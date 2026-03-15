@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insurance Products - BMGOne</title>
+    <meta name="description" content="BMGOne provides comprehensive insurance solutions including health, life, and general insurance from leading providers like Care, AXA, LIC, and more.">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/webp" href="logo.webp">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="logo.webp" alt="BMGOne" class="logo-img">
+                <span class="logo-text">BMGOne</span>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="index.html#home" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html#about" class="nav-link">About</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html#services" class="nav-link">Services</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html#contact" class="nav-link">Contact</a>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Insurance Hero Section with Animation -->
+    <section class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">Insurance Products</h1>
+                <p class="hero-subtitle">Trusted by Leading Companies Across Industries</p>
+                <p class="hero-description">
+                    We partner with industry leaders to provide comprehensive insurance solutions. 
+                    Rely on us for expert guidance, competitive rates, and exceptional service 
+                    tailored to your specific needs.
+                </p>
+            </div>
+            <div class="hero-image">
+                <img src="logo.webp" alt="BMGOne Logo" class="logo-hero">
+            </div>
+        </div>
+        
+        <!-- Animated Background Elements -->
+        <div class="animated-bg">
+            <div class="floating-element floating-1"></div>
+            <div class="floating-element floating-2"></div>
+            <div class="floating-element floating-3"></div>
+            <div class="floating-element floating-4"></div>
+            <div class="floating-element floating-5"></div>
+        </div>
+    </section>
+
+    <!-- Client List Section -->
+    <section class="clients-section">
+        <div class="container">
+            <h2 class="section-title">Our Partnered Clients</h2>
+            <p class="section-subtitle">Click on any client to explore their insurance solutions</p>
+            
+            <div class="clients-grid">
+                <div class="client-item" data-client="care">
+                    <div class="client-header">
+                        <div class="client-info">
+                            <h3>Care Health Insurance</h3>
+                            <span class="client-type">Health Insurance</span>
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="client-services">
+                        <div class="service-category">
+                            <ul>
+                                <li><span class="brochure-link" onclick="openBrochure('Care Health Insurance', 'care/care-freedom.pdf')">Care-Freedom</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('Care Health Insurance', 'care/care-supreme.pdf')">Care-Supreme</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('Care Health Insurance', 'care/care-heart.pdf')">Care-Heart</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('Care Health Insurance', 'care/ultimate-care.pdf')">Care-Ultimate</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="client-item" data-client="tata">
+                    <div class="client-header">
+                        <div class="client-info">
+                            <h3>Tata AIG General Insurance</h3>
+                            <span class="client-type">General Insurance</span>
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="client-services">
+                        <div class="service-category">
+                            <h4>🏥 General Insurance</h4>
+                            <ul>
+                                <li><span class="brochure-link" onclick="openBrochure('Tata AIG General Insurance', 'tata/medicare_select.pdf')">Tata AIG General Insurance</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+                <div class="client-item" data-client="star">
+                    <div class="client-header">
+                        <div class="client-info">
+                            <h3>Star Health Insurance</h3>
+                            <span class="client-type">Health Insurance</span>
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="client-services">
+                        <div class="service-category">
+                            <ul>
+                                <li><span class="brochure-link" onclick="openBrochure('Star Health Insurance', 'star/Star_Health_Assure.pdf')">Star Health Assure</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('Star Health Insurance', 'star/Super_Star.pdf')">Star Health Supreme</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2 class="section-title">Get Your Insurance Quote</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h3>Let's Find the Right Coverage for You</h3>
+                    <p>Our insurance experts are ready to help you choose the perfect insurance plan based on your needs and budget. Get personalized recommendations and competitive quotes from multiple providers.</p>
+                    <div class="contact-details">
+                        <div class="contact-item">
+                            <strong>Website:</strong> https://www.bmgone.com
+                        </div>
+                        <div class="contact-item">
+                            <strong>Email:</strong> insurance@bmgone.com
+                        </div>
+                        <div class="contact-item">
+                            <strong>Phone:</strong> +1 (555) 123-4567
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-form">
+                    <form id="insuranceForm">
+                        <div class="form-group">
+                            <input type="text" id="name" name="name" placeholder="Your Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="email" name="email" placeholder="Your Email" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" id="phone" name="phone" placeholder="Your Phone Number" required>
+                        </div>
+                        <div class="form-group">
+                            <select id="insurance-type" name="insurance-type" required>
+                                <option value="">Select Insurance Type</option>
+                                <option value="health">Health Insurance</option>
+                                <option value="life">Life Insurance</option>
+                                <option value="motor">Motor Insurance</option>
+                                <option value="home">Home Insurance</option>
+                                <option value="business">Business Insurance</option>
+                                <option value="travel">Travel Insurance</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <textarea id="message" name="message" placeholder="Additional Requirements (Optional)" rows="4"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Get Quote</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Brochure Modal -->
+    <div id="brochureModal" class="brochure-modal">
+        <div class="brochure-modal-content">
+            <div class="brochure-modal-header">
+                <h3 id="brochureTitle">Brochure</h3>
+                <button class="brochure-close" onclick="closeBrochureModal()">×</button>
+            </div>
+            <div class="brochure-modal-body">
+                <iframe id="brochureFrame" src="" width="100%" height="100%"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="logo.webp" alt="BMGOne" class="footer-logo-img">
+                    <span>BMGOne</span>
+                </div>
+                <p class="footer-text">&copy; 2024 BMGOne. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="index.html#home">Home</a>
+                    <a href="index.html#about">About</a>
+                    <a href="index.html#services">Services</a>
+                    <a href="index.html#contact">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Client List Expand/Collapse Functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const clientItems = document.querySelectorAll('.client-item');
+            
+            clientItems.forEach(item => {
+                const header = item.querySelector('.client-header');
+                
+                header.addEventListener('click', function() {
+                    // Close other expanded items
+                    clientItems.forEach(otherItem => {
+                        if (otherItem !== item && otherItem.classList.contains('expanded')) {
+                            otherItem.classList.remove('expanded');
+                        }
+                    });
+                    
+                    // Toggle current item
+                    item.classList.toggle('expanded');
+                    
+                    // Smooth scroll to item if expanding
+                    if (item.classList.contains('expanded')) {
+                        setTimeout(() => {
+                            item.scrollIntoView({
+                                behavior: 'smooth',
+                                block: 'nearest'
+                            });
+                        }, 100);
+                    }
+                });
+            });
+            
+            // Add keyboard navigation
+            clientItems.forEach(item => {
+                const header = item.querySelector('.client-header');
+                header.setAttribute('tabindex', '0');
+                header.setAttribute('role', 'button');
+                header.setAttribute('aria-expanded', 'false');
+                
+                header.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        header.click();
+                    }
+                });
+                
+                // Update aria-expanded when class changes
+                const observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.attributeName === 'class') {
+                            const isExpanded = item.classList.contains('expanded');
+                            header.setAttribute('aria-expanded', isExpanded);
+                        }
+                    });
+                });
+                observer.observe(item, { attributes: true });
+            });
+        });
+        
+        // Brochure Modal Functions
+        function openBrochure(title, brochurePath) {
+            const modal = document.getElementById('brochureModal');
+            const frame = document.getElementById('brochureFrame');
+            const titleElement = document.getElementById('brochureTitle');
+            const modalBody = modal.querySelector('.brochure-modal-body');
+            
+            // Set title
+            titleElement.textContent = title + ' - Brochure';
+            
+            // Show loading state
+            modalBody.classList.add('loading');
+            
+            // Set iframe source with PDF viewer parameters for better compatibility
+            const pdfUrl = brochurePath;
+            
+            // Option 1: Direct PDF (works in most modern browsers)
+            frame.src = pdfUrl;
+            
+            // Show modal
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+            
+            // Handle iframe load
+            frame.onload = function() {
+                modalBody.classList.remove('loading');
+            };
+            
+            // Fallback timeout - if PDF doesn't load in 3 seconds
+            setTimeout(function() {
+                if (modalBody.classList.contains('loading')) {
+                    // Try Google Docs viewer as fallback
+                    frame.src = 'https://docs.google.com/gview?embedded=true&url=' + encodeURIComponent(window.location.origin + '/' + pdfUrl);
+                    
+                    // Additional fallback for Google Docs viewer
+                    setTimeout(function() {
+                        if (modalBody.classList.contains('loading')) {
+                            modalBody.classList.remove('loading');
+                            // Show error message
+                            frame.style.display = 'none';
+                            const errorMsg = document.createElement('div');
+                            errorMsg.style.cssText = 'text-align: center; padding: 2rem; color: #666;';
+                            errorMsg.innerHTML = '<h3>Unable to load PDF</h3><p>Please try downloading the brochure or contact support.</p>';
+                            modalBody.appendChild(errorMsg);
+                        }
+                    }, 3000);
+                }
+            }, 3000);
+        }
+        
+        function closeBrochureModal() {
+            const modal = document.getElementById('brochureModal');
+            const frame = document.getElementById('brochureFrame');
+            
+            // Hide modal
+            modal.style.display = 'none';
+            
+            // Clear iframe to stop loading
+            frame.src = '';
+            
+            // Restore body scrolling
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Close modal when clicking outside
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('brochureModal');
+            if (e.target === modal) {
+                closeBrochureModal();
+            }
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('brochureModal');
+                if (modal.style.display === 'block') {
+                    closeBrochureModal();
+                }
+            }
+        });
+        
+        // Insurance Form Handler
+        document.getElementById('insuranceForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                insuranceType: document.getElementById('insurance-type').value,
+                message: document.getElementById('message').value
+            };
+            
+            if (!formData.name || !formData.email || !formData.phone || !formData.insuranceType) {
+                showNotification('Please fill in all required fields', 'error');
+                return;
+            }
+            
+            showNotification('Thank you! Our insurance expert will contact you soon with personalized quotes.', 'success');
+            this.reset();
+        });
+    </script>
+</body>
+</html>
