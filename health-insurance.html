@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Insurance - BMGOne</title>
+    <meta name="description" content="BMGOne offers comprehensive health insurance solutions from leading providers like Care Health, Star Health, Niva Bupa, Aditya Birla, and more.">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="logo.png">
+</head>
+<body>
+    <!-- Providers Section -->
+    <section id="providers" class="clients-section">
+        <div class="container">
+            <h2 class="section-title">Health Insurance Providers</h2>
+            <p class="section-subtitle">Choose from our trusted health insurance partners</p>
+
+        <!-- Insurance Provider Logos -->
+        <section class="logos-section">
+            <div class="container">
+                <h2 class="section-title">In Association with</h2>
+                <div class="logos-grid">
+                <div class="logo-item">
+                    <img src="logos/care_logo.png" alt="Care Health Insurance" class="provider-logo">
+                </div>
+                <div class="logo-item">
+                    <img src="logos/star_logo.png" alt="Star Health Insurance" class="provider-logo">
+                </div>
+                <div class="logo-item">
+                    <img src="logos/niva_logo.png" alt="Niva Bupa Health Insurance" class="provider-logo">
+                </div>
+                <div class="logo-item">
+                    <img src="logos/aditya_logo.jpg" alt="Aditya Birla Health Insurance" class="provider-logo">
+                </div>
+                <div class="logo-item">
+                    <img src="logos/mc_logo.webp" alt="Manipal Cigna Health Insurance" class="provider-logo">
+                </div>
+                </div>
+            </div>
+        </section>
+        <div class="clients-grid">
+            <div class="client-item" data-client="care">
+                <div class="client-header">
+                    <div class="client-info">
+                        <h3>Care Health Insurance</h3>
+                        <span class="client-type">Health Insurance</span>
+                    </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="client-services">
+                        <div class="service-category">
+                            <ul>
+                                <li><span class="brochure-link" onclick="openBrochure('Care Freedom', 'care/care-freedom.pdf')">Care Freedom</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('Care Supreme', 'care/care-supreme.pdf')">Care Supreme</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('Care Heart', 'care/care-heart.pdf')">Care Heart</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('Ultimate Care', 'care/ultimate-care.pdf')">Ultimate Care</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            <div class="client-item" data-client="star">
+                <div class="client-header">
+                    <div class="client-info">
+                        <h3>Star Health Insurance</h3>
+                        <span class="client-type">Health Insurance</span>
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="client-services">
+                        <div class="service-category">
+                            <ul>
+                                <li><span class="brochure-link" onclick="openBrochure('Star Health Assure', 'star/Star_Health_Assure.pdf')">Star Health Assure</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('Super Star', 'star/Super_Star.pdf')">Super Star</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('Family Health Optima', 'star/Family_Health_Optima.pdf')">Family Health Optima</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('Senior Citizens Red Carpet', 'star/Senior_Citizens_Red_Carpet.pdf')">Senior Citizens Red Carpet</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            <div class="client-item" data-client="niva">
+                <div class="client-header">
+                    <div class="client-info">
+                        <h3>Niva Bupa Health Insurance</h3>
+                        <span class="client-type">Health Insurance</span>
+                    </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="client-services">
+                        <div class="service-category">
+                            <ul>
+                                <li><span class="brochure-link" onclick="openBrochure('Niva Bupa', 'niva/health-elite.pdf')">Health Elite</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('Niva Bupa', 'niva/health-joy.pdf')">Health Joy</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('Niva Bupa', 'niva/family-floater.pdf')">Family Floater</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('Niva Bupa', 'niva/senior-citizen.pdf')">Senior Citizen</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            <div class="client-item" data-client="aditya">
+                <div class="client-header">
+                    <div class="client-info">
+                        <h3>Aditya Birla Health Insurance</h3>
+                        <span class="client-type">Health Insurance</span>
+                    </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="client-services">
+                        <div class="service-category">
+                            <ul>
+                                <li><span class="brochure-link" onclick="openBrochure('Aditya Birla', 'aditya/activ-health.pdf')">Activ Health</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('Aditya Birla', 'aditya/activ-care.pdf')">Activ Care</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('Aditya Birla', 'aditya/health-essentials.pdf')">Health Essentials</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('Aditya Birla', 'aditya/senior-citizen.pdf')">Senior Citizen</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+            <div class="client-item" data-client="manipal">
+                <div class="client-header">
+                    <div class="client-info">
+                        <h3>Manipal Cigna Health Insurance</h3>
+                        <span class="client-type">Health Insurance</span>
+                    </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="client-services">
+                        <div class="service-category">
+                            <ul>
+                                <li><span class="brochure-link" onclick="openBrochure('Manipal Cigna', 'mc/pro-health-plan.pdf')">Pro Health Plan</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('Manipal Cigna', 'mc/lifetime-health.pdf')">Lifetime Health</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('Manipal Cigna', 'mc/family-health.pdf')">Family Health</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('Manipal Cigna', 'mc/senior-first.pdf')">Senior First</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- All Health Insurance Providers -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2 class="section-title">Get Your Health Insurance Quote</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h3>Health Insurance Benefits:</h3>
+                    <ul>
+                        <li>Cashless hospitalization at network hospitals</li>
+                        <li>Pre and post-hospitalization expenses</li>
+                        <li>Ambulance charges coverage</li>
+                        <li>Daily hospital cash allowance</li>
+                        <li>Annual health check-up benefits</li>
+                    </ul>
+                </div>
+                <div class="contact-form">
+                    <form id="healthForm">
+                        <div class="form-group">
+                            <input type="text" id="name" name="name" placeholder="Your Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="email" name="email" placeholder="Your Email" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" id="phone" name="phone" placeholder="Your Phone" required>
+                        </div>
+                        <div class="form-group">
+                            <select id="planType" name="planType" required>
+                                <option value="">Select Plan Type</option>
+                                <option value="individual">Individual</option>
+                                <option value="family">Family Floater</option>
+                                <option value="senior">Senior Citizen</option>
+                                <option value="critical">Critical Illness</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <select id="provider" name="provider" required>
+                                <option value="">Select Provider</option>
+                                <option value="care">Care Health Insurance</option>
+                                <option value="star">Star Health Insurance</option>
+                                <option value="niva">Niva Bupa</option>
+                                <option value="aditya">Aditya Birla</option>
+                                <option value="manipal">Manipal Cigna</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <textarea id="message" name="message" placeholder="Additional Requirements (Optional)" rows="4"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Get Quote</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Brochure Modal -->
+    <div id="brochureModal" class="brochure-modal">
+        <div class="brochure-modal-content">
+            <div class="brochure-modal-header">
+                <h3 id="brochureTitle">Brochure</h3>
+                <button class="brochure-close" onclick="closeBrochureModal()">×</button>
+            </div>
+            <div class="brochure-modal-body">
+                <iframe id="brochureFrame" src="" width="100%" height="100%"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="logo.webp" alt="BMGOne" class="footer-logo-img">
+                    <span>BMGOne</span>
+                </div>
+                <p class="footer-text">&copy; 2025 BMG Enterprise. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="index.html">Home</a>
+                    <a href="insurance.html">Insurance</a>
+                    <a href="#contact">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Client List Expand/Collapse
+        document.addEventListener('DOMContentLoaded', function() {
+            const clientItems = document.querySelectorAll('.client-item');
+            
+            clientItems.forEach(item => {
+                const header = item.querySelector('.client-header');
+                
+                header.addEventListener('click', function() {
+                    const isExpanded = item.classList.contains('expanded');
+                    
+                    // Close all other items
+                    clientItems.forEach(otherItem => {
+                        if (otherItem !== item) {
+                            otherItem.classList.remove('expanded');
+                        }
+                    });
+                    
+                    // Toggle current item
+                    item.classList.toggle('expanded');
+                    
+                    // Update aria-expanded
+                    header.setAttribute('aria-expanded', !isExpanded);
+                });
+                
+                // Keyboard support
+                header.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        header.click();
+                    }
+                });
+            });
+        });
+        
+        // Brochure Modal Functions
+        function openBrochure(title, brochurePath) {
+            const modal = document.getElementById('brochureModal');
+            const frame = document.getElementById('brochureFrame');
+            const titleElement = document.getElementById('brochureTitle');
+            const modalBody = modal.querySelector('.brochure-modal-body');
+            
+            titleElement.textContent = title + ' - Brochure';
+            modalBody.classList.add('loading');
+            
+            const pdfUrl = brochurePath;
+            frame.src = pdfUrl;
+            
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            
+            frame.onload = function() {
+                modalBody.classList.remove('loading');
+            };
+            
+            setTimeout(function() {
+                if (modalBody.classList.contains('loading')) {
+                    frame.src = 'https://docs.google.com/gview?embedded=true&url=' + encodeURIComponent(window.location.origin + '/' + pdfUrl);
+                }
+            }, 3000);
+        }
+        
+        function closeBrochureModal() {
+            const modal = document.getElementById('brochureModal');
+            const frame = document.getElementById('brochureFrame');
+            
+            modal.style.display = 'none';
+            frame.src = '';
+            document.body.style.overflow = 'auto';
+        }
+        
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('brochureModal');
+            if (e.target === modal) {
+                closeBrochureModal();
+            }
+        });
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('brochureModal');
+                if (modal.style.display === 'block') {
+                    closeBrochureModal();
+                }
+            }
+        });
+        
+        // Form Handler
+        document.getElementById('healthForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                planType: document.getElementById('planType').value,
+                provider: document.getElementById('provider').value,
+                message: document.getElementById('message').value,
+                type: 'Health Insurance'
+            };
+            
+            // Show success message
+            const successMessage = document.createElement('div');
+            successMessage.className = 'success-message';
+            successMessage.textContent = `Thank you ${formData.name}! Your Health Insurance quote request has been received. We'll contact you soon.`;
+            successMessage.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #10b981;
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                max-width: 400px;
+            `;
+            
+            document.body.appendChild(successMessage);
+            this.reset();
+            
+            setTimeout(() => {
+                successMessage.remove();
+            }, 5000);
+        });
+    </script>
+</body>
+</html>

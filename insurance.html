@@ -7,15 +7,14 @@
     <meta name="description" content="BMGOne provides comprehensive insurance solutions including health, life, and general insurance from leading providers like Care, AXA, LIC, and more.">
     <link rel="stylesheet" href="styles.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="icon" type="image/webp" href="logo.webp">
+    <link rel="icon" type="image/png" href="logo.png">
 </head>
 <body>
     <!-- Navigation -->
     <nav class="navbar">
         <div class="nav-container">
             <div class="nav-logo">
-                <img src="logo.webp" alt="BMGOne" class="logo-img">
-                <span class="logo-text">BMGOne</span>
+                <img src="banner.png" class="logo-img">
             </div>
             <ul class="nav-menu">
                 <li class="nav-item">
@@ -52,10 +51,11 @@
                 </p>
             </div>
             <div class="hero-image">
-                <img src="logo.webp" alt="BMGOne Logo" class="logo-hero">
+                <img src="logo.png" alt="BMGOne Logo" class="logo-hero">
             </div>
+            
         </div>
-        
+
         <!-- Animated Background Elements -->
         <div class="animated-bg">
             <div class="floating-element floating-1"></div>
@@ -65,68 +65,89 @@
             <div class="floating-element floating-5"></div>
         </div>
     </section>
+    <section class="about-features-section">
+        <div class="about-features">
+            <div class="feature">
+                <h3>General Insurance</h3>
+                <p>Comprehensive coverage for your business assets and operations</p>
+                <div class="feature-action">
+                    <a href="#" class="btn btn-secondary" onclick="openPageModal('General Insurance Providers', 'general-insurance.html')">View Providers →</a>
+                </div>
+            </div>
+            <div class="feature">
+                <h3>Life Insurance</h3>
+                <p>Protect your loved ones with our comprehensive life insurance plans</p>
+                <div class="feature-action">
+                    <a href="#" class="btn btn-secondary" onclick="openPageModal('Life Insurance Providers', 'life-insurance.html')">View Providers →</a>
+                </div>
+            </div>
+            <div class="feature">
+                <h3>Health Insurance</h3>
+                <p>Comprehensive health coverage for you and your family</p>
+                <div class="feature-action">
+                    <a href="#" class="btn btn-secondary" onclick="openPageModal('Health Insurance Providers', 'health-insurance.html')">View Providers →</a>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <!-- Client List Section -->
-    <section class="clients-section">
+    <!-- Client Logos Slider Section -->
+    <section class="logos-slider-section">
         <div class="container">
-            <h2 class="section-title">Our Partnered Clients</h2>
-            <p class="section-subtitle">Click on any client to explore their insurance solutions</p>
+            <h2 class="section-title">In Association with</h2>
+            <div class="logos-slider">
+                <div class="logos-track">
+                    <div class="logo-slide">
+                        <img src="logos/care_logo.png" alt="Care Health Insurance" class="partner-logo">
+                    </div>
+                    <div class="logo-slide">
+                        <img src="logos/tata_logo.png" alt="Tata AIG General Insurance" class="partner-logo">
+                    </div>
+                    <div class="logo-slide">
+                        <img src="logos/star_logo.png" alt="Star Health Insurance" class="partner-logo">
+                    </div>
+                    <div class="logo-slide">
+                        <img src="logos/lic_logo.png" alt="LIC Insurance" class="partner-logo">
+                    </div>
+                    <div class="logo-slide">
+                        <img src="logos/ergo_logo.webp" alt="HDFC Ergo" class="partner-logo">
+                    </div>
+                    <div class="logo-slide">
+                        <img src="logos/mc_logo.webp" alt="Manipal Cigna" class="partner-logo">
+                    </div>
+                    <div class="logo-slide">
+                        <img src="logos/bajaj_logo.webp" alt="Bajaj Allianz" class="partner-logo">
+                    </div>
+                    <div class="logo-slide">
+                        <img src="logos/lombard_logo.png" alt="ICICI Lombard Insurance" class="partner-logo">
+                    </div>
+                    <div class="logo-slide">
+                        <img src="logos/niva_logo.png" alt="Niva Bupa Insurance" class="partner-logo">
+                    </div>
+                    <div class="logo-slide">
+                        <img src="logos/aditya_logo.jpg" alt="Aditya Birla Health Insurance" class="partner-logo">
+                    </div>
+                    <div class="logo-slide">
+                        <img src="logos/Axis_Max_logo.png" alt="Axis Max" class="partner-logo">
+                    </div>
+                    <div class="logo-slide">
+                        <img src="logos/tata-aia-life.png" alt="Tata AIA Life" class="partner-logo">
+                    </div>
+                    <div class="logo-slide">
+                        <img src="logos/sbi_logo.png" alt="SBI Life" class="partner-logo">
+                    </div>
+                </div>
+            </div>
+            <!-- Slider Navigation -->
+            <button class="slider-btn slider-prev" onclick="moveSlider(-1)">‹</button>
+            <button class="slider-btn slider-next" onclick="moveSlider(1)">›</button>
             
-            <div class="clients-grid">
-                <div class="client-item" data-client="care">
-                    <div class="client-header">
-                        <div class="client-info">
-                            <h3>Care Health Insurance</h3>
-                            <span class="client-type">Health Insurance</span>
-                        </div>
-                        <div class="expand-icon">▼</div>
-                    </div>
-                    <div class="client-services">
-                        <div class="service-category">
-                            <ul>
-                                <li><span class="brochure-link" onclick="openBrochure('Care Health Insurance', 'care/care-freedom.pdf')">Care-Freedom</span></li>
-                                <li><span class="brochure-link" onclick="openBrochure('Care Health Insurance', 'care/care-supreme.pdf')">Care-Supreme</span></li>
-                                <li><span class="brochure-link" onclick="openBrochure('Care Health Insurance', 'care/care-heart.pdf')">Care-Heart</span></li>
-                                <li><span class="brochure-link" onclick="openBrochure('Care Health Insurance', 'care/ultimate-care.pdf')">Care-Ultimate</span></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="client-item" data-client="tata">
-                    <div class="client-header">
-                        <div class="client-info">
-                            <h3>Tata AIG General Insurance</h3>
-                            <span class="client-type">General Insurance</span>
-                        </div>
-                        <div class="expand-icon">▼</div>
-                    </div>
-                    <div class="client-services">
-                        <div class="service-category">
-                            <h4>🏥 General Insurance</h4>
-                            <ul>
-                                <li><span class="brochure-link" onclick="openBrochure('Tata AIG General Insurance', 'tata/medicare_select.pdf')">Tata AIG General Insurance</span></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-                <div class="client-item" data-client="star">
-                    <div class="client-header">
-                        <div class="client-info">
-                            <h3>Star Health Insurance</h3>
-                            <span class="client-type">Health Insurance</span>
-                        </div>
-                        <div class="expand-icon">▼</div>
-                    </div>
-                    <div class="client-services">
-                        <div class="service-category">
-                            <ul>
-                                <li><span class="brochure-link" onclick="openBrochure('Star Health Insurance', 'star/Star_Health_Assure.pdf')">Star Health Assure</span></li>
-                                <li><span class="brochure-link" onclick="openBrochure('Star Health Insurance', 'star/Super_Star.pdf')">Star Health Supreme</span></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+            <!-- Slider Indicators -->
+            <div class="slider-indicators">
+                <span class="indicator active" onclick="goToSlide(0)"></span>
+                <span class="indicator" onclick="goToSlide(1)"></span>
+                <span class="indicator" onclick="goToSlide(2)"></span>
+                <span class="indicator" onclick="goToSlide(3)"></span>
             </div>
         </div>
     </section>
@@ -167,10 +188,7 @@
                                 <option value="">Select Insurance Type</option>
                                 <option value="health">Health Insurance</option>
                                 <option value="life">Life Insurance</option>
-                                <option value="motor">Motor Insurance</option>
-                                <option value="home">Home Insurance</option>
-                                <option value="business">Business Insurance</option>
-                                <option value="travel">Travel Insurance</option>
+                                <option value="general">General Insurance</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -182,6 +200,19 @@
             </div>
         </div>
     </section>
+
+    <!-- Inline Page Container -->
+    <div id="pageModal" class="page-modal">
+        <div class="page-modal-content">
+            <div class="page-modal-header">
+                <h3 id="pageTitle">Insurance Providers</h3>
+                <button class="page-close" onclick="closePageModal()">×</button>
+            </div>
+            <div class="page-modal-body">
+                <iframe id="pageFrame" src="" width="100%" height="100%"></iframe>
+            </div>
+        </div>
+    </div>
 
     <!-- Brochure Modal -->
     <div id="brochureModal" class="brochure-modal">
@@ -272,6 +303,160 @@
                 });
                 observer.observe(item, { attributes: true });
             });
+        });
+        
+        // Logos Slider Functionality
+        let currentSlide = 0;
+        const totalSlides = 10; // Total number of logos
+        const logosPerSlide = 3; // Number of logos visible at once
+        const track = document.querySelector('.logos-track');
+        
+        function moveSlider(direction) {
+            currentSlide += direction;
+            
+            // Calculate maximum slide index
+            const maxSlideIndex = Math.ceil(totalSlides / logosPerSlide) - 1;
+            
+            // Loop back to start/end
+            if (currentSlide < 0) {
+                currentSlide = maxSlideIndex;
+            } else if (currentSlide > maxSlideIndex) {
+                currentSlide = 0;
+            }
+            
+            updateSlider();
+        }
+        
+        function goToSlide(slideIndex) {
+            currentSlide = slideIndex;
+            updateSlider();
+        }
+        
+        function updateSlider() {
+            const slideWidth = 100 / logosPerSlide; // Percentage width
+            const offset = -currentSlide * slideWidth;
+            track.style.transform = `translateX(${offset}%)`;
+            
+            // Update indicators
+            updateIndicators();
+        }
+        
+        function updateIndicators() {
+            const indicators = document.querySelectorAll('.indicator');
+            const maxSlideIndex = Math.ceil(totalSlides / logosPerSlide) - 1;
+            
+            indicators.forEach((indicator, index) => {
+                indicator.classList.toggle('active', index === currentSlide && index <= maxSlideIndex);
+            });
+            
+            // Hide indicators beyond the maximum
+            indicators.forEach((indicator, index) => {
+                indicator.style.display = index <= maxSlideIndex ? 'block' : 'none';
+            });
+        }
+        
+        // Auto-slide functionality
+        let autoSlideInterval;
+        
+        function startAutoSlide() {
+            autoSlideInterval = setInterval(() => {
+                moveSlider(1);
+            }, 4000); // Change every 4 seconds
+        }
+        
+        function stopAutoSlide() {
+            clearInterval(autoSlideInterval);
+        }
+        
+        // Start auto-slide on page load
+        startAutoSlide();
+        
+        // Pause auto-slide on hover
+        const slider = document.querySelector('.logos-slider');
+        slider.addEventListener('mouseenter', stopAutoSlide);
+        slider.addEventListener('mouseleave', startAutoSlide);
+        
+        // Touch support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+        
+        slider.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        });
+        
+        slider.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].clientX;
+            const diff = touchStartX - touchEndX;
+            
+            if (Math.abs(diff) > 50) {
+                if (diff > 0) {
+                    moveSlider(1); // Swipe left, go right
+                } else {
+                    moveSlider(-1); // Swipe right, go left
+                }
+            }
+        });
+        
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                moveSlider(-1);
+            } else if (e.key === 'ArrowRight') {
+                moveSlider(1);
+            }
+        });
+        
+        // Page Modal Functions
+        function openPageModal(title, pageUrl) {
+            const modal = document.getElementById('pageModal');
+            const frame = document.getElementById('pageFrame');
+            const titleElement = document.getElementById('pageTitle');
+            
+            // Set title
+            titleElement.textContent = title;
+            
+            // Set iframe source
+            frame.src = pageUrl;
+            
+            // Show modal
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        }
+        
+        function closePageModal() {
+            const modal = document.getElementById('pageModal');
+            const frame = document.getElementById('pageFrame');
+            
+            // Hide modal
+            modal.style.display = 'none';
+            
+            // Clear iframe to stop loading
+            frame.src = '';
+            
+            // Restore body scrolling
+            document.body.style.overflow = 'auto';
+        }
+        
+        // Close page modal when clicking outside
+        document.addEventListener('click', function(e) {
+            const pageModal = document.getElementById('pageModal');
+            if (e.target === pageModal) {
+                closePageModal();
+            }
+        });
+        
+        // Close page modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const pageModal = document.getElementById('pageModal');
+                const brochureModal = document.getElementById('brochureModal');
+                
+                if (pageModal.style.display === 'block') {
+                    closePageModal();
+                } else if (brochureModal.style.display === 'block') {
+                    closeBrochureModal();
+                }
+            }
         });
         
         // Brochure Modal Functions
@@ -375,6 +560,18 @@
             
             showNotification('Thank you! Our insurance expert will contact you soon with personalized quotes.', 'success');
             this.reset();
+        });
+        
+        // Ensure feature card links work properly
+        document.addEventListener('DOMContentLoaded', function() {
+            const featureLinks = document.querySelectorAll('.feature-action a');
+            
+            featureLinks.forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // Allow default navigation
+                    console.log('Navigating to:', this.href);
+                });
+            });
         });
     </script>
 </body>

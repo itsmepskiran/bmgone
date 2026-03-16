@@ -60,8 +60,8 @@ body {
 }
 
 .logo-img {
-    width: 40px;
-    height: 40px;
+    width: auto;
+    height: 50px;
 }
 
 .nav-menu {
@@ -296,6 +296,17 @@ section:not(.hero) {
     line-height: 1.6;
 }
 
+.feature-action {
+    margin-top: 1.5rem;
+    display: flex;
+    justify-content: center;
+}
+
+.feature-action .btn {
+    display: inline-block;
+    text-decoration: none;
+}
+
 /* Services Section */
 .services {
     background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
@@ -526,6 +537,109 @@ section:not(.hero) {
     }
 }
 
+/* Logos Slider Section */
+.logos-slider-section {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    padding: 80px 0;
+    overflow: hidden;
+}
+
+.logos-slider {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.logos-track {
+    display: flex;
+    transition: transform 0.5s ease;
+}
+
+.logo-slide {
+    width: 33.333%;
+    flex: 0 0 auto;
+    text-align: center;
+    padding: 2rem;
+}
+
+.partner-logo {
+    max-width: 250px;
+    max-height: 100px;
+    object-fit: contain;
+    transition: transform 0.3s ease;
+}
+
+.partner-logo:hover {
+    transform: scale(1.05);
+}
+
+/* Slider Navigation */
+.slider-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--primary-teal);
+    color: white;
+    border: none;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.slider-btn:hover {
+    background: var(--primary-blue);
+    transform: scale(1.1);
+}
+
+.slider-prev {
+    left: 20px;
+}
+
+.slider-next {
+    right: 20px;
+}
+
+/* Slider Indicators */
+.slider-indicators {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+
+.indicator {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(0, 168, 204, 0.3);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.indicator.active {
+    background: var(--primary-teal);
+    border-color: var(--primary-teal);
+}
+
+.indicator:hover {
+    background: rgba(0, 168, 204, 0.5);
+    border-color: var(--primary-teal);
+}
+
 /* Client List Section */
 .clients-section {
     background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
@@ -699,6 +813,39 @@ section:not(.hero) {
     line-height: 1.6;
 }
 
+/* Logos Section */
+.logos-section {
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    padding: 80px 0;
+}
+
+.logos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    margin-top: 2rem;
+}
+
+.logo-item {
+    background: white;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    transition: transform 0.3s ease;
+}
+
+.logo-item:hover {
+    transform: translateY(-5px);
+}
+
+.provider-logo {
+    max-width: 180px;
+    max-height: 60px;
+    object-fit: contain;
+    border-radius: 8px;
+}
+
 /* Form Select Styling */
 .form-group select {
     width: 100%;
@@ -721,6 +868,79 @@ section:not(.hero) {
     outline: none;
     border-color: var(--accent-green);
     background: rgba(255, 255, 255, 0.2);
+}
+
+/* Page Modal */
+.page-modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 10000;
+    animation: fadeIn 0.3s ease;
+}
+
+.page-modal-content {
+    position: relative;
+    width: 95%;
+    height: 95%;
+    max-width: 1400px;
+    margin: 2.5% auto;
+    background: white;
+    border-radius: 15px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    animation: slideIn 0.3s ease;
+}
+
+.page-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.5rem 2rem;
+    background: var(--gradient-primary);
+    color: white;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.page-modal-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.page-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 2rem;
+    cursor: pointer;
+    padding: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.3s ease;
+}
+
+.page-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.page-modal-body {
+    height: calc(100% - 80px);
+    position: relative;
+}
+
+.page-modal-body iframe {
+    border: none;
+    background: white;
+    width: 100%;
+    height: 100%;
 }
 
 /* Brochure Modal */
@@ -894,6 +1114,88 @@ section:not(.hero) {
 
 .footer-links a:hover {
     color: var(--accent-green);
+}
+
+/* Responsive Design for Slider */
+@media screen and (max-width: 768px) {
+    .logos-slider {
+        max-width: 100%;
+        margin: 0 20px;
+    }
+    
+    .logo-slide {
+        width: 50%; /* Show 2 logos on tablet */
+        padding: 1.5rem;
+    }
+    
+    .partner-logo {
+        max-width: 200px;
+        max-height: 80px;
+    }
+    
+    .slider-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 1.2rem;
+    }
+    
+    .slider-prev {
+        left: 10px;
+    }
+    
+    .slider-next {
+        right: 10px;
+    }
+    
+    .slider-indicators {
+        bottom: 15px;
+        gap: 8px;
+    }
+    
+    .indicator {
+        width: 10px;
+        height: 10px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .logos-slider-section {
+        padding: 60px 0;
+    }
+    
+    .logo-slide {
+        width: 100%; /* Show 1 logo on mobile */
+        padding: 1rem;
+    }
+    
+    .partner-logo {
+        max-width: 180px;
+        max-height: 70px;
+    }
+    
+    .slider-btn {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+    }
+    
+    .slider-prev {
+        left: 5px;
+    }
+    
+    .slider-next {
+        right: 5px;
+    }
+    
+    .slider-indicators {
+        bottom: 10px;
+        gap: 6px;
+    }
+    
+    .indicator {
+        width: 8px;
+        height: 8px;
+    }
 }
 
 /* Responsive Design */

@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Insurance - BMGOne</title>
+    <meta name="description" content="BMGOne offers comprehensive life insurance solutions from leading providers including LIC, Tata AIG Life, HDFC Life, and ICICI Prudential.">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="logo.png">
+</head>
+<body>
+    <!-- Providers Section -->
+    <section id="providers" class="clients-section">
+        <div class="container">
+            <h2 class="section-title">Life Insurance Providers</h2>
+            <p class="section-subtitle">Choose from our trusted life insurance partners</p>
+            
+            <div class="clients-grid">
+                <div class="client-item" data-client="lic">
+                    <div class="client-header">
+                        <div class="client-info">
+                            <h3>LIC Life Insurance</h3>
+                            <span class="client-type">Life Insurance</span>
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="client-services">
+                        <div class="service-category">
+                            <ul>
+                                <li><span class="brochure-link" onclick="openBrochure('LIC Term Plan', 'lic/term-plan.pdf')">Term Insurance Plan</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('LIC Jeevan Anand', 'lic/jeevan-anand.pdf')">Jeevan Anand</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('LIC Jeevan Lakshya', 'lic/jeevan-lakshya.pdf')">Jeevan Lakshya</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('LIC New Endowment', 'lic/new-endowment.pdf')">New Endowment Plan</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="client-item" data-client="tata-aig">
+                    <div class="client-header">
+                        <div class="client-info">
+                            <h3>Tata AIG Life Insurance</h3>
+                            <span class="client-type">Life Insurance</span>
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="client-services">
+                        <div class="service-category">
+                            <ul>
+                                <li><span class="brochure-link" onclick="openBrochure('Tata AIG Term', 'tata-aig/term-insurance.pdf')">Term Insurance</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('Tata AIG Savings', 'tata-aig/savings-plan.pdf')">Savings Plan</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('Tata AIG Retirement', 'tata-aig/retirement.pdf')">Retirement Plan</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('Tata AIG Child', 'tata-aig/child-plan.pdf')">Child Plan</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="client-item" data-client="hdfc-life">
+                    <div class="client-header">
+                        <div class="client-info">
+                            <h3>HDFC Life Insurance</h3>
+                            <span class="client-type">Life Insurance</span>
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="client-services">
+                        <div class="service-category">
+                            <ul>
+                                <li><span class="brochure-link" onclick="openBrochure('HDFC Term', 'hdfc-life/term-insurance.pdf')">Term Insurance</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('HDFC Sanchay', 'hdfc-life/sanchay.pdf')">Sanchay Plan</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('HDFC Pension', 'hdfc-life/pension.pdf')">Pension Plan</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('HDFC YoungStar', 'hdfc-life/youngstar.pdf')">YoungStar Plan</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="client-item" data-client="icici-prudential">
+                    <div class="client-header">
+                        <div class="client-info">
+                            <h3>ICICI Prudential Life Insurance</h3>
+                            <span class="client-type">Life Insurance</span>
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="client-services">
+                        <div class="service-category">
+                            <ul>
+                                <li><span class="brochure-link" onclick="openBrochure('ICICI Term', 'icici-prudential/term-insurance.pdf')">Term Insurance</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('ICICI Wealth', 'icici-prudential/wealth-plan.pdf')">Wealth Plan</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('ICICI Retirement', 'icici-prudential/retirement.pdf')">Retirement Plan</span></li>
+                                <li><span class="brochure-link" onclick="openBrochure('ICICI SmartKid', 'icici-prudential/smartkid.pdf')">SmartKid Plan</span></li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2 class="section-title">Get Your Life Insurance Quote</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h3>Life Insurance Benefits:</h3>
+                    <ul>
+                        <li>Financial protection for your family</li>
+                        <li>Tax benefits under Section 80C</li>
+                        <li>Long-term wealth creation</li>
+                        <li>Retirement planning solutions</li>
+                        <li>Child education and marriage planning</li>
+                    </ul>
+                </div>
+                <div class="contact-form">
+                    <form id="lifeForm">
+                        <div class="form-group">
+                            <input type="text" id="name" name="name" placeholder="Your Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" id="email" name="email" placeholder="Your Email" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="tel" id="phone" name="phone" placeholder="Your Phone" required>
+                        </div>
+                        <div class="form-group">
+                            <select id="planType" name="planType" required>
+                                <option value="">Select Plan Type</option>
+                                <option value="term">Term Insurance</option>
+                                <option value="endowment">Endowment Plan</option>
+                                <option value="child">Child Plan</option>
+                                <option value="retirement">Retirement Plan</option>
+                                <option value="savings">Savings Plan</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <select id="provider" name="provider" required>
+                                <option value="">Select Provider</option>
+                                <option value="lic">LIC</option>
+                                <option value="tata-aig">Tata AIG</option>
+                                <option value="hdfc-life">HDFC Life</option>
+                                <option value="icici-prudential">ICICI Prudential</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <textarea id="message" name="message" placeholder="Additional Requirements (Optional)" rows="4"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Get Quote</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Brochure Modal -->
+    <div id="brochureModal" class="brochure-modal">
+        <div class="brochure-modal-content">
+            <div class="brochure-modal-header">
+                <h3 id="brochureTitle">Brochure</h3>
+                <button class="brochure-close" onclick="closeBrochureModal()">×</button>
+            </div>
+            <div class="brochure-modal-body">
+                <iframe id="brochureFrame" src="" width="100%" height="100%"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="logo.webp" alt="BMGOne" class="footer-logo-img">
+                    <span>BMGOne</span>
+                </div>
+                <p class="footer-text">&copy; 2025 BMG Enterprise. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="index.html">Home</a>
+                    <a href="insurance.html">Insurance</a>
+                    <a href="#contact">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+    <script>
+        // Client List Expand/Collapse
+        document.addEventListener('DOMContentLoaded', function() {
+            const clientItems = document.querySelectorAll('.client-item');
+            
+            clientItems.forEach(item => {
+                const header = item.querySelector('.client-header');
+                
+                header.addEventListener('click', function() {
+                    const isExpanded = item.classList.contains('expanded');
+                    
+                    // Close all other items
+                    clientItems.forEach(otherItem => {
+                        if (otherItem !== item) {
+                            otherItem.classList.remove('expanded');
+                        }
+                    });
+                    
+                    // Toggle current item
+                    item.classList.toggle('expanded');
+                    
+                    // Update aria-expanded
+                    header.setAttribute('aria-expanded', !isExpanded);
+                });
+                
+                // Keyboard support
+                header.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        header.click();
+                    }
+                });
+            });
+        });
+        
+        // Brochure Modal Functions
+        function openBrochure(title, brochurePath) {
+            const modal = document.getElementById('brochureModal');
+            const frame = document.getElementById('brochureFrame');
+            const titleElement = document.getElementById('brochureTitle');
+            const modalBody = modal.querySelector('.brochure-modal-body');
+            
+            titleElement.textContent = title + ' - Brochure';
+            modalBody.classList.add('loading');
+            
+            const pdfUrl = brochurePath;
+            frame.src = pdfUrl;
+            
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+            
+            frame.onload = function() {
+                modalBody.classList.remove('loading');
+            };
+            
+            setTimeout(function() {
+                if (modalBody.classList.contains('loading')) {
+                    frame.src = 'https://docs.google.com/gview?embedded=true&url=' + encodeURIComponent(window.location.origin + '/' + pdfUrl);
+                }
+            }, 3000);
+        }
+        
+        function closeBrochureModal() {
+            const modal = document.getElementById('brochureModal');
+            const frame = document.getElementById('brochureFrame');
+            
+            modal.style.display = 'none';
+            frame.src = '';
+            document.body.style.overflow = 'auto';
+        }
+        
+        document.addEventListener('click', function(e) {
+            const modal = document.getElementById('brochureModal');
+            if (e.target === modal) {
+                closeBrochureModal();
+            }
+        });
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('brochureModal');
+                if (modal.style.display === 'block') {
+                    closeBrochureModal();
+                }
+            }
+        });
+        
+        // Form Handler
+        document.getElementById('lifeForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                planType: document.getElementById('planType').value,
+                provider: document.getElementById('provider').value,
+                message: document.getElementById('message').value,
+                type: 'Life Insurance'
+            };
+            
+            // Show success message
+            const successMessage = document.createElement('div');
+            successMessage.className = 'success-message';
+            successMessage.textContent = `Thank you ${formData.name}! Your Life Insurance quote request has been received. We'll contact you soon.`;
+            successMessage.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #10b981;
+                color: white;
+                padding: 1rem 1.5rem;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                z-index: 10000;
+                max-width: 400px;
+            `;
+            
+            document.body.appendChild(successMessage);
+            this.reset();
+            
+            setTimeout(() => {
+                successMessage.remove();
+            }, 5000);
+        });
+    </script>
+</body>
+</html>
