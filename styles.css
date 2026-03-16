@@ -869,6 +869,14 @@ section:not(.hero) {
     font-size: 1.4rem;
     border-bottom: 2px solid var(--gradient-primary);
     padding-bottom: 0.5rem;
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 100;
+    padding: 1rem;
+    margin: -2rem -2rem 1rem -2rem;
+    border-radius: 12px 12px 0 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .provider-content p {
