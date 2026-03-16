@@ -10,138 +10,464 @@
     <link rel="icon" type="image/png" href="logo.png">
 </head>
 <body>
-    <!-- Providers Section -->
-    <section id="providers" class="clients-section">
-        <div class="container">
-            <h2 class="section-title">Health Insurance Providers</h2>
-            <p class="section-subtitle">Choose from our trusted health insurance partners</p>
-
         <!-- Insurance Provider Logos -->
         <section class="logos-section">
             <div class="container">
                 <h2 class="section-title">In Association with</h2>
                 <div class="logos-grid">
-                <div class="logo-item">
+                <div class="logo-item" onclick="toggleProviderContainer('care')">
                     <img src="logos/care_logo.png" alt="Care Health Insurance" class="provider-logo">
                 </div>
-                <div class="logo-item">
+                
+                <!-- Care Provider Container -->
+                <div id="care-container" class="provider-container" style="display: none;">
+                    <div class="provider-content">
+                        <h4>Care Health Insurance</h4>
+                        <p>Care Health Insurance offers comprehensive health coverage with cashless hospitalization and extensive network hospitals.</p>
+                        
+                        <div class="provider-features">
+                            <h5>Key Features & Benefits</h5>
+                            <ul class="features-list">
+                                <li><strong>Claim Settlement Ratio:</strong> 85-90% (Industry Standard)</li>
+                                <li><strong>Room Rent Limit:</strong> Up to 1% of Sum Insured</li>
+                                <li><strong>Pre & Post Hospitalization:</strong> 30 days pre, 60 days post</li>
+                                <li><strong>Waiting Periods:</strong> 30 days for illnesses, 2 years for specific diseases</li>
+                                <li><strong>Network Hospitals:</strong> 8,200+ hospitals across India</li>
+                                <li><strong>Sum Insured:</strong> ₹3 Lakhs to ₹6 Crores</li>
+                                <li><strong>Co-payment Clause:</strong> 10% for senior citizens above 60</li>
+                                <li><strong>Day Care Procedures:</strong> 150+ procedures covered</li>
+                                <li><strong>No Claim Bonus:</strong> Up to 50% cumulative bonus</li>
+                                <li><strong>Restoration Benefit:</strong> 100% sum insured restoration</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="provider-plans">
+                            <h5>Available Plans</h5>
+                            <div class="plans-list">
+                                <div class="plan-item">
+                                    <span class="plan-name">Care Freedom</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Care Freedom', 'care/care-freedom.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Care Supreme</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Care Supreme', 'care/care-supreme.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Care Heart</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Care Heart', 'care/care-heart.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Ultimate Care</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Ultimate Care', 'care/ultimate-care.pdf')">View Brochure</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="logo-item" onclick="toggleProviderContainer('star')">
                     <img src="logos/star_logo.png" alt="Star Health Insurance" class="provider-logo">
                 </div>
-                <div class="logo-item">
-                    <img src="logos/niva_logo.png" alt="Niva Bupa Health Insurance" class="provider-logo">
+                
+                <!-- Star Health Provider Container -->
+                <div id="star-container" class="provider-container" style="display: none;">
+                    <div class="provider-content">
+                        <h4>Star Health Insurance</h4>
+                        <p>Star Health Insurance provides comprehensive health coverage with specialized plans for families and senior citizens.</p>
+                        
+                        <div class="provider-features">
+                            <h5>Key Features & Benefits</h5>
+                            <ul class="features-list">
+                                <li><strong>Claim Settlement Ratio:</strong> 92% (Above Industry Average)</li>
+                                <li><strong>Room Rent Limit:</strong> No capping on room rent</li>
+                                <li><strong>Pre & Post Hospitalization:</strong> 60 days pre, 90 days post</li>
+                                <li><strong>Waiting Periods:</strong> 30 days for illnesses, 1 year for specific diseases</li>
+                                <li><strong>Network Hospitals:</strong> 11,000+ hospitals across India</li>
+                                <li><strong>Sum Insured:</strong> ₹1 Lakh to ₹1 Crore</li>
+                                <li><strong>Co-payment Clause:</strong> 10% for senior citizens above 60</li>
+                                <li><strong>Day Care Procedures:</strong> 170+ procedures covered</li>
+                                <li><strong>No Claim Bonus:</strong> Up to 100% cumulative bonus</li>
+                                <li><strong>Restoration Benefit:</strong> 100% automatic restoration</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="provider-plans">
+                            <h5>Available Plans</h5>
+                            <div class="plans-list">
+                                <div class="plan-item">
+                                    <span class="plan-name">Star Health Assure</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Star Health Assure', 'star/Star_Health_Assure.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Super Star</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Super Star', 'star/Super_Star.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Family Health Optima</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Family Health Optima', 'star/Family_Health_Optima.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Senior Citizens Red Carpet</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Senior Citizens Red Carpet', 'star/Senior_Citizens_Red_Carpet.pdf')">View Brochure</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="logo-item">
-                    <img src="logos/aditya_logo.jpg" alt="Aditya Birla Health Insurance" class="provider-logo">
+                
+                <div class="logo-item" onclick="toggleProviderContainer('tata-aig')">
+                    <img src="logos/tata_logo.png" alt="Tata AIG Health Insurance" class="provider-logo">
                 </div>
-                <div class="logo-item">
+                
+                <!-- Tata AIG Provider Container -->
+                <div id="tata-aig-container" class="provider-container" style="display: none;">
+                    <div class="provider-content">
+                        <h4>Tata AIG Health Insurance</h4>
+                        <p>Tata AIG Health Insurance offers comprehensive health coverage with innovative features and extensive network.</p>
+                        
+                        <div class="provider-features">
+                            <h5>Key Features & Benefits</h5>
+                            <ul class="features-list">
+                                <li><strong>Claim Settlement Ratio:</strong> 88% (Industry Standard)</li>
+                                <li><strong>Room Rent Limit:</strong> 1% of Sum Insured or ₹5,000 daily</li>
+                                <li><strong>Pre & Post Hospitalization:</strong> 30 days pre, 60 days post</li>
+                                <li><strong>Waiting Periods:</strong> 30 days for illnesses, 2 years for specific diseases</li>
+                                <li><strong>Network Hospitals:</strong> 6,500+ hospitals across India</li>
+                                <li><strong>Sum Insured:</strong> ₹2 Lakhs to ₹50 Lakhs</li>
+                                <li><strong>Co-payment Clause:</strong> 10% for senior citizens above 65</li>
+                                <li><strong>Day Care Procedures:</strong> 140+ procedures covered</li>
+                                <li><strong>No Claim Bonus:</strong> Up to 50% cumulative bonus</li>
+                                <li><strong>Restoration Benefit:</strong> 100% sum insured restoration</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="provider-plans">
+                            <h5>Available Plans</h5>
+                            <div class="plans-list">
+                                <div class="plan-item">
+                                    <span class="plan-name">Tata AIG Medicare</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Tata AIG Medicare', 'tata/medicare_select.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Tata AIG Health Guard</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Tata AIG Health Guard', 'tata/health-guard.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Tata AIG Family Health</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Tata AIG Family Health', 'tata/family-health.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Tata AIG Senior Citizen</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Tata AIG Senior Citizen', 'tata/senior-citizen.pdf')">View Brochure</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="logo-item" onclick="toggleProviderContainer('hdfc-ergo')">
+                    <img src="logos/ergo_logo.webp" alt="HDFC Ergo Health Insurance" class="provider-logo">
+                </div>
+                
+                <!-- HDFC Ergo Provider Container -->
+                <div id="hdfc-ergo-container" class="provider-container" style="display: none;">
+                    <div class="provider-content">
+                        <h4>HDFC Ergo Health Insurance</h4>
+                        <p>HDFC Ergo Health Insurance provides comprehensive health coverage with innovative wellness programs.</p>
+                        
+                        <div class="provider-features">
+                            <h5>Key Features & Benefits</h5>
+                            <ul class="features-list">
+                                <li><strong>Claim Settlement Ratio:</strong> 91% (Above Industry Average)</li>
+                                <li><strong>Room Rent Limit:</strong> 1% of Sum Insured or ₹5,000 daily</li>
+                                <li><strong>Pre & Post Hospitalization:</strong> 30 days pre, 60 days post</li>
+                                <li><strong>Waiting Periods:</strong> 30 days for illnesses, 2 years for specific diseases</li>
+                                <li><strong>Network Hospitals:</strong> 13,000+ hospitals across India</li>
+                                <li><strong>Sum Insured:</strong> ₹2 Lakhs to ₹1 Crore</li>
+                                <li><strong>Co-payment Clause:</strong> 10% for senior citizens above 60</li>
+                                <li><strong>Day Care Procedures:</strong> 170+ procedures covered</li>
+                                <li><strong>No Claim Bonus:</strong> Up to 200% cumulative bonus</li>
+                                <li><strong>Restoration Benefit:</strong> 150% sum insured restoration</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="provider-plans">
+                            <h5>Available Plans</h5>
+                            <div class="plans-list">
+                                <div class="plan-item">
+                                    <span class="plan-name">HDFC Ergo Health</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('HDFC Ergo Health', 'hdfc/health-insurance.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">HDFC Ergo Optima</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('HDFC Ergo Optima', 'hdfc/optima.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">HDFC Ergo Family</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('HDFC Ergo Family', 'hdfc/family-health.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">HDFC Ergo Senior</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('HDFC Ergo Senior', 'hdfc/senior-citizen.pdf')">View Brochure</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="logo-item" onclick="toggleProviderContainer('icici-lombard')">
+                    <img src="logos/lombard_logo.png" alt="ICICI Lombard Health Insurance" class="provider-logo">
+                </div>
+                
+                <!-- ICICI Lombard Provider Container -->
+                <div id="icici-lombard-container" class="provider-container" style="display: none;">
+                    <div class="provider-content">
+                        <h4>ICICI Lombard Health Insurance</h4>
+                        <p>ICICI Lombard Health Insurance offers comprehensive health coverage with extensive hospital network.</p>
+                        
+                        <div class="provider-features">
+                            <h5>Key Features & Benefits</h5>
+                            <ul class="features-list">
+                                <li><strong>Claim Settlement Ratio:</strong> 89% (Industry Standard)</li>
+                                <li><strong>Room Rent Limit:</strong> 1% of Sum Insured or ₹4,000 daily</li>
+                                <li><strong>Pre & Post Hospitalization:</strong> 30 days pre, 60 days post</li>
+                                <li><strong>Waiting Periods:</strong> 30 days for illnesses, 2 years for specific diseases</li>
+                                <li><strong>Network Hospitals:</strong> 10,000+ hospitals across India</li>
+                                <li><strong>Sum Insured:</strong> ₹3 Lakhs to ₹50 Lakhs</li>
+                                <li><strong>Co-payment Clause:</strong> 10% for senior citizens above 60</li>
+                                <li><strong>Day Care Procedures:</strong> 150+ procedures covered</li>
+                                <li><strong>No Claim Bonus:</strong> Up to 100% cumulative bonus</li>
+                                <li><strong>Restoration Benefit:</strong> 100% sum insured restoration</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="provider-plans">
+                            <h5>Available Plans</h5>
+                            <div class="plans-list">
+                                <div class="plan-item">
+                                    <span class="plan-name">ICICI Lombard Health</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('ICICI Lombard Health', 'lombard/health-insurance.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">ICICI Lombard Complete</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('ICICI Lombard Complete', 'lombard/complete-health.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">ICICI Lombard Family</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('ICICI Lombard Family', 'lombard/family-health.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">ICICI Lombard Senior</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('ICICI Lombard Senior', 'lombard/senior-citizen.pdf')">View Brochure</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="logo-item" onclick="toggleProviderContainer('manipal-cigna')">
                     <img src="logos/mc_logo.webp" alt="Manipal Cigna Health Insurance" class="provider-logo">
                 </div>
+                
+                <!-- Manipal Cigna Provider Container -->
+                <div id="manipal-cigna-container" class="provider-container" style="display: none;">
+                    <div class="provider-content">
+                        <h4>Manipal Cigna Health Insurance</h4>
+                        <p>Manipal Cigna Health Insurance provides comprehensive health coverage with global network hospitals.</p>
+                        
+                        <div class="provider-features">
+                            <h5>Key Features & Benefits</h5>
+                            <ul class="features-list">
+                                <li><strong>Claim Settlement Ratio:</strong> 87% (Industry Standard)</li>
+                                <li><strong>Room Rent Limit:</strong> 2% of Sum Insured or ₹6,000 daily</li>
+                                <li><strong>Pre & Post Hospitalization:</strong> 30 days pre, 90 days post</li>
+                                <li><strong>Waiting Periods:</strong> 30 days for illnesses, 2 years for specific diseases</li>
+                                <li><strong>Network Hospitals:</strong> 8,500+ hospitals across India</li>
+                                <li><strong>Sum Insured:</strong> ₹3 Lakhs to ₹1 Crore</li>
+                                <li><strong>Co-payment Clause:</strong> 10% for senior citizens above 60</li>
+                                <li><strong>Day Care Procedures:</strong> 160+ procedures covered</li>
+                                <li><strong>No Claim Bonus:</strong> Up to 100% cumulative bonus</li>
+                                <li><strong>Restoration Benefit:</strong> 100% sum insured restoration</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="provider-plans">
+                            <h5>Available Plans</h5>
+                            <div class="plans-list">
+                                <div class="plan-item">
+                                    <span class="plan-name">Pro Health Plan</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Manipal Cigna', 'mc/pro-health-plan.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Lifetime Health</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Manipal Cigna', 'mc/lifetime-health.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Family Health</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Manipal Cigna', 'mc/family-health.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Senior First</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Manipal Cigna', 'mc/senior-first.pdf')">View Brochure</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="logo-item" onclick="toggleProviderContainer('bajaj-allianz')">
+                    <img src="logos/bajaj_logo.webp" alt="Bajaj Allianz Health Insurance" class="provider-logo">
+                </div>
+                
+                <!-- Bajaj Allianz Provider Container -->
+                <div id="bajaj-allianz-container" class="provider-container" style="display: none;">
+                    <div class="provider-content">
+                        <h4>Bajaj Allianz Health Insurance</h4>
+                        <p>Bajaj Allianz Health Insurance offers comprehensive health coverage with innovative features and extensive network.</p>
+                        
+                        <div class="provider-features">
+                            <h5>Key Features & Benefits</h5>
+                            <ul class="features-list">
+                                <li><strong>Claim Settlement Ratio:</strong> 93% (Above Industry Average)</li>
+                                <li><strong>Room Rent Limit:</strong> 1% of Sum Insured or ₹5,000 daily</li>
+                                <li><strong>Pre & Post Hospitalization:</strong> 60 days pre, 90 days post</li>
+                                <li><strong>Waiting Periods:</strong> 30 days for illnesses, 1 year for specific diseases</li>
+                                <li><strong>Network Hospitals:</strong> 6,800+ hospitals across India</li>
+                                <li><strong>Sum Insured:</strong> ₹1.5 Lakhs to ₹50 Lakhs</li>
+                                <li><strong>Co-payment Clause:</strong> 10% for senior citizens above 60</li>
+                                <li><strong>Day Care Procedures:</strong> 165+ procedures covered</li>
+                                <li><strong>No Claim Bonus:</strong> Up to 200% cumulative bonus</li>
+                                <li><strong>Restoration Benefit:</strong> 100% sum insured restoration</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="provider-plans">
+                            <h5>Available Plans</h5>
+                            <div class="plans-list">
+                                <div class="plan-item">
+                                    <span class="plan-name">Health Guard</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Bajaj Allianz', 'bajaj/health-guard.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Silver Health</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Bajaj Allianz', 'bajaj/silver-health.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Gold Health</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Bajaj Allianz', 'bajaj/gold-health.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Diamond Health</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Bajaj Allianz', 'bajaj/diamond-health.pdf')">View Brochure</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="logo-item" onclick="toggleProviderContainer('niva')">
+                    <img src="logos/niva_logo.png" alt="Niva Bupa Health Insurance" class="provider-logo">
+                </div>
+                
+                <!-- Niva Bupa Provider Container -->
+                <div id="niva-container" class="provider-container" style="display: none;">
+                    <div class="provider-content">
+                        <h4>Niva Bupa Health Insurance</h4>
+                        <p>Niva Bupa Health Insurance provides comprehensive health coverage with global coverage options.</p>
+                        
+                        <div class="provider-features">
+                            <h5>Key Features & Benefits</h5>
+                            <ul class="features-list">
+                                <li><strong>Claim Settlement Ratio:</strong> 90% (Industry Standard)</li>
+                                <li><strong>Room Rent Limit:</strong> 1% of Sum Insured or ₹8,000 daily</li>
+                                <li><strong>Pre & Post Hospitalization:</strong> 30 days pre, 90 days post</li>
+                                <li><strong>Waiting Periods:</strong> 30 days for illnesses, 2 years for specific diseases</li>
+                                <li><strong>Network Hospitals:</strong> 9,500+ hospitals across India</li>
+                                <li><strong>Sum Insured:</strong> ₹3 Lakhs to ₹1 Crore</li>
+                                <li><strong>Co-payment Clause:</strong> 10% for senior citizens above 60</li>
+                                <li><strong>Day Care Procedures:</strong> 180+ procedures covered</li>
+                                <li><strong>No Claim Bonus:</strong> Up to 50% cumulative bonus</li>
+                                <li><strong>Restoration Benefit:</strong> 100% sum insured restoration</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="provider-plans">
+                            <h5>Available Plans</h5>
+                            <div class="plans-list">
+                                <div class="plan-item">
+                                    <span class="plan-name">Health Elite</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Niva Bupa', 'niva/health-elite.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Health Joy</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Niva Bupa', 'niva/health-joy.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Family Floater</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Niva Bupa', 'niva/family-floater.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Senior Citizen</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Niva Bupa', 'niva/senior-citizen.pdf')">View Brochure</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="logo-item" onclick="toggleProviderContainer('aditya')">
+                    <img src="logos/aditya_logo.jpg" alt="Aditya Birla Health Insurance" class="provider-logo">
+                </div>
+                
+                <!-- Aditya Birla Provider Container -->
+                <div id="aditya-container" class="provider-container" style="display: none;">
+                    <div class="provider-content">
+                        <h4>Aditya Birla Health Insurance</h4>
+                        <p>Aditya Birla Health Insurance offers comprehensive health coverage with innovative wellness features.</p>
+                        
+                        <div class="provider-features">
+                            <h5>Key Features & Benefits</h5>
+                            <ul class="features-list">
+                                <li><strong>Claim Settlement Ratio:</strong> 86% (Industry Standard)</li>
+                                <li><strong>Room Rent Limit:</strong> 1% of Sum Insured or ₹6,000 daily</li>
+                                <li><strong>Pre & Post Hospitalization:</strong> 30 days pre, 60 days post</li>
+                                <li><strong>Waiting Periods:</strong> 30 days for illnesses, 2 years for specific diseases</li>
+                                <li><strong>Network Hospitals:</strong> 7,500+ hospitals across India</li>
+                                <li><strong>Sum Insured:</strong> ₹2 Lakhs to ₹2 Crores</li>
+                                <li><strong>Co-payment Clause:</strong> 10% for senior citizens above 60</li>
+                                <li><strong>Day Care Procedures:</strong> 140+ procedures covered</li>
+                                <li><strong>No Claim Bonus:</strong> Up to 100% cumulative bonus</li>
+                                <li><strong>Restoration Benefit:</strong> 100% sum insured restoration</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="provider-plans">
+                            <h5>Available Plans</h5>
+                            <div class="plans-list">
+                                <div class="plan-item">
+                                    <span class="plan-name">Activ Health</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Aditya Birla', 'aditya/activ-health.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Activ Care</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Aditya Birla', 'aditya/activ-care.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Health Essentials</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Aditya Birla', 'aditya/health-essentials.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Senior Citizen</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Aditya Birla', 'aditya/senior-citizen.pdf')">View Brochure</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 </div>
             </div>
         </section>
-        <div class="clients-grid">
-            <div class="client-item" data-client="care">
-                <div class="client-header">
-                    <div class="client-info">
-                        <h3>Care Health Insurance</h3>
-                        <span class="client-type">Health Insurance</span>
-                    </div>
-                        <div class="expand-icon">▼</div>
-                    </div>
-                    <div class="client-services">
-                        <div class="service-category">
-                            <ul>
-                                <li><span class="brochure-link" onclick="openBrochure('Care Freedom', 'care/care-freedom.pdf')">Care Freedom</span></li>
-                                <li><span class="brochure-link" onclick="openBrochure('Care Supreme', 'care/care-supreme.pdf')">Care Supreme</span></li>
-                                <li><span class="brochure-link" onclick="openBrochure('Care Heart', 'care/care-heart.pdf')">Care Heart</span></li>
-                                <li><span class="brochure-link" onclick="openBrochure('Ultimate Care', 'care/ultimate-care.pdf')">Ultimate Care</span></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-            <div class="client-item" data-client="star">
-                <div class="client-header">
-                    <div class="client-info">
-                        <h3>Star Health Insurance</h3>
-                        <span class="client-type">Health Insurance</span>
-                        </div>
-                        <div class="expand-icon">▼</div>
-                    </div>
-                    <div class="client-services">
-                        <div class="service-category">
-                            <ul>
-                                <li><span class="brochure-link" onclick="openBrochure('Star Health Assure', 'star/Star_Health_Assure.pdf')">Star Health Assure</span></li>
-                                <li><span class="brochure-link" onclick="openBrochure('Super Star', 'star/Super_Star.pdf')">Super Star</span></li>
-                                <li><span class="brochure-link" onclick="openBrochure('Family Health Optima', 'star/Family_Health_Optima.pdf')">Family Health Optima</span></li>
-                                <li><span class="brochure-link" onclick="openBrochure('Senior Citizens Red Carpet', 'star/Senior_Citizens_Red_Carpet.pdf')">Senior Citizens Red Carpet</span></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-            <div class="client-item" data-client="niva">
-                <div class="client-header">
-                    <div class="client-info">
-                        <h3>Niva Bupa Health Insurance</h3>
-                        <span class="client-type">Health Insurance</span>
-                    </div>
-                        <div class="expand-icon">▼</div>
-                    </div>
-                    <div class="client-services">
-                        <div class="service-category">
-                            <ul>
-                                <li><span class="brochure-link" onclick="openBrochure('Niva Bupa', 'niva/health-elite.pdf')">Health Elite</span></li>
-                                <li><span class="brochure-link" onclick="openBrochure('Niva Bupa', 'niva/health-joy.pdf')">Health Joy</span></li>
-                                <li><span class="brochure-link" onclick="openBrochure('Niva Bupa', 'niva/family-floater.pdf')">Family Floater</span></li>
-                                <li><span class="brochure-link" onclick="openBrochure('Niva Bupa', 'niva/senior-citizen.pdf')">Senior Citizen</span></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-            <div class="client-item" data-client="aditya">
-                <div class="client-header">
-                    <div class="client-info">
-                        <h3>Aditya Birla Health Insurance</h3>
-                        <span class="client-type">Health Insurance</span>
-                    </div>
-                        <div class="expand-icon">▼</div>
-                    </div>
-                    <div class="client-services">
-                        <div class="service-category">
-                            <ul>
-                                <li><span class="brochure-link" onclick="openBrochure('Aditya Birla', 'aditya/activ-health.pdf')">Activ Health</span></li>
-                                <li><span class="brochure-link" onclick="openBrochure('Aditya Birla', 'aditya/activ-care.pdf')">Activ Care</span></li>
-                                <li><span class="brochure-link" onclick="openBrochure('Aditya Birla', 'aditya/health-essentials.pdf')">Health Essentials</span></li>
-                                <li><span class="brochure-link" onclick="openBrochure('Aditya Birla', 'aditya/senior-citizen.pdf')">Senior Citizen</span></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-
-            <div class="client-item" data-client="manipal">
-                <div class="client-header">
-                    <div class="client-info">
-                        <h3>Manipal Cigna Health Insurance</h3>
-                        <span class="client-type">Health Insurance</span>
-                    </div>
-                        <div class="expand-icon">▼</div>
-                    </div>
-                    <div class="client-services">
-                        <div class="service-category">
-                            <ul>
-                                <li><span class="brochure-link" onclick="openBrochure('Manipal Cigna', 'mc/pro-health-plan.pdf')">Pro Health Plan</span></li>
-                                <li><span class="brochure-link" onclick="openBrochure('Manipal Cigna', 'mc/lifetime-health.pdf')">Lifetime Health</span></li>
-                                <li><span class="brochure-link" onclick="openBrochure('Manipal Cigna', 'mc/family-health.pdf')">Family Health</span></li>
-                                <li><span class="brochure-link" onclick="openBrochure('Manipal Cigna', 'mc/senior-first.pdf')">Senior First</span></li>
-                            </ul>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <!-- All Health Insurance Providers -->
     <section id="contact" class="contact">
@@ -230,131 +556,5 @@
     </footer>
 
     <script src="script.js"></script>
-    <script>
-        // Client List Expand/Collapse
-        document.addEventListener('DOMContentLoaded', function() {
-            const clientItems = document.querySelectorAll('.client-item');
-            
-            clientItems.forEach(item => {
-                const header = item.querySelector('.client-header');
-                
-                header.addEventListener('click', function() {
-                    const isExpanded = item.classList.contains('expanded');
-                    
-                    // Close all other items
-                    clientItems.forEach(otherItem => {
-                        if (otherItem !== item) {
-                            otherItem.classList.remove('expanded');
-                        }
-                    });
-                    
-                    // Toggle current item
-                    item.classList.toggle('expanded');
-                    
-                    // Update aria-expanded
-                    header.setAttribute('aria-expanded', !isExpanded);
-                });
-                
-                // Keyboard support
-                header.addEventListener('keydown', function(e) {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        e.preventDefault();
-                        header.click();
-                    }
-                });
-            });
-        });
-        
-        // Brochure Modal Functions
-        function openBrochure(title, brochurePath) {
-            const modal = document.getElementById('brochureModal');
-            const frame = document.getElementById('brochureFrame');
-            const titleElement = document.getElementById('brochureTitle');
-            const modalBody = modal.querySelector('.brochure-modal-body');
-            
-            titleElement.textContent = title + ' - Brochure';
-            modalBody.classList.add('loading');
-            
-            const pdfUrl = brochurePath;
-            frame.src = pdfUrl;
-            
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden';
-            
-            frame.onload = function() {
-                modalBody.classList.remove('loading');
-            };
-            
-            setTimeout(function() {
-                if (modalBody.classList.contains('loading')) {
-                    frame.src = 'https://docs.google.com/gview?embedded=true&url=' + encodeURIComponent(window.location.origin + '/' + pdfUrl);
-                }
-            }, 3000);
-        }
-        
-        function closeBrochureModal() {
-            const modal = document.getElementById('brochureModal');
-            const frame = document.getElementById('brochureFrame');
-            
-            modal.style.display = 'none';
-            frame.src = '';
-            document.body.style.overflow = 'auto';
-        }
-        
-        document.addEventListener('click', function(e) {
-            const modal = document.getElementById('brochureModal');
-            if (e.target === modal) {
-                closeBrochureModal();
-            }
-        });
-        
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                const modal = document.getElementById('brochureModal');
-                if (modal.style.display === 'block') {
-                    closeBrochureModal();
-                }
-            }
-        });
-        
-        // Form Handler
-        document.getElementById('healthForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const formData = {
-                name: document.getElementById('name').value,
-                email: document.getElementById('email').value,
-                phone: document.getElementById('phone').value,
-                planType: document.getElementById('planType').value,
-                provider: document.getElementById('provider').value,
-                message: document.getElementById('message').value,
-                type: 'Health Insurance'
-            };
-            
-            // Show success message
-            const successMessage = document.createElement('div');
-            successMessage.className = 'success-message';
-            successMessage.textContent = `Thank you ${formData.name}! Your Health Insurance quote request has been received. We'll contact you soon.`;
-            successMessage.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: #10b981;
-                color: white;
-                padding: 1rem 1.5rem;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                z-index: 10000;
-                max-width: 400px;
-            `;
-            
-            document.body.appendChild(successMessage);
-            this.reset();
-            
-            setTimeout(() => {
-                successMessage.remove();
-            }, 5000);
-        });
-    </script>
 </body>
 </html>

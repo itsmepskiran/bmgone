@@ -274,3 +274,236 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+// ============================================
+// INSURANCE PAGES JAVASCRIPT
+// ============================================
+
+// Client List Expand/Collapse (for health and general insurance)
+document.addEventListener('DOMContentLoaded', function() {
+    const clientItems = document.querySelectorAll('.client-item');
+    
+    if (clientItems.length > 0) {
+        clientItems.forEach(item => {
+            const header = item.querySelector('.client-header');
+            
+            header.addEventListener('click', function() {
+                const isExpanded = item.classList.contains('expanded');
+                
+                // Close all other items
+                clientItems.forEach(otherItem => {
+                    if (otherItem !== item) {
+                        otherItem.classList.remove('expanded');
+                    }
+                });
+                
+                // Toggle current item
+                item.classList.toggle('expanded');
+                
+                // Update aria-expanded
+                header.setAttribute('aria-expanded', !isExpanded);
+            });
+            
+            // Keyboard support
+            header.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    header.click();
+                }
+            });
+        });
+    }
+});
+
+// Function to toggle client items from logo clicks (for health insurance)
+function toggleClientItem(clientId) {
+    const targetItem = document.querySelector(`[data-client="${clientId}"]`);
+    const allItems = document.querySelectorAll('.client-item');
+    
+    if (targetItem) {
+        // Close all other items
+        allItems.forEach(item => {
+            if (item !== targetItem) {
+                item.classList.remove('expanded');
+            }
+        });
+        
+        // Toggle target item
+        targetItem.classList.toggle('expanded');
+        
+        // Smooth scroll to client item
+        setTimeout(() => {
+            targetItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 100);
+    }
+}
+
+// Provider Container Toggle Function (for life insurance)
+function toggleProviderContainer(providerId) {
+    // Get all provider containers
+    const allContainers = document.querySelectorAll('.provider-container');
+    const targetContainer = document.getElementById(providerId + '-container');
+    const allLogoItems = document.querySelectorAll('.logo-item');
+    const targetLogoItem = event.currentTarget;
+    
+    // Close all other containers
+    allContainers.forEach(container => {
+        if (container !== targetContainer) {
+            container.style.display = 'none';
+        }
+    });
+    
+    // Remove active class from all logo items
+    allLogoItems.forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    // Toggle the target container
+    if (targetContainer) {
+        if (targetContainer.style.display === 'none' || targetContainer.style.display === '') {
+            targetContainer.style.display = 'block';
+            targetLogoItem.classList.add('active');
+            
+            // Smooth scroll to the container
+            setTimeout(() => {
+                targetContainer.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        } else {
+            targetContainer.style.display = 'none';
+            targetLogoItem.classList.remove('active');
+        }
+    }
+}
+
+// Brochure Modal Functions (shared across all insurance pages)
+function openBrochure(title, brochurePath) {
+    const modal = document.getElementById('brochureModal');
+    const frame = document.getElementById('brochureFrame');
+    const titleElement = document.getElementById('brochureTitle');
+    const modalBody = modal.querySelector('.brochure-modal-body');
+    
+    if (modal && frame && titleElement && modalBody) {
+        titleElement.textContent = title + ' - Brochure';
+        modalBody.classList.add('loading');
+        
+        const pdfUrl = brochurePath;
+        frame.src = pdfUrl;
+        
+        modal.style.display = 'block';
+        document.body.style.overflow = 'hidden';
+        
+        frame.onload = function() {
+            modalBody.classList.remove('loading');
+        };
+        
+        setTimeout(function() {
+            if (modalBody.classList.contains('loading')) {
+                frame.src = 'https://docs.google.com/gview?embedded=true&url=' + encodeURIComponent(window.location.origin + '/' + pdfUrl);
+            }
+        }, 3000);
+    }
+}
+
+function closeBrochureModal() {
+    const modal = document.getElementById('brochureModal');
+    const frame = document.getElementById('brochureFrame');
+    
+    if (modal && frame) {
+        modal.style.display = 'none';
+        frame.src = '';
+        document.body.style.overflow = 'auto';
+    }
+}
+
+// Close modals when clicking outside (shared)
+document.addEventListener('click', function(e) {
+    const brochureModal = document.getElementById('brochureModal');
+    if (brochureModal && e.target === brochureModal) {
+        closeBrochureModal();
+    }
+});
+
+// Close modals with Escape key (shared)
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        const brochureModal = document.getElementById('brochureModal');
+        if (brochureModal && brochureModal.style.display === 'block') {
+            closeBrochureModal();
+        }
+    }
+});
+
+// Form Handlers for insurance pages
+document.addEventListener('DOMContentLoaded', function() {
+    // Health Insurance Form
+    const healthForm = document.getElementById('healthForm');
+    if (healthForm) {
+        healthForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                planType: document.getElementById('planType').value,
+                provider: document.getElementById('provider').value,
+                message: document.getElementById('message').value,
+                type: 'Health Insurance'
+            };
+            
+            showNotification(`Thank you ${formData.name}! Your Health Insurance quote request has been received. We'll contact you soon.`, 'success');
+            this.reset();
+        });
+    }
+    
+    // General Insurance Form
+    const generalForm = document.getElementById('generalForm');
+    if (generalForm) {
+        generalForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                name: document.getElementById('name').value,
+                email: document.getElementById('email').value,
+                phone: document.getElementById('phone').value,
+                insuranceType: document.getElementById('insuranceType').value,
+                provider: document.getElementById('provider').value,
+                message: document.getElementById('message').value,
+                type: 'General Insurance'
+            };
+            
+            showNotification(`Thank you ${formData.name}! Your General Insurance quote request has been received. We'll contact you soon.`, 'success');
+            this.reset();
+        });
+    }
+    
+    // Life Insurance Provider Forms
+    const providerForms = ['lic-form', 'tata-aig-form', 'hdfc-life-form', 'icici-prudential-form'];
+    
+    providerForms.forEach(formId => {
+        const form = document.getElementById(formId);
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const providerName = formId.replace('-form', '').charAt(0).toUpperCase() + formId.replace('-form', '').slice(1);
+                showNotification(`Thank you! Your quote request for ${providerName} has been received. We'll contact you soon.`, 'success');
+                this.reset();
+            });
+        }
+    });
+    
+    // Health Insurance Provider Forms
+    const healthProviderForms = ['care-form', 'star-form', 'tata-aig-form', 'hdfc-ergo-form', 'icici-lombard-form', 'manipal-cigna-form', 'bajaj-allianz-form', 'niva-form', 'aditya-form'];
+    
+    healthProviderForms.forEach(formId => {
+        const form = document.getElementById(formId);
+        if (form) {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                const providerName = formId.replace('-form', '').replace(/-/g, ' ').split(' ').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+                showNotification(`Thank you! Your quote request for ${providerName} has been received. We'll contact you soon.`, 'success');
+                this.reset();
+            });
+        }
+    });
+});
