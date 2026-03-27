@@ -1,0 +1,815 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BMGOne - Staff Portal</title>
+    <meta name="description" content="BMGOne Staff Portal for attendance, leave management, and payroll services">
+    <link rel="stylesheet" href="../styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="../logo.png">
+    <style>
+        .payroll-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 100px 20px 40px;
+        }
+        
+        .dashboard-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 2rem;
+            border-radius: 15px;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 168, 204, 0.3);
+        }
+        
+        .dashboard-header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .user-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .user-details {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--primary-teal);
+            font-weight: bold;
+        }
+        
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: 15px;
+            padding: 2rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        }
+        
+        .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--light-teal);
+        }
+        
+        .card-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .card-icon {
+            font-size: 2rem;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--gradient-primary);
+            color: white;
+        }
+        
+        .attendance-section {
+            text-align: center;
+        }
+        
+        .attendance-time {
+            font-size: 3rem;
+            font-weight: bold;
+            color: var(--primary-teal);
+            margin: 1rem 0;
+        }
+        
+        .attendance-date {
+            font-size: 1.2rem;
+            color: var(--text-light);
+            margin-bottom: 2rem;
+        }
+        
+        .attendance-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn-attendance {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-login {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+        }
+        
+        .btn-logout {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
+        }
+        
+        .btn-logout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
+        }
+        
+        .btn-logout:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .leave-balance-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .leave-item {
+            text-align: center;
+            padding: 1rem;
+            background: var(--light-teal);
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+        
+        .leave-item:hover {
+            transform: scale(1.05);
+        }
+        
+        .leave-type {
+            font-weight: 600;
+            color: var(--text-dark);
+            margin-bottom: 0.5rem;
+        }
+        
+        .leave-count {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-teal);
+        }
+        
+        .leave-days {
+            font-size: 0.9rem;
+            color: var(--text-light);
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary-teal);
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .holiday-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .holiday-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            transition: background-color 0.3s ease;
+        }
+        
+        .holiday-item:hover {
+            background-color: #f9fafb;
+        }
+        
+        .holiday-date {
+            font-weight: 600;
+            color: var(--primary-teal);
+            min-width: 100px;
+        }
+        
+        .holiday-name {
+            flex: 1;
+            margin: 0 1rem;
+        }
+        
+        .holiday-type {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .type-gazetted {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+        
+        .type-restricted {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        .type-optional {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+        
+        .leave-requests {
+            margin-top: 2rem;
+        }
+        
+        .request-item {
+            background: #f9fafb;
+            padding: 1.5rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--primary-teal);
+        }
+        
+        .request-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .request-employee {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .request-dates {
+            color: var(--text-light);
+            font-size: 0.9rem;
+        }
+        
+        .request-reason {
+            margin-bottom: 1rem;
+            color: var(--text-dark);
+        }
+        
+        .request-actions {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        
+        .btn-approve {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-approve:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
+        }
+        
+        .btn-reject {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+            padding: 8px 20px;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-reject:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        .status-approved {
+            background: #dcfce7;
+            color: #16a34a;
+        }
+        
+        .status-rejected {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 1rem 1.5rem;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            z-index: 10000;
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+        
+        .toast-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        }
+        
+        .toast-error {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        }
+        
+        .toast-info {
+            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        }
+        
+        @media (max-width: 768px) {
+            .payroll-container {
+                padding: 80px 15px 20px;
+            }
+            
+            .dashboard-grid {
+                grid-template-columns: 1fr;
+                gap: 1.5rem;
+            }
+            
+            .dashboard-header h1 {
+                font-size: 2rem;
+            }
+            
+            .user-info {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            
+            .attendance-time {
+                font-size: 2.5rem;
+            }
+            
+            .attendance-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn-attendance {
+                width: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="../banner.png" alt="BMGOne" class="logo-img">
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="../index.html" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="payroll.html" class="nav-link">Staff Portal</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="btn btn-staff-login">Logout</a>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="payroll-container">
+        <!-- Dashboard Header -->
+        <div class="dashboard-header">
+            <div class="user-info">
+                <div class="user-details">
+                    <div class="user-avatar">SK</div>
+                    <div>
+                        <h1>Staff Dashboard</h1>
+                        <p>Welcome back, Staff Member</p>
+                    </div>
+                </div>
+                <div>
+                    <p>Employee ID: BMG2024001</p>
+                    <p>Department: HR Solutions</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Grid -->
+        <div class="dashboard-grid">
+            <!-- Attendance Card -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">Daily Attendance</h2>
+                    <div class="card-icon">⏰</div>
+                </div>
+                <div class="attendance-section">
+                    <div class="attendance-time" id="currentTime">09:00:00</div>
+                    <div class="attendance-date" id="currentDate">Loading...</div>
+                    <div class="attendance-buttons">
+                        <button class="btn-attendance btn-login" id="loginBtn" onclick="markAttendance('login')">
+                            🟢 Mark Login
+                        </button>
+                        <button class="btn-attendance btn-logout" id="logoutBtn" onclick="markAttendance('logout')" disabled>
+                            🔴 Mark Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leave Balance Card -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">Leave Balance</h2>
+                    <div class="card-icon">📅</div>
+                </div>
+                <div class="leave-balance-grid">
+                    <div class="leave-item">
+                        <div class="leave-type">Casual</div>
+                        <div class="leave-count">12</div>
+                        <div class="leave-days">days</div>
+                    </div>
+                    <div class="leave-item">
+                        <div class="leave-type">Sick</div>
+                        <div class="leave-count">8</div>
+                        <div class="leave-days">days</div>
+                    </div>
+                    <div class="leave-item">
+                        <div class="leave-type">Earned</div>
+                        <div class="leave-count">15</div>
+                        <div class="leave-days">days</div>
+                    </div>
+                    <div class="leave-item">
+                        <div class="leave-type">Total</div>
+                        <div class="leave-count">35</div>
+                        <div class="leave-days">days</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Leave Application Card -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">Leave Application</h2>
+                    <div class="card-icon">✍️</div>
+                </div>
+                <form id="leaveApplicationForm">
+                    <div class="form-group">
+                        <label for="leaveType">Leave Type</label>
+                        <select id="leaveType" required>
+                            <option value="">Select Leave Type</option>
+                            <option value="casual">Casual Leave</option>
+                            <option value="sick">Sick Leave</option>
+                            <option value="earned">Earned Leave</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="startDate">Start Date</label>
+                        <input type="date" id="startDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="endDate">End Date</label>
+                        <input type="date" id="endDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="reason">Reason</label>
+                        <textarea id="reason" placeholder="Enter reason for leave..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">Apply for Leave</button>
+                </form>
+            </div>
+
+            <!-- Holiday List Card -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">Holiday List 2024</h2>
+                    <div class="card-icon">🎉</div>
+                </div>
+                <div class="holiday-list">
+                    <div class="holiday-item">
+                        <div class="holiday-date">Jan 26</div>
+                        <div class="holiday-name">Republic Day</div>
+                        <div class="holiday-type type-gazetted">Gazetted</div>
+                    </div>
+                    <div class="holiday-item">
+                        <div class="holiday-date">Mar 25</div>
+                        <div class="holiday-name">Holi</div>
+                        <div class="holiday-type type-gazetted">Gazetted</div>
+                    </div>
+                    <div class="holiday-item">
+                        <div class="holiday-date">Aug 15</div>
+                        <div class="holiday-name">Independence Day</div>
+                        <div class="holiday-type type-gazetted">Gazetted</div>
+                    </div>
+                    <div class="holiday-item">
+                        <div class="holiday-date">Oct 2</div>
+                        <div class="holiday-name">Gandhi Jayanti</div>
+                        <div class="holiday-type type-gazetted">Gazetted</div>
+                    </div>
+                    <div class="holiday-item">
+                        <div class="holiday-date">Oct 31</div>
+                        <div class="holiday-name">Diwali</div>
+                        <div class="holiday-type type-restricted">Restricted</div>
+                    </div>
+                    <div class="holiday-item">
+                        <div class="holiday-date">Dec 25</div>
+                        <div class="holiday-name">Christmas</div>
+                        <div class="holiday-type type-gazetted">Gazetted</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leave Approval Section (for managers) -->
+        <div class="dashboard-card">
+            <div class="card-header">
+                <h2 class="card-title">Pending Leave Approvals</h2>
+                <div class="card-icon">✅</div>
+            </div>
+            <div class="leave-requests">
+                <div class="request-item">
+                    <div class="request-header">
+                        <div>
+                            <div class="request-employee">John Doe - BMG2024002</div>
+                            <div class="request-dates">Mar 28, 2024 - Mar 30, 2024 (3 days)</div>
+                        </div>
+                        <div class="status-badge status-pending">Pending</div>
+                    </div>
+                    <div class="request-reason">
+                        <strong>Reason:</strong> Family function out of station
+                    </div>
+                    <div class="request-actions">
+                        <button class="btn-approve" onclick="approveLeave('req1')">Approve</button>
+                        <button class="btn-reject" onclick="rejectLeave('req1')">Reject</button>
+                    </div>
+                </div>
+                <div class="request-item">
+                    <div class="request-header">
+                        <div>
+                            <div class="request-employee">Jane Smith - BMG2024003</div>
+                            <div class="request-dates">Apr 2, 2024 - Apr 3, 2024 (2 days)</div>
+                        </div>
+                        <div class="status-badge status-pending">Pending</div>
+                    </div>
+                    <div class="request-reason">
+                        <strong>Reason:</strong> Medical appointment
+                    </div>
+                    <div class="request-actions">
+                        <button class="btn-approve" onclick="approveLeave('req2')">Approve</button>
+                        <button class="btn-reject" onclick="rejectLeave('req2')">Reject</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="toast"></div>
+
+    <script src="../script.js"></script>
+    <script>
+        // Update current time
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString('en-IN', { 
+                hour12: false,
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+            const dateString = now.toLocaleDateString('en-IN', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            });
+            
+            document.getElementById('currentTime').textContent = timeString;
+            document.getElementById('currentDate').textContent = dateString;
+        }
+        
+        updateTime();
+        setInterval(updateTime, 1000);
+        
+        // Attendance marking
+        let isLoggedIn = false;
+        
+        function markAttendance(type) {
+            const loginBtn = document.getElementById('loginBtn');
+            const logoutBtn = document.getElementById('logoutBtn');
+            
+            if (type === 'login') {
+                isLoggedIn = true;
+                loginBtn.disabled = true;
+                logoutBtn.disabled = false;
+                showToast('Login marked successfully!', 'success');
+                
+                // Store login time
+                localStorage.setItem('loginTime', new Date().toISOString());
+            } else if (type === 'logout') {
+                isLoggedIn = false;
+                loginBtn.disabled = false;
+                logoutBtn.disabled = true;
+                showToast('Logout marked successfully!', 'success');
+                
+                // Clear login time
+                localStorage.removeItem('loginTime');
+            }
+        }
+        
+        // Check if already logged in
+        window.addEventListener('load', function() {
+            const loginTime = localStorage.getItem('loginTime');
+            if (loginTime) {
+                const loginDate = new Date(loginTime);
+                const today = new Date();
+                
+                // Check if login was today
+                if (loginDate.toDateString() === today.toDateString()) {
+                    isLoggedIn = true;
+                    document.getElementById('loginBtn').disabled = true;
+                    document.getElementById('logoutBtn').disabled = false;
+                }
+            }
+        });
+        
+        // Leave application form
+        document.getElementById('leaveApplicationForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const leaveType = document.getElementById('leaveType').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const reason = document.getElementById('reason').value;
+            
+            // Validate dates
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+            
+            if (end < start) {
+                showToast('End date must be after start date!', 'error');
+                return;
+            }
+            
+            // Calculate days
+            const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
+            
+            // Simulate submission
+            showToast(`Leave application submitted for ${days} day(s)!`, 'success');
+            
+            // Reset form
+            this.reset();
+        });
+        
+        // Leave approval functions
+        function approveLeave(requestId) {
+            const requestElement = document.querySelector(`[onclick="approveLeave('${requestId}')"]`).closest('.request-item');
+            const statusBadge = requestElement.querySelector('.status-badge');
+            const actionsDiv = requestElement.querySelector('.request-actions');
+            
+            statusBadge.className = 'status-badge status-approved';
+            statusBadge.textContent = 'Approved';
+            actionsDiv.innerHTML = '<span style="color: #16a34a; font-weight: 600;">✓ Approved</span>';
+            
+            showToast('Leave approved successfully!', 'success');
+        }
+        
+        function rejectLeave(requestId) {
+            const requestElement = document.querySelector(`[onclick="rejectLeave('${requestId}')"]`).closest('.request-item');
+            const statusBadge = requestElement.querySelector('.status-badge');
+            const actionsDiv = requestElement.querySelector('.request-actions');
+            
+            statusBadge.className = 'status-badge status-rejected';
+            statusBadge.textContent = 'Rejected';
+            actionsDiv.innerHTML = '<span style="color: #dc2626; font-weight: 600;">✗ Rejected</span>';
+            
+            showToast('Leave rejected!', 'info');
+        }
+        
+        // Toast notification function
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast toast-${type}`;
+            
+            // Show toast
+            setTimeout(() => {
+                toast.classList.add('show');
+            }, 100);
+            
+            // Hide toast after 3 seconds
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+        
+        // Set minimum date for leave applications to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('startDate').setAttribute('min', today);
+        document.getElementById('endDate').setAttribute('min', today);
+        
+        // Update end date minimum when start date changes
+        document.getElementById('startDate').addEventListener('change', function() {
+            document.getElementById('endDate').setAttribute('min', this.value);
+        });
+    </script>
+</body>
+</html>

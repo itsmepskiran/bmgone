@@ -1,0 +1,34 @@
+{
+  "name": "bmgone-payroll",
+  "version": "1.0.0",
+  "description": "BMGOne Payroll System with Cloudflare D1 and Workers",
+  "main": "index.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "deploy:prod": "wrangler deploy --env production",
+    "d1:create": "wrangler d1 create bmgone-payroll-db",
+    "d1:migrate": "wrangler d1 execute bmgone-payroll-db --file=./database/database-schema.sql",
+    "d1:migrate:dev": "wrangler d1 execute bmgone-payroll-db-dev --file=./database/database-schema.sql",
+    "d1:backup": "wrangler d1 export bmgone-payroll-db --output=./backup.sql",
+    "tail": "wrangler tail"
+  },
+  "dependencies": {
+    "itty-router": "^4.0.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2"
+  },
+  "devDependencies": {
+    "wrangler": "^3.0.0",
+    "@cloudflare/workers-types": "^4.0.0"
+  },
+  "keywords": [
+    "payroll",
+    "hr",
+    "cloudflare",
+    "d1",
+    "workers"
+  ],
+  "author": "BMGOne",
+  "license": "MIT"
+}
