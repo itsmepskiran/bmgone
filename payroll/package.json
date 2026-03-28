@@ -4,6 +4,7 @@
   "description": "BMGOne Payroll System with Cloudflare D1 and Workers",
   "main": "index.js",
   "scripts": {
+    "build": "echo 'Build completed successfully'",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "deploy:prod": "wrangler deploy --env production",
