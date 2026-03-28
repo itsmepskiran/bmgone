@@ -175,9 +175,11 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2>Change Your Password</h2>
-                <p>This is your first login. Please change your password to continue.</p>
+                <div class="modal-description">
+                    <p>This is your first login. Please change your password to continue.</p>
+                </div>
             </div>
-            <div class="warning-box">
+            <div class="warning-box first-login-warning">
                 <p>⚠️ You must change your password before accessing the dashboard.</p>
             </div>
             <form id="passwordChangeForm">
@@ -224,6 +226,7 @@
                 <div>
                     <p style="font-size: 0.9rem; opacity: 0.9;">Today: <span id="currentDate"></span></p>
                     <p style="font-size: 1.5rem; font-weight: 700;" id="currentTime"></p>
+                    <button onclick="showPasswordChangeModal()" style="background: var(--gradient-primary); color: white; border: none; padding: 0.5rem 1rem; border-radius: 5px; font-size: 0.85rem; cursor: pointer; margin-top: 0.5rem;">Change Password</button>
                 </div>
             </div>
         </div>
@@ -402,6 +405,27 @@
         function showSuccess(message) {
             document.getElementById('successMessage').textContent = message;
             document.getElementById('successModal').classList.add('show');
+        }
+
+        // Show Password Change Modal
+        function showPasswordChangeModal() {
+            // Clear form
+            document.getElementById('currentPassword').value = '';
+            document.getElementById('newPassword').value = '';
+            document.getElementById('confirmPassword').value = '';
+            
+            // Update modal title and description for voluntary password change
+            document.querySelector('#passwordChangeModal h2').textContent = 'Change Your Password';
+            document.querySelector('#passwordChangeModal .modal-description p').textContent = 'You can change your password here for security reasons.';
+            
+            // Hide first login warning if present
+            const firstLoginWarning = document.querySelector('#passwordChangeModal .first-login-warning');
+            if (firstLoginWarning) {
+                firstLoginWarning.style.display = 'none';
+            }
+            
+            // Show modal
+            document.getElementById('passwordChangeModal').classList.add('show');
         }
 
         // Close modal
