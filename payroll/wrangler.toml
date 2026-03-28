@@ -3,6 +3,11 @@ main = "workers/src/index.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
+# Routes configuration for custom domain
+routes = [
+  { pattern = "pay.bmgone.com/api/*", zone_name = "bmgone.com" }
+]
+
 # D1 Database Binding for local development
 [[d1_databases]]
 binding = "DB"
