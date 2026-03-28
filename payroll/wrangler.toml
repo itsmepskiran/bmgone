@@ -10,10 +10,10 @@ database_name = "bmgpayroll"
 database_id = "ceceeaf8-8c03-4299-9df9-9f0330b88493"
 
 [env.production]
-vars = { ENVIRONMENT = "production" }
+vars = { ENVIRONMENT = "production", JWT_SECRET = "hpIZKETmdvai3DCP0UML12Ycwob4986jgryWtkGRfxl7VHSXuQABzsFqJ5nONe" }
 
 [env.development]
-vars = { ENVIRONMENT = "development" }
+vars = { ENVIRONMENT = "development", JWT_SECRET = "viLejTlX4kOGKuamyJnU8S7HcQ1R532dDWw9VhogzsZ6EtMYNxbIrBqPp0CAfF" }
 
 # Production D1 Database Binding
 [[env.production.d1_databases]]
@@ -38,6 +38,5 @@ bucket_name = "bmgpayroll"
 
 # Environment variables
 [vars]
-JWT_SECRET = "your-super-secret-jwt-key-change-in-production"
 CORS_ORIGIN = "https://bmgone.com"
 API_VERSION = "v1"

@@ -214,8 +214,8 @@ router.post('/api/auth/login', async (request, env) => {
             ));
         }
         
-        // Create a simple token for testing (bypass JWT for now)
-        const token = 'simple-token-' + employeeId;
+        // Create JWT token (now using proper JWT since we have secure secret)
+        const token = await createToken(employee.employee_id, env);
         
         // Log login event
         try {
