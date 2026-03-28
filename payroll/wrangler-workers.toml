@@ -1,0 +1,44 @@
+name = "bmgone-payroll-api"
+main = "workers/src/index.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Pages build output directory
+pages_build_output_dir = "."
+
+# Routes configuration for custom domain
+routes = [
+  { pattern = "pay.bmgone.com/api/*", zone_name = "bmgone.com" }
+]
+
+[env.production]
+vars = { ENVIRONMENT = "production", JWT_SECRET = "hpIZKETmdvai3DCP0UML12Ycwob4986jgryWtkGRfxl7VHSXuQABzsFqJ5nONe", CORS_ORIGIN = "https://bmgone.com", API_VERSION = "v1" }
+
+[env.development]
+vars = { ENVIRONMENT = "development" }
+
+# D1 Database Binding
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "bmgpayroll"
+database_id = "ceceeaf8-8c03-4299-9df9-9f0330b88493"
+
+[[env.development.d1_databases]]
+binding = "DB"
+database_name = "bmgpayroll"
+database_id = "ceceeaf8-8c03-4299-9df9-9f0330b88493"
+
+# R2 Bucket for file uploads (optional)
+[[env.production.r2_buckets]]
+binding = "FILES"
+bucket_name = "bmgpayroll"
+
+[[env.development.r2_buckets]]
+binding = "FILES"
+bucket_name = "bmgpayroll"
+
+# Environment variables
+[vars]
+JWT_SECRET = "hpIZKETmdvai3DCP0UML12Ycwob4986jgryWtkGRfxl7VHSXuQABzsFqJ5nONe"
+CORS_ORIGIN = "https://bmgone.com"
+API_VERSION = "v1"
