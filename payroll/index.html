@@ -375,19 +375,23 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ employeeId: 'test', password: 'test' })
+                    body: JSON.stringify({ employeeId: 'BMGHYD00001', password: 'admin123' })
                 });
                 if (response.ok) {
                     statusElement.textContent = '✅ Online';
                     statusElement.style.color = '#10b981';
-                } else {
+                } else if (response.status === 401) {
+                    // 401 means API is working but credentials are invalid
                     statusElement.textContent = '✅ Online';
                     statusElement.style.color = '#10b981';
+                } else {
+                    statusElement.textContent = '⚠️ Issues';
+                    statusElement.style.color = '#f59e0b';
                 }
             } catch (error) {
-                statusElement.textContent = '⚠️ Offline';
-                statusElement.style.color = '#f59e0b';
-                console.warn('API Status:', error.message);
+                statusElement.textContent = '❌ Offline';
+                statusElement.style.color = '#ef4444';
+                console.error('API Status Check Error:', error);
             }
         }
 
