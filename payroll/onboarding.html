@@ -442,8 +442,13 @@
 
     <script src="../script.js"></script>
     <script>
-        // API Base URL
-        const API_BASE = 'http://127.0.0.1:8787/api';
+        // Configuration for deployment
+        const CONFIG = {
+            API_BASE: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+                ? 'http://127.0.0.1:8788/api' 
+                : 'https://pay.bmgone.com/api',
+            ENVIRONMENT: window.location.hostname === 'localhost' ? 'Development' : 'Production'
+        };
         
         // Check authentication
         const token = localStorage.getItem('token');
@@ -490,7 +495,7 @@
             };
             
             try {
-                const response = await fetch(`${API_BASE}/employees/create`, {
+                const response = await fetch(`${CONFIG.API_BASE}/employees/create`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -528,7 +533,7 @@
             e.preventDefault();
             
             try {
-                await fetch(`${API_BASE}/auth/logout`, {
+                await fetch(`${CONFIG.API_BASE}/auth/logout`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`
