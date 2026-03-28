@@ -43,9 +43,7 @@ document.querySelectorAll('a[href^="#"]').forEach(anchor => {
 });
 
 // Contact Form Handler
-const contactForm = document.getElementById('contactForm');
-if (contactForm) {
-    contactForm.addEventListener('submit', function(e) {
+document.getElementById('contactForm').addEventListener('submit', function(e) {
     e.preventDefault();
     
     // Get form data
@@ -74,8 +72,7 @@ if (contactForm) {
     
     // Reset form
     this.reset();
-    });
-}
+});
 
 // Notification System
 function showNotification(message, type = 'info') {

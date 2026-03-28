@@ -1,3 +1,0 @@
-# Cloudflare Pages Redirects File
-# Handle SPA routing - all non-API routes go to index.html
-/* /index.html 200
