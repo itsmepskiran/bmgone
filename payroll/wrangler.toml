@@ -3,18 +3,25 @@ main = "workers/src/index.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
+# D1 Database Binding for local development
+[[d1_databases]]
+binding = "DB"
+database_name = "bmgpayroll"
+database_id = "ceceeaf8-8c03-4299-9df9-9f0330b88493"
+
 [env.production]
 vars = { ENVIRONMENT = "production" }
 
 [env.development]
 vars = { ENVIRONMENT = "development" }
 
-# D1 Database Binding
+# Production D1 Database Binding
 [[env.production.d1_databases]]
 binding = "DB"
 database_name = "bmgpayroll"
 database_id = "ceceeaf8-8c03-4299-9df9-9f0330b88493"
 
+# Development D1 Database Binding
 [[env.development.d1_databases]]
 binding = "DB"
 database_name = "bmgpayroll"
