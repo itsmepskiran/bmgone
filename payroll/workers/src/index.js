@@ -157,28 +157,14 @@ router.post('/api/auth/login', async (request, env) => {
             ));
         }
         
-        // Verify password (temporary simple check for testing)
+        // Verify password using bcrypt
         let isValidPassword = false;
         
-        // For testing, accept simple passwords
-        if (password === 'admin123' && (employeeId === 'BMGHYD00001' || employeeId === 'BMGHYD00002')) {
-            isValidPassword = true;
-        } else if (password === 'john123' && employeeId === 'BMGHYD12345') {
-            isValidPassword = true;
-        } else if (password === 'password' && employeeId === 'TEST001') {
-            isValidPassword = true;
-        } else if (password === 'staff123' && (employeeId === 'BMG2024001' || employeeId === 'BMG2024002')) {
-            isValidPassword = true;
-        } else if (password === 'jane123' && employeeId === 'BMG2024003') {
-            isValidPassword = true;
-        } else {
-            // Try bcrypt comparison for other cases
-            try {
-                isValidPassword = await bcrypt.compare(password, employee.password_hash);
-            } catch (error) {
-                console.error('Bcrypt error:', error);
-                isValidPassword = false;
-            }
+        try {
+            isValidPassword = await bcrypt.compare(password, employee.password_hash);
+        } catch (error) {
+            console.error('Bcrypt error:', error);
+            isValidPassword = false;
         }
         if (!isValidPassword) {
             return withCors(new Response(
