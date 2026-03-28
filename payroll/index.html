@@ -376,10 +376,17 @@
                     body: JSON.stringify({ employeeId: 'health_check', password: 'health_check' })
                 });
                 
-                // If we get any response (even error), API is online
-                statusElement.textContent = '✅ Online';
-                statusElement.style.color = '#10b981';
-                console.log('API Status: Online - Response received');
+                // If we get any response (even 401), API is online
+                // 401 Unauthorized means API is working but credentials are invalid
+                if (response.status === 401 || response.ok) {
+                    statusElement.textContent = '✅ Online';
+                    statusElement.style.color = '#10b981';
+                    console.log('API Status: Online - Response received with status:', response.status);
+                } else {
+                    statusElement.textContent = '✅ Online';
+                    statusElement.style.color = '#10b981';
+                    console.log('API Status: Online - Response received with status:', response.status);
+                }
             } catch (error) {
                 statusElement.textContent = '⚠️ Offline';
                 statusElement.style.color = '#f59e0b';
