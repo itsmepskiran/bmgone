@@ -9,10 +9,106 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" type="image/png" href="../logo.png">
     <style>
+        /* Login Page Styles */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 20px;
+        }
+        
+        .login-box {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            max-width: 450px;
+            width: 100%;
+        }
+        
+        .login-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 2.5rem 2rem;
+            text-align: center;
+        }
+        
+        .login-header img {
+            width: 150px;
+            margin-bottom: 1rem;
+        }
+        
+        .login-header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .login-body {
+            padding: 2rem;
+        }
+        
+        .login-form .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .login-form label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .login-form input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            color: #1f2937;
+            background-color: #ffffff;
+            transition: border-color 0.3s ease;
+        }
+        
+        .login-form input::placeholder {
+            color: #9ca3af;
+        }
+        
+        .login-form input:focus {
+            outline: none;
+            border-color: var(--primary-teal);
+        }
+        
+        .btn-login {
+            width: 100%;
+            background: var(--gradient-primary);
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 168, 204, 0.3);
+        }
+        
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 168, 204, 0.4);
+        }
+        
+        /* Dashboard Styles */
         .payroll-container {
             max-width: 1400px;
             margin: 0 auto;
             padding: 100px 20px 40px;
+            display: none;
+        }
+        
+        .payroll-container.show {
+            display: block;
         }
         
         .dashboard-header {
@@ -22,11 +118,6 @@
             border-radius: 15px;
             margin-bottom: 2rem;
             box-shadow: 0 10px 30px rgba(0, 168, 204, 0.3);
-        }
-        
-        .dashboard-header h1 {
-            font-size: 2.5rem;
-            margin-bottom: 0.5rem;
         }
         
         .user-info {
@@ -91,116 +182,104 @@
             color: var(--text-dark);
         }
         
-        .card-icon {
-            font-size: 2rem;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            background: var(--gradient-primary);
-            color: white;
-        }
-        
-        .attendance-section {
-            text-align: center;
-        }
-        
-        .attendance-time {
-            font-size: 3rem;
-            font-weight: bold;
-            color: var(--primary-teal);
-            margin: 1rem 0;
-        }
-        
-        .attendance-date {
-            font-size: 1.2rem;
-            color: var(--text-light);
-            margin-bottom: 2rem;
-        }
-        
         .attendance-buttons {
             display: flex;
             gap: 1rem;
-            justify-content: center;
-            flex-wrap: wrap;
+            margin-top: 1.5rem;
         }
         
         .btn-attendance {
-            padding: 15px 30px;
+            flex: 1;
+            padding: 15px 20px;
             border: none;
-            border-radius: 50px;
+            border-radius: 10px;
             font-size: 1.1rem;
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s ease;
-            text-decoration: none;
-            display: inline-block;
         }
         
-        .btn-login {
+        .btn-login-attendance {
             background: linear-gradient(135deg, #10b981 0%, #059669 100%);
             color: white;
-            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
         }
         
-        .btn-login:hover {
+        .btn-login-attendance:hover {
             transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
         }
         
-        .btn-logout {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            color: white;
-            box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3);
-        }
-        
-        .btn-logout:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(239, 68, 68, 0.4);
-        }
-        
-        .btn-logout:disabled {
+        .btn-login-attendance:disabled {
             background: #9ca3af;
             cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
+        }
+        
+        .btn-logout-attendance {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+        
+        .btn-logout-attendance:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
+        }
+        
+        .btn-logout-attendance:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .attendance-status {
+            margin-top: 1rem;
+            padding: 1rem;
+            border-radius: 10px;
+            background: #f9fafb;
+        }
+        
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        
+        .status-label {
+            font-weight: 600;
+            color: var(--text-dark);
+        }
+        
+        .status-value {
+            color: var(--primary-teal);
         }
         
         .leave-balance-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 1rem;
-            margin-bottom: 1.5rem;
+            margin-top: 1rem;
         }
         
-        .leave-item {
+        .leave-type-card {
             text-align: center;
-            padding: 1rem;
+            padding: 1.5rem 1rem;
             background: var(--light-teal);
             border-radius: 10px;
-            transition: transform 0.3s ease;
         }
         
-        .leave-item:hover {
-            transform: scale(1.05);
-        }
-        
-        .leave-type {
-            font-weight: 600;
-            color: var(--text-dark);
+        .leave-type-name {
+            font-size: 0.9rem;
+            color: var(--text-light);
             margin-bottom: 0.5rem;
+            text-transform: capitalize;
         }
         
-        .leave-count {
-            font-size: 1.8rem;
-            font-weight: bold;
+        .leave-days-count {
+            font-size: 2rem;
+            font-weight: 700;
             color: var(--primary-teal);
         }
         
-        .leave-days {
-            font-size: 0.9rem;
+        .leave-days-label {
+            font-size: 0.8rem;
             color: var(--text-light);
         }
         
@@ -224,6 +303,8 @@
             border-radius: 8px;
             font-family: inherit;
             font-size: 1rem;
+            color: #1f2937;
+            background-color: #ffffff;
             transition: border-color 0.3s ease;
         }
         
@@ -234,9 +315,22 @@
             border-color: var(--primary-teal);
         }
         
-        .form-group textarea {
-            resize: vertical;
-            min-height: 100px;
+        .btn-submit {
+            width: 100%;
+            background: var(--gradient-primary);
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 168, 204, 0.3);
         }
         
         .holiday-list {
@@ -250,11 +344,6 @@
             align-items: center;
             padding: 1rem;
             border-bottom: 1px solid #e5e7eb;
-            transition: background-color 0.3s ease;
-        }
-        
-        .holiday-item:hover {
-            background-color: #f9fafb;
         }
         
         .holiday-date {
@@ -280,178 +369,117 @@
             color: #16a34a;
         }
         
-        .type-restricted {
-            background: #fef3c7;
-            color: #d97706;
-        }
-        
-        .type-optional {
-            background: #dbeafe;
-            color: #2563eb;
-        }
-        
-        .leave-requests {
-            margin-top: 2rem;
-        }
-        
-        .request-item {
-            background: #f9fafb;
-            padding: 1.5rem;
-            border-radius: 10px;
-            margin-bottom: 1rem;
-            border-left: 4px solid var(--primary-teal);
-        }
-        
-        .request-header {
-            display: flex;
-            justify-content: space-between;
+        /* Password Change Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
             align-items: center;
-            margin-bottom: 1rem;
+            justify-content: center;
         }
         
-        .request-employee {
-            font-weight: 600;
-            color: var(--text-dark);
+        .modal.show {
+            display: flex;
         }
         
-        .request-dates {
+        .modal-content {
+            background: white;
+            border-radius: 20px;
+            padding: 2.5rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        .modal-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        
+        .modal-header h2 {
+            color: var(--primary-teal);
+            margin-bottom: 0.5rem;
+        }
+        
+        .modal-header p {
             color: var(--text-light);
-            font-size: 0.9rem;
         }
         
-        .request-reason {
-            margin-bottom: 1rem;
-            color: var(--text-dark);
+        .warning-box {
+            background: #fef3c7;
+            border: 2px solid #f59e0b;
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 1.5rem;
         }
         
-        .request-actions {
+        .warning-box p {
+            color: #92400e;
+            margin: 0;
+            font-weight: 600;
+        }
+        
+        /* Admin Navigation */
+        .admin-nav {
+            background: white;
+            border-radius: 15px;
+            padding: 1rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .admin-nav ul {
+            list-style: none;
             display: flex;
             gap: 1rem;
             flex-wrap: wrap;
+            margin: 0;
+            padding: 0;
         }
         
-        .btn-approve {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            color: white;
-            padding: 8px 20px;
-            border: none;
+        .admin-nav a {
+            display: inline-block;
+            padding: 10px 20px;
+            background: var(--light-teal);
+            color: var(--primary-teal);
+            text-decoration: none;
             border-radius: 25px;
-            cursor: pointer;
             font-weight: 600;
             transition: all 0.3s ease;
         }
         
-        .btn-approve:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
-        }
-        
-        .btn-reject {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        .admin-nav a:hover {
+            background: var(--primary-teal);
             color: white;
-            padding: 8px 20px;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-reject:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
-        }
-        
-        .status-badge {
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            font-weight: 600;
-        }
-        
-        .status-pending {
-            background: #fef3c7;
-            color: #d97706;
-        }
-        
-        .status-approved {
-            background: #dcfce7;
-            color: #16a34a;
-        }
-        
-        .status-rejected {
-            background: #fee2e2;
-            color: #dc2626;
-        }
-        
-        .toast {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            padding: 1rem 1.5rem;
-            border-radius: 10px;
-            color: white;
-            font-weight: 600;
-            z-index: 10000;
-            opacity: 0;
-            transform: translateX(100%);
-            transition: all 0.3s ease;
-        }
-        
-        .toast.show {
-            opacity: 1;
-            transform: translateX(0);
-        }
-        
-        .toast-success {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-        }
-        
-        .toast-error {
-            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-        }
-        
-        .toast-info {
-            background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
         }
         
         @media (max-width: 768px) {
-            .payroll-container {
-                padding: 80px 15px 20px;
-            }
-            
             .dashboard-grid {
                 grid-template-columns: 1fr;
-                gap: 1.5rem;
             }
             
-            .dashboard-header h1 {
-                font-size: 2rem;
-            }
-            
-            .user-info {
-                flex-direction: column;
-                align-items: flex-start;
-            }
-            
-            .attendance-time {
-                font-size: 2.5rem;
+            .leave-balance-grid {
+                grid-template-columns: 1fr;
             }
             
             .attendance-buttons {
                 flex-direction: column;
-                align-items: center;
             }
             
-            .btn-attendance {
-                width: 200px;
+            .admin-nav ul {
+                flex-direction: column;
             }
         }
     </style>
 </head>
 <body>
     <!-- Navigation -->
-    <nav class="navbar">
+    <nav class="navbar" id="navbar" style="display: none;">
         <div class="nav-container">
             <div class="nav-logo">
                 <img src="../banner.png" alt="BMGOne" class="logo-img">
@@ -461,10 +489,10 @@
                     <a href="../index.html" class="nav-link">Home</a>
                 </li>
                 <li class="nav-item">
-                    <a href="payroll.html" class="nav-link">Staff Portal</a>
+                    <a href="payroll.html" class="nav-link active">Staff Portal</a>
                 </li>
                 <li class="nav-item">
-                    <a href="#" class="btn btn-staff-login">Logout</a>
+                    <a href="#" class="btn btn-staff-login" id="logoutBtn">Logout</a>
                 </li>
             </ul>
             <div class="hamburger">
@@ -475,20 +503,83 @@
         </div>
     </nav>
 
-    <div class="payroll-container">
+    <!-- Login Container -->
+    <div class="login-container" id="loginContainer">
+        <div class="login-box">
+            <div class="login-header">
+                <img src="../banner.png" alt="BMGOne">
+                <h1>Staff Portal</h1>
+                <p>Login to access your dashboard</p>
+            </div>
+            <div class="login-body">
+                <form class="login-form" id="loginForm">
+                    <div class="form-group">
+                        <label for="employeeId">Employee ID</label>
+                        <input type="text" id="employeeId" placeholder="e.g., BMGHYD12345" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="Enter your password" required>
+                    </div>
+                    <button type="submit" class="btn-login">Login</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Password Change Modal -->
+    <div id="passwordChangeModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Change Your Password</h2>
+                <p>This is your first login. Please change your password to continue.</p>
+            </div>
+            <div class="warning-box">
+                <p>⚠️ You must change your password before accessing the dashboard.</p>
+            </div>
+            <form id="passwordChangeForm">
+                <div class="form-group">
+                    <label for="currentPassword">Current Password</label>
+                    <input type="password" id="currentPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">New Password</label>
+                    <input type="password" id="newPassword" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm New Password</label>
+                    <input type="password" id="confirmPassword" required minlength="6">
+                </div>
+                <button type="submit" class="btn-submit">Change Password</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Dashboard Container -->
+    <div class="payroll-container" id="dashboardContainer">
+        <!-- Admin Navigation -->
+        <div class="admin-nav" id="adminNav" style="display: none;">
+            <ul>
+                <li><a href="onboarding.html">Employee Onboarding</a></li>
+                <li><a href="#" id="viewEmployeesLink">View All Employees</a></li>
+                <li><a href="#" id="leaveApprovalsLink">Leave Approvals</a></li>
+            </ul>
+        </div>
+
         <!-- Dashboard Header -->
         <div class="dashboard-header">
             <div class="user-info">
                 <div class="user-details">
-                    <div class="user-avatar">SK</div>
+                    <div class="user-avatar" id="userAvatar">JD</div>
                     <div>
-                        <h1>Staff Dashboard</h1>
-                        <p>Welcome back, Staff Member</p>
+                        <h1>Welcome, <span id="userName">John Doe</span></h1>
+                        <p><span id="userPosition">Developer</span> - <span id="userDepartment">IT Consulting</span></p>
+                        <p style="font-size: 0.9rem; opacity: 0.9;">Employee ID: <span id="userEmployeeId">BMGHYD12345</span></p>
                     </div>
                 </div>
                 <div>
-                    <p>Employee ID: BMG2024001</p>
-                    <p>Department: HR Solutions</p>
+                    <p style="font-size: 0.9rem; opacity: 0.9;">Today: <span id="currentDate"></span></p>
+                    <p style="font-size: 1.5rem; font-weight: 700;" id="currentTime"></p>
                 </div>
             </div>
         </div>
@@ -498,19 +589,29 @@
             <!-- Attendance Card -->
             <div class="dashboard-card">
                 <div class="card-header">
-                    <h2 class="card-title">Daily Attendance</h2>
-                    <div class="card-icon">⏰</div>
+                    <h2 class="card-title">Mark Attendance</h2>
+                    <span style="font-size: 2rem;">⏰</span>
                 </div>
-                <div class="attendance-section">
-                    <div class="attendance-time" id="currentTime">09:00:00</div>
-                    <div class="attendance-date" id="currentDate">Loading...</div>
-                    <div class="attendance-buttons">
-                        <button class="btn-attendance btn-login" id="loginBtn" onclick="markAttendance('login')">
-                            🟢 Mark Login
-                        </button>
-                        <button class="btn-attendance btn-logout" id="logoutBtn" onclick="markAttendance('logout')" disabled>
-                            🔴 Mark Logout
-                        </button>
+                <div class="attendance-buttons">
+                    <button class="btn-attendance btn-login-attendance" id="loginBtn" onclick="markAttendance('login')">
+                        ✓ Login
+                    </button>
+                    <button class="btn-attendance btn-logout-attendance" id="logoutBtn" onclick="markAttendance('logout')" disabled>
+                        ✗ Logout
+                    </button>
+                </div>
+                <div class="attendance-status" id="attendanceStatus">
+                    <div class="status-item">
+                        <span class="status-label">Login Time:</span>
+                        <span class="status-value" id="loginTime">--:--:--</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Logout Time:</span>
+                        <span class="status-value" id="logoutTime">--:--:--</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="status-label">Total Hours:</span>
+                        <span class="status-value" id="totalHours">--</span>
                     </div>
                 </div>
             </div>
@@ -519,39 +620,20 @@
             <div class="dashboard-card">
                 <div class="card-header">
                     <h2 class="card-title">Leave Balance</h2>
-                    <div class="card-icon">📅</div>
+                    <span style="font-size: 2rem;">📊</span>
                 </div>
-                <div class="leave-balance-grid">
-                    <div class="leave-item">
-                        <div class="leave-type">Casual</div>
-                        <div class="leave-count">12</div>
-                        <div class="leave-days">days</div>
-                    </div>
-                    <div class="leave-item">
-                        <div class="leave-type">Sick</div>
-                        <div class="leave-count">8</div>
-                        <div class="leave-days">days</div>
-                    </div>
-                    <div class="leave-item">
-                        <div class="leave-type">Earned</div>
-                        <div class="leave-count">15</div>
-                        <div class="leave-days">days</div>
-                    </div>
-                    <div class="leave-item">
-                        <div class="leave-type">Total</div>
-                        <div class="leave-count">35</div>
-                        <div class="leave-days">days</div>
-                    </div>
+                <div class="leave-balance-grid" id="leaveBalanceGrid">
+                    <!-- Will be populated dynamically -->
                 </div>
             </div>
 
-            <!-- Leave Application Card -->
+            <!-- Apply Leave Card -->
             <div class="dashboard-card">
                 <div class="card-header">
-                    <h2 class="card-title">Leave Application</h2>
-                    <div class="card-icon">✍️</div>
+                    <h2 class="card-title">Apply Leave</h2>
+                    <span style="font-size: 2rem;">📝</span>
                 </div>
-                <form id="leaveApplicationForm">
+                <form id="leaveForm">
                     <div class="form-group">
                         <label for="leaveType">Leave Type</label>
                         <select id="leaveType" required>
@@ -571,245 +653,351 @@
                     </div>
                     <div class="form-group">
                         <label for="reason">Reason</label>
-                        <textarea id="reason" placeholder="Enter reason for leave..." required></textarea>
+                        <textarea id="reason" rows="3" required></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%;">Apply for Leave</button>
+                    <button type="submit" class="btn-submit">Submit Application</button>
                 </form>
             </div>
 
-            <!-- Holiday List Card -->
+            <!-- Holidays Card -->
             <div class="dashboard-card">
                 <div class="card-header">
                     <h2 class="card-title">Holiday List 2024</h2>
-                    <div class="card-icon">🎉</div>
+                    <span style="font-size: 2rem;">🎉</span>
                 </div>
-                <div class="holiday-list">
-                    <div class="holiday-item">
-                        <div class="holiday-date">Jan 26</div>
-                        <div class="holiday-name">Republic Day</div>
-                        <div class="holiday-type type-gazetted">Gazetted</div>
-                    </div>
-                    <div class="holiday-item">
-                        <div class="holiday-date">Mar 25</div>
-                        <div class="holiday-name">Holi</div>
-                        <div class="holiday-type type-gazetted">Gazetted</div>
-                    </div>
-                    <div class="holiday-item">
-                        <div class="holiday-date">Aug 15</div>
-                        <div class="holiday-name">Independence Day</div>
-                        <div class="holiday-type type-gazetted">Gazetted</div>
-                    </div>
-                    <div class="holiday-item">
-                        <div class="holiday-date">Oct 2</div>
-                        <div class="holiday-name">Gandhi Jayanti</div>
-                        <div class="holiday-type type-gazetted">Gazetted</div>
-                    </div>
-                    <div class="holiday-item">
-                        <div class="holiday-date">Oct 31</div>
-                        <div class="holiday-name">Diwali</div>
-                        <div class="holiday-type type-restricted">Restricted</div>
-                    </div>
-                    <div class="holiday-item">
-                        <div class="holiday-date">Dec 25</div>
-                        <div class="holiday-name">Christmas</div>
-                        <div class="holiday-type type-gazetted">Gazetted</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Leave Approval Section (for managers) -->
-        <div class="dashboard-card">
-            <div class="card-header">
-                <h2 class="card-title">Pending Leave Approvals</h2>
-                <div class="card-icon">✅</div>
-            </div>
-            <div class="leave-requests">
-                <div class="request-item">
-                    <div class="request-header">
-                        <div>
-                            <div class="request-employee">John Doe - BMG2024002</div>
-                            <div class="request-dates">Mar 28, 2024 - Mar 30, 2024 (3 days)</div>
-                        </div>
-                        <div class="status-badge status-pending">Pending</div>
-                    </div>
-                    <div class="request-reason">
-                        <strong>Reason:</strong> Family function out of station
-                    </div>
-                    <div class="request-actions">
-                        <button class="btn-approve" onclick="approveLeave('req1')">Approve</button>
-                        <button class="btn-reject" onclick="rejectLeave('req1')">Reject</button>
-                    </div>
-                </div>
-                <div class="request-item">
-                    <div class="request-header">
-                        <div>
-                            <div class="request-employee">Jane Smith - BMG2024003</div>
-                            <div class="request-dates">Apr 2, 2024 - Apr 3, 2024 (2 days)</div>
-                        </div>
-                        <div class="status-badge status-pending">Pending</div>
-                    </div>
-                    <div class="request-reason">
-                        <strong>Reason:</strong> Medical appointment
-                    </div>
-                    <div class="request-actions">
-                        <button class="btn-approve" onclick="approveLeave('req2')">Approve</button>
-                        <button class="btn-reject" onclick="rejectLeave('req2')">Reject</button>
-                    </div>
+                <div class="holiday-list" id="holidayList">
+                    <!-- Will be populated dynamically -->
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Toast Notification -->
-    <div id="toast" class="toast"></div>
-
     <script src="../script.js"></script>
     <script>
-        // Update current time
-        function updateTime() {
+        // API Base URL
+        const API_BASE = 'http://127.0.0.1:8788/api';
+        
+        let token = null;
+        let employee = null;
+        
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if already logged in
+            token = localStorage.getItem('token');
+            const storedEmployee = localStorage.getItem('employee');
+            
+            if (token && storedEmployee) {
+                employee = JSON.parse(storedEmployee);
+                showDashboard();
+            }
+            
+            // Update time every second
+            setInterval(updateDateTime, 1000);
+            updateDateTime();
+        });
+        
+        // Login Form Handler
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const employeeId = document.getElementById('employeeId').value;
+            const password = document.getElementById('password').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ employeeId, password })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    token = data.token;
+                    employee = data.employee;
+                    
+                    localStorage.setItem('token', token);
+                    localStorage.setItem('employee', JSON.stringify(employee));
+                    
+                    if (data.isFirstLogin) {
+                        // Show password change modal
+                        document.getElementById('passwordChangeModal').classList.add('show');
+                    } else {
+                        showDashboard();
+                    }
+                } else {
+                    alert('Login failed: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alert('Login failed. Please check your connection and try again.');
+            }
+        });
+        
+        // Password Change Form Handler
+        document.getElementById('passwordChangeForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            
+            if (newPassword !== confirmPassword) {
+                alert('Passwords do not match!');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                alert('Password must be at least 6 characters long.');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/auth/change-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('Password changed successfully!');
+                    document.getElementById('passwordChangeModal').classList.remove('show');
+                    showDashboard();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Password change error:', error);
+                alert('Failed to change password. Please try again.');
+            }
+        });
+        
+        // Show Dashboard
+        function showDashboard() {
+            document.getElementById('loginContainer').style.display = 'none';
+            document.getElementById('navbar').style.display = 'block';
+            document.getElementById('dashboardContainer').classList.add('show');
+            
+            // Update user info
+            document.getElementById('userName').textContent = `${employee.first_name} ${employee.last_name}`;
+            document.getElementById('userPosition').textContent = employee.position;
+            document.getElementById('userDepartment').textContent = employee.department;
+            document.getElementById('userEmployeeId').textContent = employee.employee_id;
+            document.getElementById('userAvatar').textContent = `${employee.first_name[0]}${employee.last_name[0]}`;
+            
+            // Show admin navigation for admins
+            if (employee.role === 'admin' || employee.role === 'master_admin') {
+                document.getElementById('adminNav').style.display = 'block';
+            }
+            
+            // Load data
+            loadLeaveBalances();
+            loadHolidays();
+            checkTodayAttendance();
+        }
+        
+        // Mark Attendance
+        async function markAttendance(type) {
+            try {
+                const response = await fetch(`${API_BASE}/attendance/mark`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ type })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert(data.message);
+                    checkTodayAttendance();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Attendance error:', error);
+                alert('Failed to mark attendance. Please try again.');
+            }
+        }
+        
+        // Check Today's Attendance
+        async function checkTodayAttendance() {
+            try {
+                const today = new Date();
+                const month = today.getMonth() + 1;
+                const year = today.getFullYear();
+                
+                const response = await fetch(`${API_BASE}/attendance?month=${month}&year=${year}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const todayStr = today.toISOString().split('T')[0];
+                    const todayRecord = data.attendance.find(a => a.date === todayStr);
+                    
+                    if (todayRecord) {
+                        if (todayRecord.login_time) {
+                            const loginTime = new Date(todayRecord.login_time);
+                            document.getElementById('loginTime').textContent = loginTime.toLocaleTimeString();
+                            document.getElementById('loginBtn').disabled = true;
+                            document.getElementById('logoutBtn').disabled = false;
+                        }
+                        
+                        if (todayRecord.logout_time) {
+                            const logoutTime = new Date(todayRecord.logout_time);
+                            document.getElementById('logoutTime').textContent = logoutTime.toLocaleTimeString();
+                            document.getElementById('logoutBtn').disabled = true;
+                            document.getElementById('totalHours').textContent = todayRecord.total_hours.toFixed(2) + ' hrs';
+                        }
+                    } else {
+                        document.getElementById('loginBtn').disabled = false;
+                        document.getElementById('logoutBtn').disabled = true;
+                    }
+                }
+            } catch (error) {
+                console.error('Check attendance error:', error);
+            }
+        }
+        
+        // Load Leave Balances
+        async function loadLeaveBalances() {
+            try {
+                const response = await fetch(`${API_BASE}/leave/balances`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const grid = document.getElementById('leaveBalanceGrid');
+                    grid.innerHTML = '';
+                    
+                    data.balances.forEach(balance => {
+                        grid.innerHTML += `
+                            <div class="leave-type-card">
+                                <div class="leave-type-name">${balance.leave_type}</div>
+                                <div class="leave-days-count">${balance.balance_days}</div>
+                                <div class="leave-days-label">days left</div>
+                            </div>
+                        `;
+                    });
+                }
+            } catch (error) {
+                console.error('Load leave balances error:', error);
+            }
+        }
+        
+        // Load Holidays
+        async function loadHolidays() {
+            try {
+                const response = await fetch(`${API_BASE}/holidays?year=2024`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const list = document.getElementById('holidayList');
+                    list.innerHTML = '';
+                    
+                    data.holidays.forEach(holiday => {
+                        const date = new Date(holiday.date);
+                        const typeClass = holiday.type === 'gazetted' ? 'type-gazetted' : 
+                                         holiday.type === 'restricted' ? 'type-restricted' : 'type-optional';
+                        
+                        list.innerHTML += `
+                            <div class="holiday-item">
+                                <span class="holiday-date">${date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
+                                <span class="holiday-name">${holiday.name}</span>
+                                <span class="holiday-type ${typeClass}">${holiday.type}</span>
+                            </div>
+                        `;
+                    });
+                }
+            } catch (error) {
+                console.error('Load holidays error:', error);
+            }
+        }
+        
+        // Leave Application Form
+        document.getElementById('leaveForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const leaveData = {
+                leaveType: document.getElementById('leaveType').value,
+                startDate: document.getElementById('startDate').value,
+                endDate: document.getElementById('endDate').value,
+                reason: document.getElementById('reason').value
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/leave/apply`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(leaveData)
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('Leave application submitted successfully!');
+                    this.reset();
+                    loadLeaveBalances();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Leave application error:', error);
+                alert('Failed to submit leave application. Please try again.');
+            }
+        });
+        
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async function(e) {
+            e.preventDefault();
+            
+            try {
+                await fetch(`${API_BASE}/auth/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+            
+            localStorage.removeItem('token');
+            localStorage.removeItem('employee');
+            window.location.reload();
+        });
+        
+        // Update Date and Time
+        function updateDateTime() {
             const now = new Date();
-            const timeString = now.toLocaleTimeString('en-IN', { 
-                hour12: false,
-                hour: '2-digit',
-                minute: '2-digit',
-                second: '2-digit'
-            });
-            const dateString = now.toLocaleDateString('en-IN', {
+            document.getElementById('currentDate').textContent = now.toLocaleDateString('en-US', {
                 weekday: 'long',
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric'
             });
-            
-            document.getElementById('currentTime').textContent = timeString;
-            document.getElementById('currentDate').textContent = dateString;
+            document.getElementById('currentTime').textContent = now.toLocaleTimeString();
         }
-        
-        updateTime();
-        setInterval(updateTime, 1000);
-        
-        // Attendance marking
-        let isLoggedIn = false;
-        
-        function markAttendance(type) {
-            const loginBtn = document.getElementById('loginBtn');
-            const logoutBtn = document.getElementById('logoutBtn');
-            
-            if (type === 'login') {
-                isLoggedIn = true;
-                loginBtn.disabled = true;
-                logoutBtn.disabled = false;
-                showToast('Login marked successfully!', 'success');
-                
-                // Store login time
-                localStorage.setItem('loginTime', new Date().toISOString());
-            } else if (type === 'logout') {
-                isLoggedIn = false;
-                loginBtn.disabled = false;
-                logoutBtn.disabled = true;
-                showToast('Logout marked successfully!', 'success');
-                
-                // Clear login time
-                localStorage.removeItem('loginTime');
-            }
-        }
-        
-        // Check if already logged in
-        window.addEventListener('load', function() {
-            const loginTime = localStorage.getItem('loginTime');
-            if (loginTime) {
-                const loginDate = new Date(loginTime);
-                const today = new Date();
-                
-                // Check if login was today
-                if (loginDate.toDateString() === today.toDateString()) {
-                    isLoggedIn = true;
-                    document.getElementById('loginBtn').disabled = true;
-                    document.getElementById('logoutBtn').disabled = false;
-                }
-            }
-        });
-        
-        // Leave application form
-        document.getElementById('leaveApplicationForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const leaveType = document.getElementById('leaveType').value;
-            const startDate = document.getElementById('startDate').value;
-            const endDate = document.getElementById('endDate').value;
-            const reason = document.getElementById('reason').value;
-            
-            // Validate dates
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            
-            if (end < start) {
-                showToast('End date must be after start date!', 'error');
-                return;
-            }
-            
-            // Calculate days
-            const days = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1;
-            
-            // Simulate submission
-            showToast(`Leave application submitted for ${days} day(s)!`, 'success');
-            
-            // Reset form
-            this.reset();
-        });
-        
-        // Leave approval functions
-        function approveLeave(requestId) {
-            const requestElement = document.querySelector(`[onclick="approveLeave('${requestId}')"]`).closest('.request-item');
-            const statusBadge = requestElement.querySelector('.status-badge');
-            const actionsDiv = requestElement.querySelector('.request-actions');
-            
-            statusBadge.className = 'status-badge status-approved';
-            statusBadge.textContent = 'Approved';
-            actionsDiv.innerHTML = '<span style="color: #16a34a; font-weight: 600;">✓ Approved</span>';
-            
-            showToast('Leave approved successfully!', 'success');
-        }
-        
-        function rejectLeave(requestId) {
-            const requestElement = document.querySelector(`[onclick="rejectLeave('${requestId}')"]`).closest('.request-item');
-            const statusBadge = requestElement.querySelector('.status-badge');
-            const actionsDiv = requestElement.querySelector('.request-actions');
-            
-            statusBadge.className = 'status-badge status-rejected';
-            statusBadge.textContent = 'Rejected';
-            actionsDiv.innerHTML = '<span style="color: #dc2626; font-weight: 600;">✗ Rejected</span>';
-            
-            showToast('Leave rejected!', 'info');
-        }
-        
-        // Toast notification function
-        function showToast(message, type = 'info') {
-            const toast = document.getElementById('toast');
-            toast.textContent = message;
-            toast.className = `toast toast-${type}`;
-            
-            // Show toast
-            setTimeout(() => {
-                toast.classList.add('show');
-            }, 100);
-            
-            // Hide toast after 3 seconds
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3000);
-        }
-        
-        // Set minimum date for leave applications to today
-        const today = new Date().toISOString().split('T')[0];
-        document.getElementById('startDate').setAttribute('min', today);
-        document.getElementById('endDate').setAttribute('min', today);
-        
-        // Update end date minimum when start date changes
-        document.getElementById('startDate').addEventListener('change', function() {
-            document.getElementById('endDate').setAttribute('min', this.value);
-        });
     </script>
 </body>
 </html>

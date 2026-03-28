@@ -7,20 +7,20 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "deploy:prod": "wrangler deploy --env production",
-    "d1:create": "wrangler d1 create bmgone-payroll-db",
-    "d1:migrate": "wrangler d1 execute bmgone-payroll-db --file=./database/database-schema.sql",
-    "d1:migrate:dev": "wrangler d1 execute bmgone-payroll-db-dev --file=./database/database-schema.sql",
-    "d1:backup": "wrangler d1 export bmgone-payroll-db --output=./backup.sql",
+    "d1:create": "wrangler d1 create bmgpayroll",
+    "d1:migrate": "wrangler d1 execute bmgpayroll --file=./database/database-schema.sql",
+    "d1:migrate:dev": "wrangler d1 execute bmgpayroll --file=./database/database-schema.sql",
+    "d1:backup": "wrangler d1 export bmgpayroll --output=./backup.sql",
     "tail": "wrangler tail"
   },
   "dependencies": {
-    "itty-router": "^4.0.0",
     "bcryptjs": "^2.4.3",
+    "itty-router": "^4.0.0",
     "jsonwebtoken": "^9.0.2"
   },
   "devDependencies": {
-    "wrangler": "^3.0.0",
-    "@cloudflare/workers-types": "^4.0.0"
+    "@cloudflare/workers-types": "^4.0.0",
+    "wrangler": "^4.78.0"
   },
   "keywords": [
     "payroll",

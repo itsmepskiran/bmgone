@@ -1,6 +1,7 @@
 name = "bmgone-payroll-api"
 main = "workers/src/index.js"
-compatibility_date = "2024-03-20"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
 
 [env.production]
 vars = { ENVIRONMENT = "production" }
@@ -11,22 +12,22 @@ vars = { ENVIRONMENT = "development" }
 # D1 Database Binding
 [[env.production.d1_databases]]
 binding = "DB"
-database_name = "bmgone-payroll-db"
-database_id = "your-database-id-here"
+database_name = "bmgpayroll"
+database_id = "ceceeaf8-8c03-4299-9df9-9f0330b88493"
 
 [[env.development.d1_databases]]
 binding = "DB"
-database_name = "bmgone-payroll-db-dev"
-database_id = "your-dev-database-id-here"
+database_name = "bmgpayroll"
+database_id = "ceceeaf8-8c03-4299-9df9-9f0330b88493"
 
 # R2 Bucket for file uploads (optional)
 [[env.production.r2_buckets]]
 binding = "FILES"
-bucket_name = "bmgone-payroll-files"
+bucket_name = "bmgpayroll"
 
 [[env.development.r2_buckets]]
 binding = "FILES"
-bucket_name = "bmgone-payroll-files-dev"
+bucket_name = "bmgpayroll"
 
 # Environment variables
 [vars]

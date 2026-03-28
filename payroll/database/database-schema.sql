@@ -4,17 +4,36 @@
 -- Employees table
 CREATE TABLE IF NOT EXISTS employees (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    employee_id TEXT UNIQUE NOT NULL, -- e.g., BMG2024001
+    employee_id TEXT UNIQUE NOT NULL, -- e.g., BMGHYD12345
     first_name TEXT NOT NULL,
     last_name TEXT NOT NULL,
     email TEXT UNIQUE NOT NULL,
-    password_hash TEXT NOT NULL,
-    phone TEXT,
+    password_hash TEXT,
+    phone TEXT NOT NULL,
+    alternate_phone TEXT,
+    date_of_birth DATE,
+    gender TEXT, -- 'male', 'female', 'other'
+    address TEXT,
+    city TEXT,
+    state TEXT,
+    pincode TEXT,
     department TEXT NOT NULL,
     position TEXT NOT NULL,
-    role TEXT NOT NULL DEFAULT 'staff', -- 'staff', 'manager', 'admin'
+    role TEXT NOT NULL DEFAULT 'staff', -- 'staff', 'manager', 'admin', 'master_admin'
+    reporting_manager TEXT, -- employee_id of reporting manager
     join_date DATE NOT NULL,
+    salary DECIMAL(10,2),
+    bank_name TEXT,
+    bank_account TEXT,
+    ifsc_code TEXT,
+    pan_number TEXT,
+    aadhaar_number TEXT,
+    emergency_contact_name TEXT,
+    emergency_contact_phone TEXT,
+    emergency_contact_relation TEXT,
     is_active BOOLEAN DEFAULT 1,
+    is_first_login BOOLEAN DEFAULT 1, -- Track if employee needs to change password
+    created_by TEXT, -- employee_id who created this record
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
@@ -121,11 +140,11 @@ CREATE INDEX IF NOT EXISTS idx_audit_log_employee_id ON audit_log(employee_id);
 CREATE INDEX IF NOT EXISTS idx_audit_log_created_at ON audit_log(created_at);
 
 -- Insert sample data
-INSERT OR IGNORE INTO employees (employee_id, first_name, last_name, email, password_hash, department, position, role, join_date) VALUES
-('BMG2024001', 'Staff', 'Member', 'staff@bmgone.com', '$2b$10$example_hash', 'HR Solutions', 'HR Executive', 'staff', '2024-01-15'),
-('BMG2024002', 'John', 'Doe', 'john@bmgone.com', '$2b$10$example_hash', 'IT Consulting', 'Developer', 'staff', '2024-01-20'),
-('BMG2024003', 'Jane', 'Smith', 'jane@bmgone.com', '$2b$10$example_hash', 'Business Consulting', 'Consultant', 'manager', '2023-06-10'),
-('BMG2024004', 'Admin', 'User', 'admin@bmgone.com', '$2b$10$example_hash', 'Management', 'System Admin', 'admin', '2023-01-01');
+INSERT OR IGNORE INTO employees (employee_id, first_name, last_name, email, password_hash, phone, department, position, role, join_date, is_first_login) VALUES
+('BMGHYD00001', 'Master', 'Admin', 'masteradmin@bmgone.com', '$2b$10$YourHashedPasswordHere', '9808400500', 'Management', 'System Administrator', 'master_admin', '2023-01-01', 0),
+('BMGHYD00002', 'Admin', 'User', 'admin@bmgone.com', '$2b$10$YourHashedPasswordHere', '9808400501', 'HR', 'HR Manager', 'admin', '2023-06-01', 0),
+('BMGHYD12345', 'John', 'Doe', 'john@bmgone.com', '$2b$10$YourHashedPasswordHere', '9808400502', 'IT Consulting', 'Developer', 'staff', '2024-01-15', 1),
+('BMGHYD12346', 'Jane', 'Smith', 'jane@bmgone.com', '$2b$10$YourHashedPasswordHere', '9808400503', 'Business Consulting', 'Consultant', 'manager', '2024-01-20', 1);
 
 INSERT OR IGNORE INTO leave_balances (employee_id, leave_type, total_days, year) VALUES
 ('BMG2024001', 'casual', 12, 2024),
