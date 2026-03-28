@@ -860,7 +860,7 @@ router.get('/api/admin/employees', async (request, env) => {
         }
         
         const employees = await env.DB.prepare(
-            'SELECT employee_id, first_name, last_name, email, phone, department, position, role, join_date, is_active FROM employees ORDER BY created_at DESC'
+            'SELECT employee_id, first_name, last_name, email, phone, department, position, role, join_date, is_active, employment_status, status_reason, status_effective_date FROM employees ORDER BY created_at DESC'
         ).all();
         
         return withCors(new Response(
@@ -870,6 +870,151 @@ router.get('/api/admin/employees', async (request, env) => {
         
     } catch (error) {
         console.error('Get employees error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: 'Internal server error' }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
+// Update employee status (Admin/Master Admin only)
+router.post('/api/employees/:employeeId/status', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Check if user has permission (master_admin or admin)
+        if (user.role !== 'master_admin' && user.role !== 'admin') {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Insufficient permissions' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        const { employeeId } = request.params;
+        const { employment_status, status_reason, status_notes } = await request.json();
+        
+        // Validate employment status
+        const validStatuses = ['active', 'inactive', 'terminated', 'resigned', 'retired', 'on_leave'];
+        if (!validStatuses.includes(employment_status)) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Invalid employment status' }),
+                { status: 400, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Get current employee data for audit
+        const currentEmployee = await env.DB.prepare(
+            'SELECT * FROM employees WHERE employee_id = ?'
+        ).bind(employeeId).first();
+        
+        if (!currentEmployee) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Employee not found' }),
+                { status: 404, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Update employee status
+        await env.DB.prepare(`
+            UPDATE employees SET 
+                employment_status = ?, 
+                status_reason = ?, 
+                status_effective_date = date('now'),
+                status_updated_by = ?,
+                status_notes = ?,
+                is_active = ?,
+                updated_at = datetime('now')
+            WHERE employee_id = ?
+        `).bind(
+            employment_status,
+            status_reason || null,
+            user.employeeId,
+            status_notes || null,
+            employment_status === 'active' ? 1 : 0,
+            employeeId
+        ).run();
+        
+        // Log audit
+        await logAudit(env, user.employeeId, 'employee_status_update', 'employees', employeeId, 
+                      { 
+                        old_status: currentEmployee.employment_status, 
+                        old_reason: currentEmployee.status_reason 
+                      }, 
+                      { 
+                        new_status: employment_status, 
+                        new_reason: status_reason,
+                        notes: status_notes 
+                      }, 
+                      request.headers.get('CF-Connecting-IP'), request.headers.get('User-Agent'));
+        
+        return withCors(new Response(
+            JSON.stringify({ 
+                success: true, 
+                message: 'Employee status updated successfully',
+                employeeId: employeeId,
+                newStatus: employment_status
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+        
+    } catch (error) {
+        console.error('Update employee status error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: 'Internal server error' }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
+// Get employee status history
+router.get('/api/employees/:employeeId/status-history', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        const { employeeId } = request.params;
+        
+        // Get employee details
+        const employee = await env.DB.prepare(
+            'SELECT employee_id, first_name, last_name, employment_status, status_reason, status_effective_date, status_notes FROM employees WHERE employee_id = ?'
+        ).bind(employeeId).first();
+        
+        if (!employee) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Employee not found' }),
+                { status: 404, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Get audit log for status changes
+        const statusHistory = await env.DB.prepare(`
+            SELECT action, old_values, new_values, created_at, ip_address
+            FROM audit_log 
+            WHERE employee_id = ? AND table_name = 'employees' AND action = 'employee_status_update'
+            ORDER BY created_at DESC
+        `).bind(employeeId).all();
+        
+        return withCors(new Response(
+            JSON.stringify({ 
+                employee: employee,
+                statusHistory: statusHistory.results 
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+        
+    } catch (error) {
+        console.error('Get employee status history error:', error);
         return withCors(new Response(
             JSON.stringify({ error: 'Internal server error' }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }

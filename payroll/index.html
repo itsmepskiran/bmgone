@@ -204,6 +204,7 @@
         <div class="admin-nav" id="adminNav" style="display: none;">
             <ul>
                 <li><a href="onboarding.html">Employee Onboarding</a></li>
+                <li><a href="employee-status.html">Employee Status</a></li>
                 <li><a href="#" id="viewEmployeesLink">View All Employees</a></li>
                 <li><a href="#" id="leaveApprovalsLink">Leave Approvals</a></li>
                 <li><a href="#" id="reportsLink">Reports</a></li>
@@ -256,6 +257,21 @@
                     <div class="status-item">
                         <span class="status-label">Total Hours:</span>
                         <span class="status-value" id="totalHours">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Employee Status Card -->
+            <div class="dashboard-card" id="statusCard" style="display: none;">
+                <div class="card-header">
+                    <h2 class="card-title">Employment Status</h2>
+                    <span style="font-size: 2rem;">👤</span>
+                </div>
+                <div style="text-align: center; padding: 1rem;">
+                    <div class="status-badge" id="userStatusBadge" style="font-size: 1rem; padding: 0.5rem 1rem; margin-bottom: 0.5rem;">Active</div>
+                    <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">Current Employment Status</p>
+                    <div id="statusDetails" style="margin-top: 1rem; font-size: 0.85rem; color: #4b5563;">
+                        <!-- Will be populated dynamically -->
                     </div>
                 </div>
             </div>
@@ -541,6 +557,7 @@
             loadLeaveBalances();
             loadHolidays();
             checkTodayAttendance();
+            loadEmployeeStatus();
         }
 
         // Load Leave Balances
@@ -599,6 +616,62 @@
                 }
             } catch (error) {
                 console.error('Load holidays error:', error);
+            }
+        }
+
+        // Load Employee Status
+        async function loadEmployeeStatus() {
+            try {
+                // Get current employee's detailed information including status
+                const response = await fetch(`${CONFIG.API_BASE}/profile`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const status = data.employment_status || 'active';
+                    const statusReason = data.status_reason || '';
+                    const statusDate = data.status_effective_date;
+                    
+                    // Update status badge
+                    const statusBadge = document.getElementById('userStatusBadge');
+                    statusBadge.textContent = status.replace('_', ' ');
+                    statusBadge.className = `status-badge ${status}`;
+                    
+                    // Update status details
+                    const statusDetails = document.getElementById('statusDetails');
+                    let detailsHTML = '';
+                    
+                    if (statusReason) {
+                        detailsHTML += `<div><strong>Reason:</strong> ${statusReason}</div>`;
+                    }
+                    
+                    if (statusDate) {
+                        const formattedDate = new Date(statusDate).toLocaleDateString();
+                        detailsHTML += `<div><strong>Effective:</strong> ${formattedDate}</div>`;
+                    }
+                    
+                    if (status !== 'active') {
+                        detailsHTML += `<div style="color: #ef4444; margin-top: 0.5rem;">⚠️ Please contact HR for more information</div>`;
+                    }
+                    
+                    statusDetails.innerHTML = detailsHTML;
+                    
+                    // Show status card for all employees
+                    document.getElementById('statusCard').style.display = 'block';
+                    
+                } else {
+                    console.error('Failed to load employee status:', data.error);
+                    // Hide status card if failed to load
+                    document.getElementById('statusCard').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Load employee status error:', error);
+                // Hide status card if failed to load
+                document.getElementById('statusCard').style.display = 'none';
             }
         }
 
