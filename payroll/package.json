@@ -7,6 +7,7 @@
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "deploy:prod": "wrangler deploy --env production",
+    "build": "exit 0",
     "d1:create": "wrangler d1 create bmgpayroll",
     "d1:migrate": "wrangler d1 execute bmgpayroll --file=./database/database-schema.sql",
     "d1:migrate:dev": "wrangler d1 execute bmgpayroll --file=./database/database-schema.sql",
