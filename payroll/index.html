@@ -779,6 +779,8 @@
                             document.getElementById('loginBtn').disabled = true;
                             document.getElementById('logoutBtn').disabled = false;
                             console.log('Set state: Login disabled, Logout enabled');
+                            console.log('Login button disabled property:', document.getElementById('loginBtn').disabled);
+                            console.log('Logout button disabled property:', document.getElementById('logoutBtn').disabled);
                         }
                         
                         if (todayRecord.logout_time) {
