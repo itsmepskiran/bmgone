@@ -2,7 +2,7 @@
 # Payroll branch - Worker API backend
 # Usage: wrangler deploy
 
-name = "bmgone-payroll-api-new"
+name = "bmgone-payroll-api-new-production"
 main = "workers/src/index.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]

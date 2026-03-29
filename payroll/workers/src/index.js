@@ -910,7 +910,7 @@ router.get('/api/admin/employees', async (request, env) => {
         }
         
         const employees = await env.DB.prepare(
-            'SELECT employee_id, first_name, last_name, email, phone, department, position, role, join_date, is_active, employment_status, status_reason, status_effective_date FROM employees ORDER BY created_at DESC'
+            'SELECT employee_id, first_name, last_name, email, phone, department, position, role, join_date, is_active FROM employees ORDER BY join_date DESC'
         ).all();
         
         return withCors(new Response(
@@ -921,13 +921,13 @@ router.get('/api/admin/employees', async (request, env) => {
     } catch (error) {
         console.error('Get employees error:', error);
         return withCors(new Response(
-            JSON.stringify({ error: 'Internal server error' }),
+            JSON.stringify({ error: 'Internal server error', details: error.message }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }
         ));
     }
 });
 
-// Update employee status (Admin/Master Admin only)
+// Update employee status (Admin/Master Admin only) - simplified to use is_active only
 router.post('/api/employees/:employeeId/status', async (request, env) => {
     try {
         const user = await authenticate(request, env);
@@ -949,23 +949,12 @@ router.post('/api/employees/:employeeId/status', async (request, env) => {
         const { employeeId } = request.params;
         const { status, reason, subreason, effectiveDate, notes } = await request.json();
         
-        // Map frontend fields to database fields
-        const employment_status = status;
-        const status_reason = reason || subreason;
-        const status_notes = notes;
-        
-        // Validate employment status
-        const validStatuses = ['active', 'inactive', 'terminated', 'resigned', 'retired', 'on_leave'];
-        if (!validStatuses.includes(employment_status)) {
-            return withCors(new Response(
-                JSON.stringify({ error: 'Invalid employment status' }),
-                { status: 400, headers: { 'Content-Type': 'application/json' } }
-            ));
-        }
+        // Validate status - map to is_active (1 = active, 0 = inactive)
+        const isActive = status === 'active' ? 1 : 0;
         
         // Get current employee data for audit
         const currentEmployee = await env.DB.prepare(
-            'SELECT * FROM employees WHERE employee_id = ?'
+            'SELECT employee_id, first_name, last_name, is_active FROM employees WHERE employee_id = ?'
         ).bind(employeeId).first();
         
         if (!currentEmployee) {
@@ -975,38 +964,15 @@ router.post('/api/employees/:employeeId/status', async (request, env) => {
             ));
         }
         
-        // Update employee status
-        await env.DB.prepare(`
-            UPDATE employees SET 
-                employment_status = ?, 
-                status_reason = ?, 
-                status_effective_date = ?,
-                status_updated_by = ?,
-                status_notes = ?,
-                is_active = ?,
-                updated_at = datetime('now')
-            WHERE employee_id = ?
-        `).bind(
-            employment_status,
-            status_reason || null,
-            effectiveDate || new Date().toISOString().split('T')[0],
-            user.employeeId,
-            status_notes || null,
-            employment_status === 'active' ? 1 : 0,
-            employeeId
-        ).run();
+        // Update employee status using only is_active column
+        await env.DB.prepare(
+            'UPDATE employees SET is_active = ?, updated_at = datetime("now") WHERE employee_id = ?'
+        ).bind(isActive, employeeId).run();
         
         // Log audit
         await logAudit(env, user.employeeId, 'employee_status_update', 'employees', employeeId, 
-                      { 
-                        old_status: currentEmployee.employment_status, 
-                        old_reason: currentEmployee.status_reason 
-                      }, 
-                      { 
-                        new_status: employment_status, 
-                        new_reason: status_reason,
-                        notes: status_notes 
-                      }, 
+                      { old_status: currentEmployee.is_active === 1 ? 'active' : 'inactive' }, 
+                      { new_status: status, reason: reason || subreason, notes: notes }, 
                       request.headers.get('CF-Connecting-IP'), request.headers.get('User-Agent'));
         
         return withCors(new Response(
@@ -1014,7 +980,7 @@ router.post('/api/employees/:employeeId/status', async (request, env) => {
                 success: true, 
                 message: 'Employee status updated successfully',
                 employeeId: employeeId,
-                newStatus: employment_status
+                newStatus: status
             }),
             { status: 200, headers: { 'Content-Type': 'application/json' } }
         ));
@@ -1022,7 +988,7 @@ router.post('/api/employees/:employeeId/status', async (request, env) => {
     } catch (error) {
         console.error('Update employee status error:', error);
         return withCors(new Response(
-            JSON.stringify({ error: 'Internal server error' }),
+            JSON.stringify({ error: 'Internal server error', details: error.message }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }
         ));
     }

@@ -1018,13 +1018,14 @@
                     html += '</tr></thead><tbody>';
                     
                     data.employees.forEach(emp => {
-                        const statusClass = emp.employment_status === 'active' ? 'style="color: #10b981; font-weight: 600;"' : 'style="color: #ef4444; font-weight: 600;"';
+                        const statusText = emp.is_active === 1 ? 'active' : 'inactive';
+                        const statusClass = emp.is_active === 1 ? 'style="color: #10b981; font-weight: 600;"' : 'style="color: #ef4444; font-weight: 600;"';
                         html += `<tr style="border-bottom: 1px solid #e5e7eb;">`;
                         html += `<td style="padding: 12px;">${emp.employee_id}</td>`;
                         html += `<td style="padding: 12px;">${emp.first_name} ${emp.last_name}</td>`;
                         html += `<td style="padding: 12px;">${emp.position || '-'}</td>`;
                         html += `<td style="padding: 12px;">${emp.department || '-'}</td>`;
-                        html += `<td style="padding: 12px;" ${statusClass}>${emp.employment_status || 'active'}</td>`;
+                        html += `<td style="padding: 12px;" ${statusClass}>${statusText}</td>`;
                         html += `</tr>`;
                     });
                     
@@ -1070,8 +1071,9 @@
                         document.getElementById('statusEmpDepartment').textContent = emp.department || '-';
                         
                         const statusBadge = document.getElementById('statusEmpCurrentStatus');
-                        statusBadge.textContent = emp.employment_status || 'active';
-                        statusBadge.className = `status-badge ${emp.employment_status || 'active'}`;
+                        const statusText = emp.is_active === 1 ? 'active' : 'inactive';
+                        statusBadge.textContent = statusText;
+                        statusBadge.className = `status-badge ${statusText}`;
                         
                         // Set default effective date to today
                         document.getElementById('statusEffectiveDate').value = new Date().toISOString().split('T')[0];
