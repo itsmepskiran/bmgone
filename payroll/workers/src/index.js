@@ -1061,6 +1061,104 @@ router.get('/api/employees/:employeeId/status-history', async (request, env) => 
     }
 });
 
+// Admin password reset endpoint (Admin/Master Admin only)
+router.post('/api/admin/reset-password', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Check if user has permission (master_admin or admin)
+        if (user.role !== 'master_admin' && user.role !== 'admin') {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Insufficient permissions' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        const { targetEmployeeId, newPassword } = await request.json();
+        
+        if (!targetEmployeeId || !newPassword) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Employee ID and new password are required' }),
+                { status: 400, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        if (newPassword.length < 6) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Password must be at least 6 characters long' }),
+                { status: 400, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Check if target employee exists
+        const targetEmployee = await env.DB.prepare(
+            'SELECT employee_id, first_name, last_name, role FROM employees WHERE employee_id = ?'
+        ).bind(targetEmployeeId).first();
+        
+        if (!targetEmployee) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Employee not found' }),
+                { status: 404, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Prevent admin from resetting another admin's password (only master_admin can)
+        if (targetEmployee.role === 'admin' && user.role !== 'master_admin') {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Only master admin can reset admin passwords' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Prevent anyone from resetting master_admin password
+        if (targetEmployee.role === 'master_admin') {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Master admin password cannot be reset' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Hash new password
+        const newPasswordHash = await bcrypt.hash(newPassword, 10);
+        
+        // Update password and set is_first_login to true to force password change
+        await env.DB.prepare(
+            'UPDATE employees SET password_hash = ?, is_first_login = 1, updated_at = datetime("now") WHERE employee_id = ?'
+        ).bind(newPasswordHash, targetEmployeeId).run();
+        
+        await logAudit(env, user.employeeId, 'password_reset', 'employees', targetEmployeeId, null, 
+                      { 
+                        reset_by: user.employeeId,
+                        target_employee: targetEmployeeId,
+                        target_name: `${targetEmployee.first_name} ${targetEmployee.last_name}`
+                      }, 
+                      request.headers.get('CF-Connecting-IP'), request.headers.get('User-Agent'));
+        
+        return withCors(new Response(
+            JSON.stringify({ 
+                message: 'Password reset successfully',
+                employeeId: targetEmployeeId,
+                employeeName: `${targetEmployee.first_name} ${targetEmployee.last_name}`,
+                note: 'Employee must change password on next login'
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+        
+    } catch (error) {
+        console.error('Password reset error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: 'Internal server error' }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
 // 404 handler
 router.all('*', () => withCors(new Response(
     JSON.stringify({ error: 'Endpoint not found' }),

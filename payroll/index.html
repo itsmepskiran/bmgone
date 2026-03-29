@@ -208,6 +208,7 @@
                 <li><a href="#" id="viewEmployeesLink">View All Employees</a></li>
                 <li><a href="#" id="leaveApprovalsLink">Leave Approvals</a></li>
                 <li><a href="#" id="reportsLink">Reports</a></li>
+                <li><a href="#" id="resetPasswordLink">Reset Password</a></li>
             </ul>
         </div>
 
@@ -339,6 +340,35 @@
             <h2 class="success-title">Success!</h2>
             <p id="successMessage">Operation completed successfully.</p>
             <button class="btn-close-modal" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- Admin Password Reset Modal -->
+    <div id="adminResetPasswordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Reset Employee Password</h2>
+                <p>Reset password for any employee. They will be required to change it on next login.</p>
+            </div>
+            <div class="warning-box">
+                <p>⚠️ Only reset passwords for staff employees. Admin passwords can only be reset by Master Admin.</p>
+            </div>
+            <form id="adminResetPasswordForm">
+                <div class="form-group">
+                    <label for="targetEmployeeId">Employee ID</label>
+                    <input type="text" id="targetEmployeeId" placeholder="e.g., BMGHYD12345" required>
+                </div>
+                <div class="form-group">
+                    <label for="resetNewPassword">New Password</label>
+                    <input type="password" id="resetNewPassword" required minlength="6" placeholder="Minimum 6 characters">
+                </div>
+                <div class="form-group">
+                    <label for="resetConfirmPassword">Confirm New Password</label>
+                    <input type="password" id="resetConfirmPassword" required minlength="6" placeholder="Re-enter new password">
+                </div>
+                <button type="submit" class="btn-submit">Reset Password</button>
+                <button type="button" class="btn-close-modal" onclick="closeModal()" style="margin-top: 1rem; background: #6b7280;">Cancel</button>
+            </form>
         </div>
     </div>
 
@@ -873,6 +903,64 @@
         document.getElementById('reportsLink')?.addEventListener('click', function(e) {
             e.preventDefault();
             showSuccess('Reports feature coming soon!');
+        });
+
+        // Reset Password Link - Open Modal
+        document.getElementById('resetPasswordLink')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('adminResetPasswordModal').classList.add('show');
+        });
+
+        // Admin Reset Password Form Handler
+        document.getElementById('adminResetPasswordForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            showLoading();
+
+            const targetEmployeeId = document.getElementById('targetEmployeeId').value.trim();
+            const newPassword = document.getElementById('resetNewPassword').value;
+            const confirmPassword = document.getElementById('resetConfirmPassword').value;
+
+            // Validation
+            if (newPassword !== confirmPassword) {
+                alert('Passwords do not match!');
+                hideLoading();
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                alert('Password must be at least 6 characters long.');
+                hideLoading();
+                return;
+            }
+
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/admin/reset-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        targetEmployeeId: targetEmployeeId,
+                        newPassword: newPassword
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showSuccess(`Password reset successfully for ${data.employeeName} (${data.employeeId}). They must change password on next login.`);
+                    closeModal();
+                    this.reset();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Password reset error:', error);
+                alert('Failed to reset password. Please try again.');
+            } finally {
+                hideLoading();
+            }
         });
     </script>
 </body>
