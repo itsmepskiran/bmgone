@@ -273,8 +273,28 @@ router.post('/api/auth/change-password', async (request, env) => {
             'SELECT password_hash FROM employees WHERE employee_id = ?'
         ).bind(user.employeeId).first();
         
+        if (!employee) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Employee not found' }),
+                { status: 404, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        if (!employee.password_hash) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'No password hash found' }),
+                { status: 500, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
         // Verify current password
-        const isValid = await bcrypt.compare(currentPassword, employee.password_hash);
+        let isValid = false;
+        try {
+            isValid = await bcrypt.compare(currentPassword, employee.password_hash);
+        } catch (bcryptError) {
+            console.error('Bcrypt comparison error:', bcryptError);
+        }
+        
         if (!isValid) {
             return withCors(new Response(
                 JSON.stringify({ error: 'Current password is incorrect' }),
