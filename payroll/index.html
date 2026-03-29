@@ -777,10 +777,16 @@
                             const loginTime = new Date(todayRecord.login_time);
                             document.getElementById('loginTime').textContent = loginTime.toLocaleTimeString();
                             document.getElementById('loginBtn').disabled = true;
-                            document.getElementById('logoutBtn').disabled = false;
+                            document.getElementById('logoutBtn').removeAttribute('disabled');
                             console.log('Set state: Login disabled, Logout enabled');
                             console.log('Login button disabled property:', document.getElementById('loginBtn').disabled);
                             console.log('Logout button disabled property:', document.getElementById('logoutBtn').disabled);
+                            
+                            // Check again after 1 second to see if something else resets it
+                            setTimeout(() => {
+                                console.log('After 1s - Logout disabled property:', document.getElementById('logoutBtn').disabled);
+                                console.log('After 1s - Logout has disabled attribute?', document.getElementById('logoutBtn').hasAttribute('disabled'));
+                            }, 1000);
                         }
                         
                         if (todayRecord.logout_time) {
@@ -791,7 +797,7 @@
                             console.log('Set state: Logout disabled (already logged out)');
                         }
                     } else {
-                        document.getElementById('loginBtn').disabled = false;
+                        document.getElementById('loginBtn').removeAttribute('disabled');
                         document.getElementById('logoutBtn').disabled = true;
                         console.log('Set state: Login enabled, Logout disabled (no record)');
                     }
