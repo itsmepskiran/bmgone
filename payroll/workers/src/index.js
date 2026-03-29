@@ -184,29 +184,15 @@ router.post('/api/auth/login', async (request, env) => {
             ));
         }
         
-        // Verify password (temporary simple check for testing)
+        // Verify password using bcrypt
         let isValidPassword = false;
-        
-        // For testing, accept simple passwords
-        if (password === 'admin123' && (employeeId === 'BMGHYD00001' || employeeId === 'BMGHYD00002')) {
-            isValidPassword = true;
-        } else if (password === 'john123' && employeeId === 'BMGHYD12345') {
-            isValidPassword = true;
-        } else if (password === 'password' && employeeId === 'TEST001') {
-            isValidPassword = true;
-        } else if (password === 'staff123' && (employeeId === 'BMG2024001' || employeeId === 'BMG2024002')) {
-            isValidPassword = true;
-        } else if (password === 'jane123' && employeeId === 'BMG2024003') {
-            isValidPassword = true;
-        } else {
-            // Try bcrypt comparison for other cases
-            try {
-                isValidPassword = await bcrypt.compare(password, employee.password_hash);
-            } catch (error) {
-                console.error('Bcrypt error:', error);
-                isValidPassword = false;
-            }
+        try {
+            isValidPassword = await bcrypt.compare(password, employee.password_hash);
+        } catch (error) {
+            console.error('Bcrypt error:', error);
+            isValidPassword = false;
         }
+        
         if (!isValidPassword) {
             return withCors(new Response(
                 JSON.stringify({ error: 'Invalid credentials' }),
@@ -287,24 +273,12 @@ router.post('/api/auth/change-password', async (request, env) => {
             ));
         }
         
-        // Verify current password
+        // Verify current password using bcrypt only
         let isValid = false;
-        
-        // For testing, accept hardcoded passwords for admin accounts (same as login)
-        if (currentPassword === 'admin123' && (user.employeeId === 'BMGHYD00001' || user.employeeId === 'BMGHYD00002')) {
-            isValid = true;
-            console.log('Using hardcoded password check for admin');
-        } else {
-            // Try bcrypt comparison for other cases
-            try {
-                console.log('Attempting bcrypt compare for employee:', user.employeeId);
-                console.log('Password hash length:', employee.password_hash ? employee.password_hash.length : 0);
-                isValid = await bcrypt.compare(currentPassword, employee.password_hash);
-                console.log('Bcrypt compare result:', isValid);
-            } catch (bcryptError) {
-                console.error('Bcrypt comparison error:', bcryptError);
-                console.error('Error details:', bcryptError.message);
-            }
+        try {
+            isValid = await bcrypt.compare(currentPassword, employee.password_hash);
+        } catch (bcryptError) {
+            console.error('Bcrypt comparison error:', bcryptError);
         }
         
         if (!isValid) {
