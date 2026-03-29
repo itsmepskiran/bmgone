@@ -471,6 +471,11 @@
         // Load dropdown data
         loadDropdownData();
         
+        // Add department change listener
+        document.getElementById('department').addEventListener('change', function() {
+            updateDropdownsForDepartment(this.value);
+        });
+        
         async function loadDropdownData() {
             try {
                 const response = await fetch(`${CONFIG.API_BASE}/onboarding/dropdowns`, {
@@ -507,6 +512,62 @@
                 }
             } catch (error) {
                 console.error('Error loading dropdown data:', error);
+            }
+        }
+        
+        async function updateDropdownsForDepartment(department) {
+            if (!department) {
+                loadDropdownData(); // Load all data if no department selected
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/onboarding/dropdowns?department=${encodeURIComponent(department)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Update positions dropdown
+                    const positionSelect = document.getElementById('position');
+                    const currentPosition = positionSelect.value;
+                    positionSelect.innerHTML = '<option value="">Select Position</option>';
+                    
+                    if (data.positions && data.positions.length > 0) {
+                        data.positions.forEach(pos => {
+                            positionSelect.innerHTML += `<option value="${pos.position}">${pos.position}</option>`;
+                        });
+                    }
+                    
+                    // Restore selected position if it still exists
+                    if (currentPosition) {
+                        positionSelect.value = currentPosition;
+                    }
+                    
+                    // Update reporting manager dropdown
+                    const managerSelect = document.getElementById('reportingManager');
+                    const currentManager = managerSelect.value;
+                    managerSelect.innerHTML = '<option value="">Select Reporting Manager</option>';
+                    
+                    if (data.employees && data.employees.length > 0) {
+                        data.employees.forEach(emp => {
+                            const displayName = `${emp.first_name} ${emp.last_name} (${emp.employee_id})`;
+                            managerSelect.innerHTML += `<option value="${emp.employee_id}">${displayName}</option>`;
+                        });
+                    }
+                    
+                    // Restore selected manager if it still exists
+                    if (currentManager) {
+                        managerSelect.value = currentManager;
+                    }
+                } else {
+                    console.error('Failed to load department dropdown data:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading department dropdown data:', error);
             }
         }
         

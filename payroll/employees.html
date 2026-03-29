@@ -208,7 +208,7 @@
 
         async function loadEmployees() {
             try {
-                const response = await fetch(`${CONFIG.API_BASE}/employees`, {
+                const response = await fetch(`${CONFIG.API_BASE}/admin/employees`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }

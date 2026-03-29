@@ -548,15 +548,32 @@ router.get('/api/onboarding/dropdowns', async (request, env) => {
             ));
         }
         
-        // Get unique positions from employees table
-        const positions = await env.DB.prepare(
-            'SELECT DISTINCT position FROM employees WHERE position IS NOT NULL AND position != "" ORDER BY position'
-        ).all();
+        const url = new URL(request.url);
+        const department = url.searchParams.get('department');
         
-        // Get employee IDs and names for reporting manager dropdown
-        const employees = await env.DB.prepare(
-            'SELECT employee_id, first_name, last_name FROM employees WHERE is_active = 1 ORDER BY first_name, last_name'
-        ).all();
+        let positions, employees;
+        
+        if (department) {
+            // Get positions for specific department
+            positions = await env.DB.prepare(
+                'SELECT DISTINCT position FROM employees WHERE department = ? AND position IS NOT NULL AND position != "" ORDER BY position'
+            ).bind(department).all();
+            
+            // Get employees for specific department
+            employees = await env.DB.prepare(
+                'SELECT employee_id, first_name, last_name FROM employees WHERE department = ? AND is_active = 1 ORDER BY first_name, last_name'
+            ).bind(department).all();
+        } else {
+            // Get all unique positions
+            positions = await env.DB.prepare(
+                'SELECT DISTINCT position FROM employees WHERE position IS NOT NULL AND position != "" ORDER BY position'
+            ).all();
+            
+            // Get all active employees
+            employees = await env.DB.prepare(
+                'SELECT employee_id, first_name, last_name FROM employees WHERE is_active = 1 ORDER BY first_name, last_name'
+            ).all();
+        }
         
         return withCors(new Response(
             JSON.stringify({
