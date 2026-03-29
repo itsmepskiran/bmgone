@@ -580,13 +580,6 @@
             const newPassword = document.getElementById('newPassword').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             
-            console.log('Password change attempt:', {
-                currentPasswordLength: currentPassword.length,
-                newPasswordLength: newPassword.length,
-                confirmPasswordLength: confirmPassword.length,
-                token: token ? 'present' : 'missing'
-            });
-            
             if (newPassword !== confirmPassword) {
                 alert('Passwords do not match!');
                 hideLoading();
@@ -600,7 +593,6 @@
             }
             
             try {
-                console.log('Sending request to:', `${CONFIG.API_BASE}/auth/change-password`);
                 const response = await fetch(`${CONFIG.API_BASE}/auth/change-password`, {
                     method: 'POST',
                     headers: {
@@ -610,11 +602,7 @@
                     body: JSON.stringify({ currentPassword, newPassword })
                 });
                 
-                console.log('Response status:', response.status);
-                console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-                
                 const data = await response.json();
-                console.log('Response data:', data);
                 
                 if (response.ok) {
                     showSuccess('Password changed successfully!');

@@ -136,12 +136,9 @@ const logAudit = async (env, employeeId, action, tableName, recordId, oldValues,
 // Login endpoint - uses employee_id instead of email
 router.post('/api/auth/login', async (request, env) => {
     try {
-        console.log('Login request received');
         const { employeeId, password } = await request.json();
-        console.log('Login attempt for employee:', employeeId);
         
         if (!employeeId || !password) {
-            console.log('Missing employee ID or password');
             return withCors(new Response(
                 JSON.stringify({ error: 'Employee ID and password required' }),
                 { status: 400, headers: { 'Content-Type': 'application/json' } }
@@ -154,20 +151,17 @@ router.post('/api/auth/login', async (request, env) => {
         ).bind(employeeId).first();
         
         if (!employee) {
-            console.log('Employee not found or inactive:', employeeId);
             return withCors(new Response(
                 JSON.stringify({ error: 'Invalid credentials' }),
                 { status: 401, headers: { 'Content-Type': 'application/json' } }
             ));
         }
         
-        console.log('Employee found:', employee.employee_id, 'First login:', employee.is_first_login);
         // Verify password using bcrypt
         let isValidPassword = false;
         
         try {
             isValidPassword = await bcrypt.compare(password, employee.password_hash);
-            console.log('Password comparison result:', isValidPassword);
         } catch (error) {
             console.error('Bcrypt error:', error);
             isValidPassword = false;
@@ -208,83 +202,20 @@ router.post('/api/auth/login', async (request, env) => {
     }
 });
 
-// Test endpoint for debugging password issues
-router.post('/api/auth/test-password', async (request, env) => {
-    try {
-        console.log('Test password endpoint called');
-        const { employeeId, testPassword } = await request.json();
-        
-        if (!employeeId || !testPassword) {
-            return withCors(new Response(
-                JSON.stringify({ error: 'Employee ID and test password required' }),
-                { status: 400, headers: { 'Content-Type': 'application/json' } }
-            ));
-        }
-        
-        // Get employee password hash
-        const employee = await env.DB.prepare(
-            'SELECT employee_id, password_hash FROM employees WHERE employee_id = ?'
-        ).bind(employeeId).first();
-        
-        if (!employee) {
-            return withCors(new Response(
-                JSON.stringify({ error: 'Employee not found' }),
-                { status: 404, headers: { 'Content-Type': 'application/json' } }
-            ));
-        }
-        
-        // Test bcrypt comparison
-        let isValid = false;
-        let error = null;
-        
-        try {
-            isValid = await bcrypt.compare(testPassword, employee.password_hash);
-            console.log('Password test result:', { employeeId, testPassword, isValid });
-        } catch (bcryptError) {
-            error = bcryptError.message;
-            console.error('Bcrypt test error:', bcryptError);
-        }
-        
-        return withCors(new Response(
-            JSON.stringify({
-                employeeId,
-                testPassword,
-                passwordHash: employee.password_hash,
-                isValid,
-                error,
-                timestamp: new Date().toISOString()
-            }),
-            { status: 200, headers: { 'Content-Type': 'application/json' } }
-        ));
-        
-    } catch (error) {
-        console.error('Test password endpoint error:', error);
-        return withCors(new Response(
-            JSON.stringify({ error: 'Internal server error', details: error.message }),
-            { status: 500, headers: { 'Content-Type': 'application/json' } }
-        ));
-    }
-});
-
 // Change password endpoint (for first login)
 router.post('/api/auth/change-password', async (request, env) => {
     try {
-        console.log('Change password request received');
         const user = await authenticate(request, env);
         if (!user) {
-            console.log('Authentication failed in change password');
             return withCors(new Response(
                 JSON.stringify({ error: 'Unauthorized' }),
                 { status: 401, headers: { 'Content-Type': 'application/json' } }
             ));
         }
         
-        console.log('User authenticated:', user.employeeId);
         const { currentPassword, newPassword } = await request.json();
-        console.log('Passwords received - Current length:', currentPassword?.length, 'New length:', newPassword?.length);
         
         if (!currentPassword || !newPassword) {
-            console.log('Missing passwords in request');
             return withCors(new Response(
                 JSON.stringify({ error: 'Current and new password required' }),
                 { status: 400, headers: { 'Content-Type': 'application/json' } }
@@ -297,17 +228,14 @@ router.post('/api/auth/change-password', async (request, env) => {
         ).bind(user.employeeId).first();
         
         if (!employee) {
-            console.log('Employee not found:', user.employeeId);
             return withCors(new Response(
                 JSON.stringify({ error: 'Employee not found' }),
                 { status: 404, headers: { 'Content-Type': 'application/json' } }
             ));
         }
         
-        console.log('Employee found, comparing passwords');
         // Verify current password
         const isValid = await bcrypt.compare(currentPassword, employee.password_hash);
-        console.log('Password comparison result:', isValid);
         
         if (!isValid) {
             return withCors(new Response(
