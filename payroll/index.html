@@ -96,6 +96,61 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+        
+        /* Attendance Table Styles */
+        .attendance-table-container {
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+        
+        .attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+        
+        .attendance-table th {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 0.75rem;
+            text-align: left;
+            font-weight: 600;
+            border: none;
+        }
+        
+        .attendance-table td {
+            padding: 0.75rem;
+            border-bottom: 1px solid #e5e7eb;
+            color: var(--text-dark);
+        }
+        
+        .attendance-table tr:hover {
+            background-color: #f9fafb;
+        }
+        
+        .attendance-table tr:last-child td {
+            border-bottom: none;
+        }
+        
+        .status-present {
+            color: #10b981;
+            font-weight: 600;
+        }
+        
+        .status-absent {
+            color: #ef4444;
+            font-weight: 600;
+        }
+        
+        .status-half-day {
+            color: #f59e0b;
+            font-weight: 600;
+        }
+        
+        .status-leave {
+            color: #3b82f6;
+            font-weight: 600;
+        }
     </style>
 </head>
 <body>
@@ -260,6 +315,29 @@
                         <span class="status-label">Total Hours:</span>
                         <span class="status-value" id="totalHours">--</span>
                     </div>
+                </div>
+            </div>
+
+            <!-- Last 7 Days Attendance Card -->
+            <div class="dashboard-card" style="grid-column: span 2;">
+                <div class="card-header">
+                    <h2 class="card-title">Last 7 Days Attendance</h2>
+                    <span style="font-size: 2rem;">📅</span>
+                </div>
+                <div class="attendance-table-container">
+                    <table class="attendance-table" id="attendanceTable">
+                        <thead>
+                            <tr>
+                                <th>Date</th>
+                                <th>Login Time</th>
+                                <th>Logout Time</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceTableBody">
+                            <!-- Will be populated dynamically -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -575,6 +653,7 @@
             loadLeaveBalances();
             loadHolidays();
             checkTodayAttendance();
+            loadLast7DaysAttendance();
         }
 
         // Load Leave Balances
@@ -676,6 +755,89 @@
                 }
             } catch (error) {
                 console.error('Check attendance error:', error);
+            }
+        }
+
+        // Load Last 7 Days Attendance
+        async function loadLast7DaysAttendance() {
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/attendance/last7days`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const tbody = document.getElementById('attendanceTableBody');
+                    tbody.innerHTML = '';
+                    
+                    if (data.attendance && data.attendance.length > 0) {
+                        data.attendance.forEach(record => {
+                            const date = new Date(record.date);
+                            const formattedDate = date.toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric', 
+                                year: 'numeric' 
+                            });
+                            
+                            const loginTime = record.login_time ? 
+                                new Date(record.login_time).toLocaleTimeString('en-US', { 
+                                    hour: '2-digit', 
+                                    minute: '2-digit' 
+                                }) : '--:--';
+                            
+                            const logoutTime = record.logout_time ? 
+                                new Date(record.logout_time).toLocaleTimeString('en-US', { 
+                                    hour: '2-digit', 
+                                    minute: '2-digit' 
+                                }) : '--:--';
+                            
+                            let statusClass = '';
+                            let statusText = record.status || 'present';
+                            
+                            switch(statusText.toLowerCase()) {
+                                case 'present':
+                                    statusClass = 'status-present';
+                                    break;
+                                case 'absent':
+                                    statusClass = 'status-absent';
+                                    break;
+                                case 'half_day':
+                                    statusClass = 'status-half-day';
+                                    statusText = 'Half Day';
+                                    break;
+                                case 'leave':
+                                    statusClass = 'status-leave';
+                                    break;
+                                default:
+                                    statusClass = 'status-present';
+                            }
+                            
+                            tbody.innerHTML += `
+                                <tr>
+                                    <td>${formattedDate}</td>
+                                    <td>${loginTime}</td>
+                                    <td>${logoutTime}</td>
+                                    <td><span class="${statusClass}">${statusText.charAt(0).toUpperCase() + statusText.slice(1)}</span></td>
+                                </tr>
+                            `;
+                        });
+                    } else {
+                        tbody.innerHTML = `
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: #6b7280; padding: 2rem;">
+                                    No attendance records found for the last 7 days
+                                </td>
+                            </tr>
+                        `;
+                    }
+                } else {
+                    console.error('Failed to load attendance:', data.error);
+                }
+            } catch (error) {
+                console.error('Load last 7 days attendance error:', error);
             }
         }
 

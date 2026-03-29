@@ -601,6 +601,39 @@ router.post('/api/attendance/mark', async (request, env) => {
     }
 });
 
+// Get last 7 days attendance
+router.get('/api/attendance/last7days', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Get attendance for last 7 days
+        const attendance = await env.DB.prepare(
+            `SELECT date, login_time, logout_time, status 
+             FROM attendance 
+             WHERE employee_id = ? AND date >= date('now', '-7 days')
+             ORDER BY date DESC`
+        ).bind(user.employeeId).all();
+        
+        return withCors(new Response(
+            JSON.stringify({ attendance: attendance.results || [] }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+        
+    } catch (error) {
+        console.error('Get last 7 days attendance error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: 'Internal server error' }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
 // Get attendance records
 router.get('/api/attendance', async (request, env) => {
     try {
