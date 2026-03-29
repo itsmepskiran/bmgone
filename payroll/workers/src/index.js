@@ -797,6 +797,57 @@ router.get('/api/leave/applications', async (request, env) => {
     }
 });
 
+// Get pending leave approvals for reporting manager
+router.get('/api/leave/pending-approvals', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Admins can see all pending approvals
+        // Managers can see pending approvals for their direct reports only
+        let query = `
+            SELECT la.*, e.first_name, e.last_name, e.employee_id as emp_id, e.department, e.position
+            FROM leave_applications la 
+            JOIN employees e ON la.employee_id = e.employee_id
+            WHERE la.status = 'pending'
+        `;
+        const params = [];
+        
+        // If user is a manager (not admin), filter by reporting manager
+        if (user.role === 'manager') {
+            query += ` AND e.reporting_manager = ?`;
+            params.push(user.employeeId);
+        }
+        // If admin or master_admin, they see all pending approvals
+        
+        query += ' ORDER BY la.created_at DESC';
+        
+        const applications = await env.DB.prepare(query).bind(...params).all();
+        
+        return withCors(new Response(
+            JSON.stringify({ 
+                pendingApprovals: applications.results,
+                totalCount: applications.results.length,
+                isManager: user.role === 'manager',
+                isAdmin: user.role === 'admin' || user.role === 'master_admin'
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+        
+    } catch (error) {
+        console.error('Get pending approvals error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: 'Internal server error' }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
 // Approve/Reject leave
 router.put('/api/leave/:id/approve', async (request, env) => {
     try {
@@ -826,15 +877,26 @@ router.put('/api/leave/:id/approve', async (request, env) => {
             ));
         }
         
-        // Get application details
-        const application = await env.DB.prepare(
-            'SELECT * FROM leave_applications WHERE id = ?'
-        ).bind(applicationId).first();
+        // Get application details with employee info to check reporting manager
+        const application = await env.DB.prepare(`
+            SELECT la.*, e.reporting_manager 
+            FROM leave_applications la
+            JOIN employees e ON la.employee_id = e.employee_id
+            WHERE la.id = ?
+        `).bind(applicationId).first();
         
         if (!application) {
             return withCors(new Response(
                 JSON.stringify({ error: 'Application not found' }),
                 { status: 404, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Check if user is the reporting manager or an admin
+        if (user.role === 'manager' && application.reporting_manager !== user.employeeId) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'You can only approve/reject leaves for your direct reports' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
             ));
         }
         
@@ -1137,6 +1199,343 @@ router.post('/api/admin/reset-password', async (request, env) => {
         console.error('Password reset error:', error);
         return withCors(new Response(
             JSON.stringify({ error: 'Internal server error' }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
+// Monthly Attendance Report Endpoint
+router.get('/api/reports/monthly-attendance', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Only admins, managers, and employees viewing their own report
+        const { month, year, employeeId, format = 'json' } = new URL(request.url).searchParams;
+        
+        if (!month || !year) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Month and year are required' }),
+                { status: 400, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        const targetEmployeeId = employeeId || user.employeeId;
+        
+        // Check permissions - can only view own report unless admin/manager
+        if (targetEmployeeId !== user.employeeId && 
+            user.role !== 'admin' && user.role !== 'master_admin' && user.role !== 'manager') {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Insufficient permissions' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Get employee details
+        const employee = await env.DB.prepare(
+            'SELECT employee_id, first_name, last_name, department, position FROM employees WHERE employee_id = ?'
+        ).bind(targetEmployeeId).first();
+        
+        if (!employee) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Employee not found' }),
+                { status: 404, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Get attendance for the month
+        const startDate = `${year}-${month.padStart(2, '0')}-01`;
+        const endDate = new Date(year, parseInt(month), 0).toISOString().split('T')[0];
+        
+        const attendance = await env.DB.prepare(
+            `SELECT date, login_time, logout_time, total_hours, status 
+             FROM attendance 
+             WHERE employee_id = ? AND date >= ? AND date <= ?
+             ORDER BY date`
+        ).bind(targetEmployeeId, startDate, endDate).all();
+        
+        // Get approved leaves for the month
+        const leaves = await env.DB.prepare(
+            `SELECT start_date, end_date, total_days, leave_type, status
+             FROM leave_applications 
+             WHERE employee_id = ? AND status = 'approved' 
+             AND ((start_date >= ? AND start_date <= ?) OR (end_date >= ? AND end_date <= ?))`
+        ).bind(targetEmployeeId, startDate, endDate, startDate, endDate).all();
+        
+        // Calculate statistics
+        const attendanceRecords = attendance.results || [];
+        const leaveRecords = leaves.results || [];
+        
+        let totalWorkingDays = 0;
+        let daysPresent = 0;
+        let daysAbsent = 0;
+        let totalLoginHours = 0;
+        let daysOnLeave = 0;
+        
+        const dailyRecords = [];
+        
+        // Generate all days in the month
+        const daysInMonth = new Date(year, parseInt(month), 0).getDate();
+        
+        for (let day = 1; day <= daysInMonth; day++) {
+            const currentDate = `${year}-${month.padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+            const dateObj = new Date(currentDate);
+            const dayOfWeek = dateObj.getDay();
+            const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+            
+            // Check if it's a holiday
+            const holiday = await env.DB.prepare(
+                'SELECT name FROM holidays WHERE date = ? AND is_active = 1'
+            ).bind(currentDate).first();
+            
+            const isHoliday = !!holiday;
+            
+            // Find attendance record for this day
+            const attendanceRecord = attendanceRecords.find(a => a.date === currentDate);
+            
+            // Check if on leave
+            const onLeave = leaveRecords.some(leave => {
+                const leaveStart = new Date(leave.start_date);
+                const leaveEnd = new Date(leave.end_date);
+                const checkDate = new Date(currentDate);
+                return checkDate >= leaveStart && checkDate <= leaveEnd;
+            });
+            
+            let status = 'working';
+            let loginTime = '';
+            let logoutTime = '';
+            let hoursWorked = 0;
+            
+            if (isWeekend) {
+                status = 'weekend';
+            } else if (isHoliday) {
+                status = 'holiday';
+            } else if (onLeave) {
+                status = 'on_leave';
+                daysOnLeave++;
+            } else if (attendanceRecord) {
+                if (attendanceRecord.login_time) {
+                    status = 'present';
+                    daysPresent++;
+                    loginTime = new Date(attendanceRecord.login_time).toLocaleTimeString();
+                    
+                    if (attendanceRecord.logout_time) {
+                        logoutTime = new Date(attendanceRecord.logout_time).toLocaleTimeString();
+                        hoursWorked = attendanceRecord.total_hours || 
+                            ((new Date(attendanceRecord.logout_time) - new Date(attendanceRecord.login_time)) / (1000 * 60 * 60));
+                        totalLoginHours += hoursWorked;
+                    }
+                } else {
+                    status = 'absent';
+                    daysAbsent++;
+                }
+                totalWorkingDays++;
+            } else {
+                // Check if date is in the past
+                const today = new Date().toISOString().split('T')[0];
+                if (currentDate < today) {
+                    status = 'absent';
+                    daysAbsent++;
+                    totalWorkingDays++;
+                } else {
+                    status = 'future';
+                }
+            }
+            
+            dailyRecords.push({
+                date: currentDate,
+                day: day,
+                status,
+                loginTime,
+                logoutTime,
+                hoursWorked: hoursWorked ? hoursWorked.toFixed(2) : '0.00',
+                isWeekend,
+                isHoliday: isHoliday ? holiday.name : null
+            });
+        }
+        
+        const report = {
+            employee: {
+                id: employee.employee_id,
+                name: `${employee.first_name} ${employee.last_name}`,
+                department: employee.department,
+                position: employee.position
+            },
+            month: parseInt(month),
+            year: parseInt(year),
+            summary: {
+                totalWorkingDays,
+                daysPresent,
+                daysAbsent,
+                daysOnLeave,
+                totalLoginHours: totalLoginHours.toFixed(2),
+                attendancePercentage: totalWorkingDays > 0 ? ((daysPresent / totalWorkingDays) * 100).toFixed(2) : '0.00'
+            },
+            dailyRecords
+        };
+        
+        // If CSV format requested
+        if (format === 'csv') {
+            let csv = 'Date,Day,Status,Login Time,Logout Time,Hours Worked,Notes\n';
+            dailyRecords.forEach(record => {
+                const notes = record.isHoliday ? `Holiday: ${record.isHoliday}` : 
+                             record.isWeekend ? 'Weekend' : '';
+                csv += `${record.date},${record.day},${record.status},${record.loginTime},${record.logoutTime},${record.hoursWorked},"${notes}"\n`;
+            });
+            csv += `\nSummary,,,,,\n`;
+            csv += `Total Working Days,${totalWorkingDays},,,,\n`;
+            csv += `Days Present,${daysPresent},,,,\n`;
+            csv += `Days Absent,${daysAbsent},,,,\n`;
+            csv += `Days on Leave,${daysOnLeave},,,,\n`;
+            csv += `Total Login Hours,${totalLoginHours.toFixed(2)},,,,\n`;
+            csv += `Attendance %,${report.summary.attendancePercentage}%,,,,\n`;
+            
+            return withCors(new Response(csv, {
+                status: 200,
+                headers: {
+                    'Content-Type': 'text/csv',
+                    'Content-Disposition': `attachment; filename="attendance_${targetEmployeeId}_${year}_${month}.csv"`
+                }
+            }));
+        }
+        
+        return withCors(new Response(
+            JSON.stringify(report),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+        
+    } catch (error) {
+        console.error('Monthly attendance report error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: 'Internal server error', details: error.message }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
+// Check for absconding employees (3 continuous days absence)
+router.post('/api/admin/check-absconding', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Only admin can run this check
+        if (user.role !== 'admin' && user.role !== 'master_admin') {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Insufficient permissions' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Get all active employees
+        const employees = await env.DB.prepare(
+            'SELECT employee_id, first_name, last_name, is_active FROM employees WHERE is_active = 1 AND role = "staff"'
+        ).all();
+        
+        const abscondingEmployees = [];
+        const today = new Date();
+        
+        for (const emp of employees.results) {
+            // Check last 5 working days for absence pattern
+            let continuousAbsences = 0;
+            let checkDate = new Date(today);
+            
+            // Check backwards for continuous absences (skip weekends and holidays)
+            for (let i = 0; i < 10; i++) { // Check up to 10 days back
+                const dateStr = checkDate.toISOString().split('T')[0];
+                const dayOfWeek = checkDate.getDay();
+                
+                // Skip weekends
+                if (dayOfWeek === 0 || dayOfWeek === 6) {
+                    checkDate.setDate(checkDate.getDate() - 1);
+                    continue;
+                }
+                
+                // Check if holiday
+                const holiday = await env.DB.prepare(
+                    'SELECT 1 FROM holidays WHERE date = ? AND is_active = 1'
+                ).bind(dateStr).first();
+                
+                if (holiday) {
+                    checkDate.setDate(checkDate.getDate() - 1);
+                    continue;
+                }
+                
+                // Check if on approved leave
+                const onLeave = await env.DB.prepare(
+                    `SELECT 1 FROM leave_applications 
+                     WHERE employee_id = ? AND status = 'approved' 
+                     AND ? BETWEEN start_date AND end_date`
+                ).bind(emp.employee_id, dateStr).first();
+                
+                if (onLeave) {
+                    // Reset counter if on approved leave
+                    continuousAbsences = 0;
+                    checkDate.setDate(checkDate.getDate() - 1);
+                    continue;
+                }
+                
+                // Check attendance
+                const attendance = await env.DB.prepare(
+                    'SELECT login_time FROM attendance WHERE employee_id = ? AND date = ?'
+                ).bind(emp.employee_id, dateStr).first();
+                
+                if (!attendance || !attendance.login_time) {
+                    continuousAbsences++;
+                } else {
+                    // Found attendance, break the streak
+                    break;
+                }
+                
+                checkDate.setDate(checkDate.getDate() - 1);
+            }
+            
+            // If 3 or more continuous absences, mark as absconding
+            if (continuousAbsences >= 3) {
+                // Update employee status to inactive (absconding)
+                await env.DB.prepare(
+                    'UPDATE employees SET is_active = 0, updated_at = datetime("now") WHERE employee_id = ?'
+                ).bind(emp.employee_id).run();
+                
+                // Log the absconding status change
+                await logAudit(env, user.employeeId, 'employee_status_update', 'employees', emp.employee_id, 
+                    { old_status: 'active' }, 
+                    { new_status: 'absconding', reason: 'Continuous absence for 3 or more working days', notes: 'Auto-detected by system' }, 
+                    request.headers.get('CF-Connecting-IP'), request.headers.get('User-Agent'));
+                
+                abscondingEmployees.push({
+                    employeeId: emp.employee_id,
+                    name: `${emp.first_name} ${emp.last_name}`,
+                    continuousAbsences,
+                    status: 'marked_as_absconding'
+                });
+            }
+        }
+        
+        return withCors(new Response(
+            JSON.stringify({ 
+                message: 'Absconding check completed',
+                abscondingEmployees,
+                totalChecked: employees.results.length,
+                abscondingCount: abscondingEmployees.length
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+        
+    } catch (error) {
+        console.error('Check absconding error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: 'Internal server error', details: error.message }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }
         ));
     }

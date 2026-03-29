@@ -212,6 +212,14 @@
             </ul>
         </div>
 
+        <!-- Manager Navigation -->
+        <div class="admin-nav" id="managerNav" style="display: none; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);">
+            <ul>
+                <li><a href="#" id="managerLeaveApprovalsLink">Leave Approvals</a></li>
+                <li><a href="#" id="managerTeamLink">My Team</a></li>
+            </ul>
+        </div>
+
         <!-- Dashboard Header -->
         <div class="dashboard-header">
             <div class="user-info">
@@ -317,6 +325,44 @@
                 </form>
             </div>
 
+            <!-- Monthly Reports Card -->
+            <div class="dashboard-card" id="monthlyReportsCard">
+                <div class="card-header">
+                    <h2 class="card-title">Monthly Reports</h2>
+                    <span style="font-size: 2rem;">📊</span>
+                </div>
+                <div style="padding: 1rem 0;">
+                    <p style="color: #6b7280; margin-bottom: 1rem;">Download your monthly attendance report including login hours, leaves, and absenteeism.</p>
+                    <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                        <select id="reportMonth" style="flex: 1; min-width: 100px; padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px;">
+                            <option value="1">January</option>
+                            <option value="2">February</option>
+                            <option value="3">March</option>
+                            <option value="4">April</option>
+                            <option value="5">May</option>
+                            <option value="6">June</option>
+                            <option value="7">July</option>
+                            <option value="8">August</option>
+                            <option value="9">September</option>
+                            <option value="10">October</option>
+                            <option value="11">November</option>
+                            <option value="12">December</option>
+                        </select>
+                        <select id="reportYear" style="flex: 1; min-width: 80px; padding: 8px; border: 1px solid #e5e7eb; border-radius: 6px;">
+                            <option value="2024">2024</option>
+                            <option value="2025">2025</option>
+                            <option value="2026" selected>2026</option>
+                        </select>
+                    </div>
+                    <button type="button" class="btn-submit" onclick="downloadMonthlyReport()" style="margin-top: 1rem; width: 100%;">
+                        Download Report (CSV)
+                    </button>
+                    <button type="button" class="btn-submit" onclick="viewMonthlyReport()" style="margin-top: 0.5rem; width: 100%; background: #6b7280;">
+                        View Report
+                    </button>
+                </div>
+            </div>
+
             <!-- Holidays Card -->
             <div class="dashboard-card">
                 <div class="card-header">
@@ -327,6 +373,68 @@
                     <!-- Will be populated dynamically -->
                 </div>
             </div>
+
+            <!-- Pending Leave Approvals Card (Only for Managers) -->
+            <div class="dashboard-card" id="pendingApprovalsCard" style="display: none;">
+                <div class="card-header">
+                    <h2 class="card-title">Pending Leave Approvals</h2>
+                    <span style="font-size: 2rem;" id="pendingCountBadge">0</span>
+                </div>
+                <div id="pendingApprovalsList" style="max-height: 250px; overflow-y: auto;">
+                    <!-- Will be populated dynamically -->
+                </div>
+                <button type="button" class="btn-submit" onclick="openLeaveApprovalsModal()" style="margin-top: 1rem; width: 100%;">View All Approvals</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leave Approvals Modal -->
+    <div id="leaveApprovalsModal" class="modal">
+        <div class="modal-content" style="max-width: 900px; max-height: 85vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2>Leave Approvals</h2>
+                <p>Review and approve/reject leave applications from your team.</p>
+            </div>
+            <div id="allPendingApprovalsList" style="max-height: 500px; overflow-y: auto;">
+                <!-- Will be populated dynamically -->
+            </div>
+            <button type="button" class="btn-close-modal" onclick="closeModal()" style="margin-top: 1rem;">Close</button>
+        </div>
+    </div>
+
+    <!-- Rejection Reason Modal -->
+    <div id="rejectLeaveModal" class="modal">
+        <div class="modal-content" style="max-width: 500px;">
+            <div class="modal-header">
+                <h2>Reject Leave Application</h2>
+                <p>Please provide a reason for rejection.</p>
+            </div>
+            <form id="rejectLeaveForm">
+                <input type="hidden" id="rejectLeaveId">
+                <div class="form-group">
+                    <label for="rejectionReason">Rejection Reason</label>
+                    <textarea id="rejectionReason" rows="3" required placeholder="Enter reason for rejection..."></textarea>
+                </div>
+                <button type="submit" class="btn-submit" style="background: #ef4444;">Confirm Rejection</button>
+                <button type="button" class="btn-close-modal" onclick="closeRejectModal()" style="margin-top: 1rem; background: #6b7280;">Cancel</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Monthly Report View Modal -->
+    <div id="monthlyReportModal" class="modal">
+        <div class="modal-content" style="max-width: 900px; max-height: 85vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h2>Monthly Attendance Report</h2>
+                <p id="monthlyReportTitle">View your attendance details for the selected month.</p>
+            </div>
+            <div id="monthlyReportSummary" style="background: #f9fafb; padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                <!-- Summary will be populated dynamically -->
+            </div>
+            <div id="monthlyReportTable" style="max-height: 400px; overflow-y: auto;">
+                <!-- Table will be populated dynamically -->
+            </div>
+            <button type="button" class="btn-close-modal" onclick="closeModal()" style="margin-top: 1rem;">Close</button>
         </div>
     </div>
 
@@ -755,6 +863,16 @@
                 document.getElementById('adminNav').style.display = 'block';
             }
             
+            // Show manager navigation for managers
+            if (employee.role === 'manager') {
+                document.getElementById('managerNav').style.display = 'block';
+            }
+            
+            // Show pending approvals card and load data for managers and admins
+            if (employee.role === 'manager' || employee.role === 'admin' || employee.role === 'master_admin') {
+                loadPendingApprovals();
+            }
+            
             // Load data
             loadLeaveBalances();
             loadHolidays();
@@ -1175,15 +1293,390 @@
             document.getElementById('statusEmployeeId').value = '';
         });
 
-        document.getElementById('reportsLink')?.addEventListener('click', function(e) {
+        // Leave Approvals Link - Open Modal
+        document.getElementById('leaveApprovalsLink')?.addEventListener('click', function(e) {
             e.preventDefault();
-            showSuccess('Reports feature coming soon!');
+            openLeaveApprovalsModal();
         });
 
-        // Reset Password Link - Open Modal
-        document.getElementById('resetPasswordLink')?.addEventListener('click', function(e) {
+        // Manager Leave Approvals Link - Open Modal
+        document.getElementById('managerLeaveApprovalsLink')?.addEventListener('click', function(e) {
             e.preventDefault();
-            document.getElementById('adminResetPasswordModal').classList.add('show');
+            openLeaveApprovalsModal();
+        });
+
+        // Manager Team Link - Coming Soon
+        document.getElementById('managerTeamLink')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            showSuccess('My Team feature coming soon!');
+        });
+
+        // Load Pending Leave Approvals for Manager
+        async function loadPendingApprovals() {
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/leave/pending-approvals`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const pendingCount = data.totalCount || 0;
+                    document.getElementById('pendingCountBadge').textContent = pendingCount;
+                    
+                    // Update dashboard card visibility
+                    if (pendingCount > 0 || data.isManager || data.isAdmin) {
+                        document.getElementById('pendingApprovalsCard').style.display = 'block';
+                    }
+                    
+                    // Render pending list for dashboard card (show max 3)
+                    const listContainer = document.getElementById('pendingApprovalsList');
+                    if (pendingCount === 0) {
+                        listContainer.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 1rem;">No pending leave approvals.</p>';
+                    } else {
+                        const displayApprovals = data.pendingApprovals.slice(0, 3);
+                        let html = '';
+                        displayApprovals.forEach(app => {
+                            const startDate = new Date(app.start_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                            const endDate = new Date(app.end_date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                            html += `
+                                <div style="padding: 0.75rem; border-bottom: 1px solid #e5e7eb; background: #f9fafb; border-radius: 6px; margin-bottom: 0.5rem;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <strong>${app.first_name} ${app.last_name}</strong>
+                                        <span style="font-size: 0.8rem; color: #f59e0b; font-weight: 600;">${app.total_days} days</span>
+                                    </div>
+                                    <p style="margin: 0.25rem 0; font-size: 0.85rem; color: #6b7280;">${app.leave_type} | ${startDate} - ${endDate}</p>
+                                    <p style="margin: 0; font-size: 0.75rem; color: #9ca3af;">${app.reason}</p>
+                                </div>
+                            `;
+                        });
+                        if (pendingCount > 3) {
+                            html += `<p style="text-align: center; color: #6b7280; font-size: 0.85rem; margin-top: 0.5rem;">+ ${pendingCount - 3} more pending...</p>`;
+                        }
+                        listContainer.innerHTML = html;
+                    }
+                    
+                    return data.pendingApprovals;
+                } else {
+                    console.error('Failed to load pending approvals:', data.error);
+                    document.getElementById('pendingApprovalsList').innerHTML = '<p style="text-align: center; color: #ef4444; padding: 1rem;">Error loading approvals.</p>';
+                }
+            } catch (error) {
+                console.error('Load pending approvals error:', error);
+            }
+        }
+
+        // Open Leave Approvals Modal
+        async function openLeaveApprovalsModal() {
+            document.getElementById('leaveApprovalsModal').classList.add('show');
+            await renderAllPendingApprovals();
+        }
+
+        // Render All Pending Approvals in Modal
+        async function renderAllPendingApprovals() {
+            const listContainer = document.getElementById('allPendingApprovalsList');
+            listContainer.innerHTML = '<p style="text-align: center; padding: 2rem;">Loading pending approvals...</p>';
+            
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/leave/pending-approvals`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    if (!data.pendingApprovals || data.pendingApprovals.length === 0) {
+                        listContainer.innerHTML = '<p style="text-align: center; padding: 2rem; color: #6b7280;">No pending leave approvals.</p>';
+                        return;
+                    }
+                    
+                    let html = '';
+                    data.pendingApprovals.forEach(app => {
+                        const startDate = new Date(app.start_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                        const endDate = new Date(app.end_date).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+                        const appliedDate = new Date(app.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        
+                        html += `
+                            <div style="padding: 1rem; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 1rem; background: #fff;">
+                                <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 0.75rem;">
+                                    <div>
+                                        <h4 style="margin: 0; color: #111827;">${app.first_name} ${app.last_name}</h4>
+                                        <p style="margin: 0.25rem 0; font-size: 0.85rem; color: #6b7280;">${app.emp_id} | ${app.position || '-'} | ${app.department || '-'}</p>
+                                    </div>
+                                    <span style="background: #f59e0b; color: white; padding: 0.25rem 0.75rem; border-radius: 12px; font-size: 0.75rem; font-weight: 600;">${app.total_days} days</span>
+                                </div>
+                                <div style="background: #f9fafb; padding: 0.75rem; border-radius: 6px; margin-bottom: 0.75rem;">
+                                    <p style="margin: 0.25rem 0; font-size: 0.9rem;"><strong>Leave Type:</strong> ${app.leave_type}</p>
+                                    <p style="margin: 0.25rem 0; font-size: 0.9rem;"><strong>Duration:</strong> ${startDate} to ${endDate}</p>
+                                    <p style="margin: 0.25rem 0; font-size: 0.85rem; color: #6b7280;"><strong>Reason:</strong> ${app.reason}</p>
+                                    <p style="margin: 0.25rem 0; font-size: 0.75rem; color: #9ca3af;">Applied on: ${appliedDate}</p>
+                                </div>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <button type="button" class="btn-submit" onclick="approveLeave(${app.id})" style="flex: 1; background: #10b981;">Approve</button>
+                                    <button type="button" class="btn-submit" onclick="openRejectModal(${app.id})" style="flex: 1; background: #ef4444;">Reject</button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    listContainer.innerHTML = html;
+                } else {
+                    listContainer.innerHTML = `<p style="text-align: center; padding: 2rem; color: #ef4444;">Error: ${data.error || 'Failed to load approvals'}</p>`;
+                }
+            } catch (error) {
+                console.error('Render approvals error:', error);
+                listContainer.innerHTML = '<p style="text-align: center; padding: 2rem; color: #ef4444;">Error loading approvals. Please try again.</p>';
+            }
+        }
+
+        // Approve Leave
+        async function approveLeave(applicationId) {
+            showLoading();
+            
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/leave/${applicationId}/approve`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status: 'approved' })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('Leave application approved successfully!');
+                    // Refresh both the dashboard card and modal
+                    await loadPendingApprovals();
+                    await renderAllPendingApprovals();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to approve leave'));
+                }
+            } catch (error) {
+                console.error('Approve leave error:', error);
+                alert('Failed to approve leave. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Open Reject Modal
+        function openRejectModal(applicationId) {
+            document.getElementById('rejectLeaveId').value = applicationId;
+            document.getElementById('rejectionReason').value = '';
+            document.getElementById('rejectLeaveModal').classList.add('show');
+        }
+
+        // Close Reject Modal
+        function closeRejectModal() {
+            document.getElementById('rejectLeaveModal').classList.remove('show');
+        }
+
+        // Reject Leave Form Handler
+        document.getElementById('rejectLeaveForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            showLoading();
+            
+            const applicationId = document.getElementById('rejectLeaveId').value;
+            const rejectionReason = document.getElementById('rejectionReason').value;
+            
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/leave/${applicationId}/approve`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ status: 'rejected', rejectionReason: rejectionReason })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('Leave application rejected.');
+                    closeRejectModal();
+                    // Refresh both the dashboard card and modal
+                    await loadPendingApprovals();
+                    await renderAllPendingApprovals();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to reject leave'));
+                }
+            } catch (error) {
+                console.error('Reject leave error:', error);
+                alert('Failed to reject leave. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Download Monthly Attendance Report (CSV)
+        async function downloadMonthlyReport() {
+            const month = document.getElementById('reportMonth').value;
+            const year = document.getElementById('reportYear').value;
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/reports/monthly-attendance?month=${month}&year=${year}&format=csv`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `attendance_${employee.employee_id}_${year}_${month}.csv`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    window.URL.revokeObjectURL(url);
+                    showSuccess('Report downloaded successfully!');
+                } else {
+                    const data = await response.json();
+                    alert('Error: ' + (data.error || 'Failed to download report'));
+                }
+            } catch (error) {
+                console.error('Download report error:', error);
+                alert('Failed to download report. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // View Monthly Attendance Report
+        async function viewMonthlyReport() {
+            const month = document.getElementById('reportMonth').value;
+            const year = document.getElementById('reportYear').value;
+            
+            showLoading();
+            
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/reports/monthly-attendance?month=${month}&year=${year}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Update modal title
+                    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+                                       'July', 'August', 'September', 'October', 'November', 'December'];
+                    document.getElementById('monthlyReportTitle').textContent = 
+                        `Attendance Report for ${data.employee.name} - ${monthNames[data.month - 1]} ${data.year}`;
+                    
+                    // Update summary
+                    const summaryHtml = `
+                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 1rem;">
+                            <div style="text-align: center; padding: 0.5rem; background: white; border-radius: 6px;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #4f46e5;">${data.summary.totalWorkingDays}</div>
+                                <div style="font-size: 0.75rem; color: #6b7280;">Working Days</div>
+                            </div>
+                            <div style="text-align: center; padding: 0.5rem; background: white; border-radius: 6px;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #10b981;">${data.summary.daysPresent}</div>
+                                <div style="font-size: 0.75rem; color: #6b7280;">Days Present</div>
+                            </div>
+                            <div style="text-align: center; padding: 0.5rem; background: white; border-radius: 6px;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #ef4444;">${data.summary.daysAbsent}</div>
+                                <div style="font-size: 0.75rem; color: #6b7280;">Days Absent</div>
+                            </div>
+                            <div style="text-align: center; padding: 0.5rem; background: white; border-radius: 6px;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #f59e0b;">${data.summary.daysOnLeave}</div>
+                                <div style="font-size: 0.75rem; color: #6b7280;">Days on Leave</div>
+                            </div>
+                            <div style="text-align: center; padding: 0.5rem; background: white; border-radius: 6px;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #4f46e5;">${data.summary.totalLoginHours}</div>
+                                <div style="font-size: 0.75rem; color: #6b7280;">Total Hours</div>
+                            </div>
+                            <div style="text-align: center; padding: 0.5rem; background: white; border-radius: 6px;">
+                                <div style="font-size: 1.5rem; font-weight: 700; color: #6b7280;">${data.summary.attendancePercentage}%</div>
+                                <div style="font-size: 0.75rem; color: #6b7280;">Attendance %</div>
+                            </div>
+                        </div>
+                    `;
+                    document.getElementById('monthlyReportSummary').innerHTML = summaryHtml;
+                    
+                    // Update table
+                    let tableHtml = `
+                        <table style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
+                            <thead>
+                                <tr style="background: #f3f4f6;">
+                                    <th style="padding: 10px; text-align: left; border-bottom: 2px solid #e5e7eb;">Date</th>
+                                    <th style="padding: 10px; text-align: center; border-bottom: 2px solid #e5e7eb;">Status</th>
+                                    <th style="padding: 10px; text-align: center; border-bottom: 2px solid #e5e7eb;">Login</th>
+                                    <th style="padding: 10px; text-align: center; border-bottom: 2px solid #e5e7eb;">Logout</th>
+                                    <th style="padding: 10px; text-align: center; border-bottom: 2px solid #e5e7eb;">Hours</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                    `;
+                    
+                    data.dailyRecords.forEach(record => {
+                        let statusColor = '#6b7280';
+                        let statusText = record.status;
+                        
+                        switch(record.status) {
+                            case 'present': statusColor = '#10b981'; statusText = 'Present'; break;
+                            case 'absent': statusColor = '#ef4444'; statusText = 'Absent'; break;
+                            case 'on_leave': statusColor = '#f59e0b'; statusText = 'On Leave'; break;
+                            case 'weekend': statusColor = '#8b5cf6'; statusText = 'Weekend'; break;
+                            case 'holiday': statusColor = '#ec4899'; statusText = 'Holiday'; break;
+                            case 'future': statusColor = '#9ca3af'; statusText = '-'; break;
+                        }
+                        
+                        const rowStyle = record.status === 'weekend' || record.status === 'holiday' ? 
+                            'background: #f9fafb;' : '';
+                        
+                        tableHtml += `
+                            <tr style="border-bottom: 1px solid #e5e7eb; ${rowStyle}">
+                                <td style="padding: 10px;">
+                                    ${record.date}
+                                    ${record.isHoliday ? `<span style="font-size: 0.75rem; color: #ec4899; display: block;">${record.isHoliday}</span>` : ''}
+                                </td>
+                                <td style="padding: 10px; text-align: center; color: ${statusColor}; font-weight: 600;">${statusText}</td>
+                                <td style="padding: 10px; text-align: center;">${record.loginTime || '-'}</td>
+                                <td style="padding: 10px; text-align: center;">${record.logoutTime || '-'}</td>
+                                <td style="padding: 10px; text-align: center; font-weight: 600;">${record.hoursWorked}</td>
+                            </tr>
+                        `;
+                    });
+                    
+                    tableHtml += '</tbody></table>';
+                    document.getElementById('monthlyReportTable').innerHTML = tableHtml;
+                    
+                    // Show modal
+                    document.getElementById('monthlyReportModal').classList.add('show');
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to load report'));
+                }
+            } catch (error) {
+                console.error('View report error:', error);
+                alert('Failed to load report. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Reports Link - Open Reports Modal
+        document.getElementById('reportsLink')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Scroll to the monthly reports card
+            document.getElementById('monthlyReportsCard').scrollIntoView({ behavior: 'smooth' });
+        });
+
+        // User Change Password Link - Open Modal
+        document.getElementById('userChangePasswordLink')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('userChangePasswordModal').classList.add('show');
         });
 
         // Admin Reset Password Form Handler
