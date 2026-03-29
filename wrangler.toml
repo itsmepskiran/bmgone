@@ -1,0 +1,16 @@
+# Cloudflare Pages Configuration
+# Root folder - Pages deployment (main branch frontend)
+# Usage: Pages will auto-detect and use this config
+
+name = "bmgone-main"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Pages build output directory (static site files are in root)
+pages_build_output_dir = "."
+
+[env.production]
+vars = { ENVIRONMENT = "production", CORS_ORIGIN = "https://bmgone.com" }
+
+[env.preview]
+vars = { ENVIRONMENT = "preview", CORS_ORIGIN = "http://localhost:3000" }
