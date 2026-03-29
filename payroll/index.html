@@ -722,6 +722,8 @@
                 const month = today.getMonth() + 1;
                 const year = today.getFullYear();
                 
+                console.log('Checking attendance for:', today.toISOString().split('T')[0]);
+                
                 const response = await fetch(`${CONFIG.API_BASE}/attendance?month=${month}&year=${year}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -729,17 +731,24 @@
                 });
                 
                 const data = await response.json();
+                console.log('Attendance data:', data);
                 
                 if (response.ok) {
                     const todayStr = today.toISOString().split('T')[0];
                     const todayRecord = data.attendance.find(a => a.date === todayStr);
                     
+                    console.log('Today record:', todayRecord);
+                    
                     if (todayRecord) {
+                        console.log('Login time:', todayRecord.login_time);
+                        console.log('Logout time:', todayRecord.logout_time);
+                        
                         if (todayRecord.login_time) {
                             const loginTime = new Date(todayRecord.login_time);
                             document.getElementById('loginTime').textContent = loginTime.toLocaleTimeString();
                             document.getElementById('loginBtn').disabled = true;
                             document.getElementById('logoutBtn').disabled = false;
+                            console.log('Set state: Login disabled, Logout enabled');
                         }
                         
                         if (todayRecord.logout_time) {
@@ -747,10 +756,12 @@
                             document.getElementById('logoutTime').textContent = logoutTime.toLocaleTimeString();
                             document.getElementById('logoutBtn').disabled = true;
                             document.getElementById('totalHours').textContent = todayRecord.total_hours.toFixed(2) + ' hrs';
+                            console.log('Set state: Logout disabled (already logged out)');
                         }
                     } else {
                         document.getElementById('loginBtn').disabled = false;
                         document.getElementById('logoutBtn').disabled = true;
+                        console.log('Set state: Login enabled, Logout disabled (no record)');
                     }
                 }
             } catch (error) {
