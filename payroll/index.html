@@ -777,28 +777,8 @@
                             const loginTime = new Date(todayRecord.login_time);
                             document.getElementById('loginTime').textContent = loginTime.toLocaleTimeString();
                             document.getElementById('loginBtn').disabled = true;
-<<<<<<< Updated upstream
-                            document.getElementById('logoutBtn').removeAttribute('disabled');
-                            console.log('Set state: Login disabled, Logout enabled');
-                            console.log('Login button disabled property:', document.getElementById('loginBtn').disabled);
-                            console.log('Logout button disabled property:', document.getElementById('logoutBtn').disabled);
-                            
-                            // Check again after 1 second to see if something else resets it
-                            setTimeout(() => {
-                                console.log('After 1s - Logout disabled property:', document.getElementById('logoutBtn').disabled);
-                                console.log('After 1s - Logout has disabled attribute?', document.getElementById('logoutBtn').hasAttribute('disabled'));
-=======
                             document.getElementById('attendanceLogoutBtn').removeAttribute('disabled');
                             console.log('Set state: Login disabled, Logout enabled');
-                            console.log('Login button disabled property:', document.getElementById('loginBtn').disabled);
-                            console.log('Attendance Logout button disabled property:', document.getElementById('attendanceLogoutBtn').disabled);
-                            
-                            // Check again after 1 second to see if something else resets it
-                            setTimeout(() => {
-                                console.log('After 1s - Attendance Logout disabled property:', document.getElementById('attendanceLogoutBtn').disabled);
-                                console.log('After 1s - Attendance Logout has disabled attribute?', document.getElementById('attendanceLogoutBtn').hasAttribute('disabled'));
->>>>>>> Stashed changes
-                            }, 1000);
                         }
                         
                         if (todayRecord.logout_time) {
@@ -810,11 +790,7 @@
                         }
                     } else {
                         document.getElementById('loginBtn').removeAttribute('disabled');
-<<<<<<< Updated upstream
-                        document.getElementById('logoutBtn').disabled = true;
-=======
                         document.getElementById('attendanceLogoutBtn').disabled = true;
->>>>>>> Stashed changes
                         console.log('Set state: Login enabled, Logout disabled (no record)');
                     }
                 }
