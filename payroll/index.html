@@ -204,7 +204,7 @@
         <div class="admin-nav" id="adminNav" style="display: none;">
             <ul>
                 <li><a href="onboarding.html">Employee Onboarding</a></li>
-                <li><a href="employee-status.html">Employee Status</a></li>
+                <li><a href="#" id="employeeStatusLink">Employee Status</a></li>
                 <li><a href="#" id="viewEmployeesLink">View All Employees</a></li>
                 <li><a href="#" id="leaveApprovalsLink">Leave Approvals</a></li>
                 <li><a href="#" id="reportsLink">Reports</a></li>
@@ -262,18 +262,14 @@
                 </div>
             </div>
 
-            <!-- Employee Status Card -->
-            <div class="dashboard-card" id="statusCard" style="display: none;">
+            <!-- Last 7 Days Attendance Card -->
+            <div class="dashboard-card" id="last7DaysCard">
                 <div class="card-header">
-                    <h2 class="card-title">Employment Status</h2>
-                    <span style="font-size: 2rem;">👤</span>
+                    <h2 class="card-title">Last 7 Days Attendance</h2>
+                    <span style="font-size: 2rem;">�</span>
                 </div>
-                <div style="text-align: center; padding: 1rem;">
-                    <div class="status-badge" id="userStatusBadge" style="font-size: 1rem; padding: 0.5rem 1rem; margin-bottom: 0.5rem;">Active</div>
-                    <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">Current Employment Status</p>
-                    <div id="statusDetails" style="margin-top: 1rem; font-size: 0.85rem; color: #4b5563;">
-                        <!-- Will be populated dynamically -->
-                    </div>
+                <div class="attendance-list" id="last7DaysAttendance">
+                    <!-- Will be populated dynamically -->
                 </div>
             </div>
 
@@ -369,6 +365,115 @@
                 <button type="submit" class="btn-submit">Reset Password</button>
                 <button type="button" class="btn-close-modal" onclick="closeModal()" style="margin-top: 1rem; background: #6b7280;">Cancel</button>
             </form>
+        </div>
+    </div>
+
+    <!-- View Employees Modal -->
+    <div id="viewEmployeesModal" class="modal">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h2>All Employees</h2>
+                <p>View all employee records in the system.</p>
+            </div>
+            <div id="employeesList" style="max-height: 500px; overflow-y: auto;">
+                <!-- Will be populated dynamically -->
+            </div>
+            <button type="button" class="btn-close-modal" onclick="closeModal()" style="margin-top: 1rem;">Close</button>
+        </div>
+    </div>
+
+    <!-- Employee Status Modal -->
+    <div id="employeeStatusModal" class="modal">
+        <div class="modal-content" style="max-width: 700px;">
+            <div class="modal-header">
+                <h2>Employee Status Management</h2>
+                <p>Search and update employee employment status.</p>
+            </div>
+            
+            <!-- Search Section -->
+            <div style="padding: 1.5rem; border-bottom: 1px solid #e5e7eb;">
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                    <input type="text" id="statusEmployeeId" placeholder="Enter Employee ID (e.g., BMGHYD00001)" 
+                           style="flex: 1; padding: 12px; border: 2px solid #e5e7eb; border-radius: 8px; font-size: 1rem;">
+                    <button type="button" class="btn-submit" onclick="fetchEmployeeForStatus()" 
+                            style="width: auto; padding: 12px 24px;">Search</button>
+                </div>
+            </div>
+            
+            <!-- Employee Details Section (hidden by default) -->
+            <div id="employeeStatusDetails" style="display: none; padding: 1.5rem;">
+                <div style="background: #f9fafb; padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem;">
+                    <h3 style="margin-top: 0; color: #111827;" id="statusEmpName">Employee Name</h3>
+                    <p style="margin: 0.25rem 0; color: #6b7280;">ID: <span id="statusEmpId"></span></p>
+                    <p style="margin: 0.25rem 0; color: #6b7280;">Position: <span id="statusEmpPosition"></span></p>
+                    <p style="margin: 0.25rem 0; color: #6b7280;">Department: <span id="statusEmpDepartment"></span></p>
+                    <p style="margin: 0.5rem 0;">Current Status: <span id="statusEmpCurrentStatus" class="status-badge">Active</span></p>
+                </div>
+                
+                <form id="employeeStatusForm">
+                    <div class="form-group">
+                        <label for="newStatus">New Status</label>
+                        <select id="newStatus" required style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px;">
+                            <option value="">Select Status</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="statusReason">Reason</label>
+                        <select id="statusReason" required style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px;">
+                            <option value="">Select Reason</option>
+                            <option value="Resigned">Resigned</option>
+                            <option value="Absconding">Absconding</option>
+                            <option value="Terminated">Terminated</option>
+                            <option value="Retired">Retired</option>
+                            <option value="Promotion">Promotion</option>
+                            <option value="Transfer">Transfer</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="statusSubreason">Sub Reason</label>
+                        <select id="statusSubreason" required style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px;">
+                            <option value="">Select Sub Reason</option>
+                            <option value="Personal Reason">Personal Reason</option>
+                            <option value="Higher Studies">Higher Studies</option>
+                            <option value="Work Environment">Work Environment</option>
+                            <option value="Growth">Growth</option>
+                            <option value="Medical Reason">Medical Reason</option>
+                            <option value="Fraud">Fraud</option>
+                            <option value="ZTP">Zero Tolerance Policy (ZTP)</option>
+                            <option value="Attendance">Attendance Issues</option>
+                            <option value="Relocation">Relocation</option>
+                            <option value="Performance">Performance Issues</option>
+                            <option value="Better Opportunity">Better Opportunity</option>
+                            <option value="Family Issues">Family Issues</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="statusEffectiveDate">Effective Date</label>
+                        <input type="date" id="statusEffectiveDate" required style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="statusNotes">Additional Notes</label>
+                        <textarea id="statusNotes" rows="3" placeholder="Optional notes about this status change..."
+                                  style="width: 100%; padding: 10px; border: 2px solid #e5e7eb; border-radius: 8px;"></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn-submit">Update Status</button>
+                </form>
+            </div>
+            
+            <div id="employeeStatusError" style="display: none; padding: 1rem; color: #ef4444; text-align: center;">
+                Employee not found or error loading data.
+            </div>
+            
+            <button type="button" class="btn-close-modal" onclick="closeModal()" style="margin-top: 1rem; background: #6b7280;">Cancel</button>
         </div>
     </div>
 
@@ -627,7 +732,7 @@
             loadLeaveBalances();
             loadHolidays();
             checkTodayAttendance();
-            loadEmployeeStatus();
+            loadLast7DaysAttendance();
         }
 
         // Load Leave Balances
@@ -689,11 +794,10 @@
             }
         }
 
-        // Load Employee Status
-        async function loadEmployeeStatus() {
+        // Load Last 7 Days Attendance
+        async function loadLast7DaysAttendance() {
             try {
-                // Get current employee's detailed information including status
-                const response = await fetch(`${CONFIG.API_BASE}/profile`, {
+                const response = await fetch(`${CONFIG.API_BASE}/attendance/last7days`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -702,46 +806,34 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    const status = data.employment_status || 'active';
-                    const statusReason = data.status_reason || '';
-                    const statusDate = data.status_effective_date;
+                    const list = document.getElementById('last7DaysAttendance');
+                    list.innerHTML = '';
                     
-                    // Update status badge
-                    const statusBadge = document.getElementById('userStatusBadge');
-                    statusBadge.textContent = status.replace('_', ' ');
-                    statusBadge.className = `status-badge ${status}`;
-                    
-                    // Update status details
-                    const statusDetails = document.getElementById('statusDetails');
-                    let detailsHTML = '';
-                    
-                    if (statusReason) {
-                        detailsHTML += `<div><strong>Reason:</strong> ${statusReason}</div>`;
+                    if (data.attendance && data.attendance.length > 0) {
+                        data.attendance.forEach(record => {
+                            const date = new Date(record.date);
+                            const loginTime = record.login_time ? new Date(record.login_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '--:--';
+                            const logoutTime = record.logout_time ? new Date(record.logout_time).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) : '--:--';
+                            const totalHours = record.total_hours ? record.total_hours.toFixed(2) : '--';
+                            
+                            list.innerHTML += `
+                                <div class="attendance-item" style="display: flex; justify-content: space-between; padding: 0.75rem 0; border-bottom: 1px solid #e5e7eb; font-size: 0.9rem;">
+                                    <span style="font-weight: 600; color: #374151;">${date.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' })}</span>
+                                    <span style="color: #6b7280;">${loginTime} - ${logoutTime}</span>
+                                    <span style="font-weight: 600; color: ${totalHours !== '--' ? '#10b981' : '#9ca3af'};">${totalHours} hrs</span>
+                                </div>
+                            `;
+                        });
+                    } else {
+                        list.innerHTML = '<p style="text-align: center; color: #6b7280; padding: 1rem;">No attendance records found for the last 7 days.</p>';
                     }
-                    
-                    if (statusDate) {
-                        const formattedDate = new Date(statusDate).toLocaleDateString();
-                        detailsHTML += `<div><strong>Effective:</strong> ${formattedDate}</div>`;
-                    }
-                    
-                    if (status !== 'active') {
-                        detailsHTML += `<div style="color: #ef4444; margin-top: 0.5rem;">⚠️ Please contact HR for more information</div>`;
-                    }
-                    
-                    statusDetails.innerHTML = detailsHTML;
-                    
-                    // Show status card for all employees
-                    document.getElementById('statusCard').style.display = 'block';
-                    
                 } else {
-                    console.error('Failed to load employee status:', data.error);
-                    // Hide status card if failed to load
-                    document.getElementById('statusCard').style.display = 'none';
+                    console.error('Failed to load last 7 days attendance:', data.error);
+                    document.getElementById('last7DaysAttendance').innerHTML = '<p style="text-align: center; color: #ef4444; padding: 1rem;">Failed to load attendance data.</p>';
                 }
             } catch (error) {
-                console.error('Load employee status error:', error);
-                // Hide status card if failed to load
-                document.getElementById('statusCard').style.display = 'none';
+                console.error('Load last 7 days attendance error:', error);
+                document.getElementById('last7DaysAttendance').innerHTML = '<p style="text-align: center; color: #ef4444; padding: 1rem;">Error loading attendance data.</p>';
             }
         }
 
@@ -889,15 +981,169 @@
             window.location.reload();
         });
 
-        // Admin Navigation Links
-        document.getElementById('viewEmployeesLink')?.addEventListener('click', function(e) {
+        // View Employees Link - Open Modal and Load Data
+        document.getElementById('viewEmployeesLink')?.addEventListener('click', async function(e) {
             e.preventDefault();
-            showSuccess('Employee list feature coming soon!');
+            document.getElementById('viewEmployeesModal').classList.add('show');
+            await loadAllEmployees();
         });
 
-        document.getElementById('leaveApprovalsLink')?.addEventListener('click', function(e) {
+        // Load All Employees (for View Employees modal)
+        async function loadAllEmployees() {
+            const listContainer = document.getElementById('employeesList');
+            listContainer.innerHTML = '<p style="text-align: center; padding: 2rem;">Loading employees...</p>';
+            
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/admin/employees`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.employees) {
+                    if (data.employees.length === 0) {
+                        listContainer.innerHTML = '<p style="text-align: center; padding: 2rem; color: #6b7280;">No employees found.</p>';
+                        return;
+                    }
+                    
+                    let html = '<table style="width: 100%; border-collapse: collapse;">';
+                    html += '<thead><tr style="background: #f3f4f6;">';
+                    html += '<th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Employee ID</th>';
+                    html += '<th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Name</th>';
+                    html += '<th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Position</th>';
+                    html += '<th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Department</th>';
+                    html += '<th style="padding: 12px; text-align: left; border-bottom: 2px solid #e5e7eb;">Status</th>';
+                    html += '</tr></thead><tbody>';
+                    
+                    data.employees.forEach(emp => {
+                        const statusClass = emp.employment_status === 'active' ? 'style="color: #10b981; font-weight: 600;"' : 'style="color: #ef4444; font-weight: 600;"';
+                        html += `<tr style="border-bottom: 1px solid #e5e7eb;">`;
+                        html += `<td style="padding: 12px;">${emp.employee_id}</td>`;
+                        html += `<td style="padding: 12px;">${emp.first_name} ${emp.last_name}</td>`;
+                        html += `<td style="padding: 12px;">${emp.position || '-'}</td>`;
+                        html += `<td style="padding: 12px;">${emp.department || '-'}</td>`;
+                        html += `<td style="padding: 12px;" ${statusClass}>${emp.employment_status || 'active'}</td>`;
+                        html += `</tr>`;
+                    });
+                    
+                    html += '</tbody></table>';
+                    listContainer.innerHTML = html;
+                } else {
+                    listContainer.innerHTML = `<p style="text-align: center; padding: 2rem; color: #ef4444;">Error: ${data.error || 'Failed to load employees'}</p>`;
+                }
+            } catch (error) {
+                console.error('Load employees error:', error);
+                listContainer.innerHTML = '<p style="text-align: center; padding: 2rem; color: #ef4444;">Error loading employees. Please try again.</p>';
+            }
+        }
+
+        // Fetch Employee for Status Update
+        async function fetchEmployeeForStatus() {
+            const employeeId = document.getElementById('statusEmployeeId').value.trim();
+            if (!employeeId) {
+                alert('Please enter an Employee ID');
+                return;
+            }
+            
+            showLoading();
+            document.getElementById('employeeStatusError').style.display = 'none';
+            document.getElementById('employeeStatusDetails').style.display = 'none';
+            
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/admin/employees`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok && data.employees) {
+                    const emp = data.employees.find(e => e.employee_id === employeeId);
+                    
+                    if (emp) {
+                        document.getElementById('statusEmpName').textContent = `${emp.first_name} ${emp.last_name}`;
+                        document.getElementById('statusEmpId').textContent = emp.employee_id;
+                        document.getElementById('statusEmpPosition').textContent = emp.position || '-';
+                        document.getElementById('statusEmpDepartment').textContent = emp.department || '-';
+                        
+                        const statusBadge = document.getElementById('statusEmpCurrentStatus');
+                        statusBadge.textContent = emp.employment_status || 'active';
+                        statusBadge.className = `status-badge ${emp.employment_status || 'active'}`;
+                        
+                        // Set default effective date to today
+                        document.getElementById('statusEffectiveDate').value = new Date().toISOString().split('T')[0];
+                        
+                        document.getElementById('employeeStatusDetails').style.display = 'block';
+                    } else {
+                        document.getElementById('employeeStatusError').style.display = 'block';
+                    }
+                } else {
+                    document.getElementById('employeeStatusError').style.display = 'block';
+                }
+            } catch (error) {
+                console.error('Fetch employee error:', error);
+                document.getElementById('employeeStatusError').style.display = 'block';
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // Employee Status Form Handler
+        document.getElementById('employeeStatusForm')?.addEventListener('submit', async function(e) {
             e.preventDefault();
-            showSuccess('Leave approvals feature coming soon!');
+            showLoading();
+            
+            const employeeId = document.getElementById('statusEmpId').textContent;
+            const status = document.getElementById('newStatus').value;
+            const reason = document.getElementById('statusReason').value;
+            const subreason = document.getElementById('statusSubreason').value;
+            const effectiveDate = document.getElementById('statusEffectiveDate').value;
+            const notes = document.getElementById('statusNotes').value;
+            
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/employees/${employeeId}/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        status: status,
+                        reason: reason,
+                        subreason: subreason,
+                        effectiveDate: effectiveDate,
+                        notes: notes
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess(`Employee status updated successfully!`);
+                    closeModal();
+                    this.reset();
+                } else {
+                    alert('Error: ' + (data.error || 'Failed to update status'));
+                }
+            } catch (error) {
+                console.error('Status update error:', error);
+                alert('Failed to update status. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        });
+
+        // Employee Status Link - Open Modal
+        document.getElementById('employeeStatusLink')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('employeeStatusModal').classList.add('show');
+            // Reset form
+            document.getElementById('employeeStatusDetails').style.display = 'none';
+            document.getElementById('employeeStatusError').style.display = 'none';
+            document.getElementById('statusEmployeeId').value = '';
         });
 
         document.getElementById('reportsLink')?.addEventListener('click', function(e) {
