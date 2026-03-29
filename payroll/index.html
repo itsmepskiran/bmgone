@@ -226,6 +226,7 @@
                 <div>
                     <p style="font-size: 0.9rem; opacity: 0.9;">Today: <span id="currentDate"></span></p>
                     <p style="font-size: 1.5rem; font-weight: 700;" id="currentTime"></p>
+                    <a href="#" id="userChangePasswordLink" style="font-size: 0.85rem; color: #4f46e5; text-decoration: underline; cursor: pointer;">Change Password</a>
                 </div>
             </div>
         </div>
@@ -319,7 +320,7 @@
             <!-- Holidays Card -->
             <div class="dashboard-card">
                 <div class="card-header">
-                    <h2 class="card-title">Holiday List 2024</h2>
+                    <h2 class="card-title">Holiday List 2026</h2>
                     <span style="font-size: 2rem;">🎉</span>
                 </div>
                 <div class="holiday-list" id="holidayList">
@@ -336,6 +337,32 @@
             <h2 class="success-title">Success!</h2>
             <p id="successMessage">Operation completed successfully.</p>
             <button class="btn-close-modal" onclick="closeModal()">Close</button>
+        </div>
+    </div>
+
+    <!-- User Change Password Modal -->
+    <div id="userChangePasswordModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Change Your Password</h2>
+                <p>Update your password for security.</p>
+            </div>
+            <form id="userChangePasswordForm">
+                <div class="form-group">
+                    <label for="userCurrentPassword">Current Password</label>
+                    <input type="password" id="userCurrentPassword" required>
+                </div>
+                <div class="form-group">
+                    <label for="userNewPassword">New Password</label>
+                    <input type="password" id="userNewPassword" required minlength="6">
+                </div>
+                <div class="form-group">
+                    <label for="userConfirmPassword">Confirm New Password</label>
+                    <input type="password" id="userConfirmPassword" required minlength="6">
+                </div>
+                <button type="submit" class="btn-submit">Update Password</button>
+                <button type="button" class="btn-close-modal" onclick="closeModal()" style="margin-top: 1rem; background: #6b7280;">Cancel</button>
+            </form>
         </div>
     </div>
 
@@ -768,7 +795,7 @@
         // Load Holidays
         async function loadHolidays() {
             try {
-                const response = await fetch(`${CONFIG.API_BASE}/holidays?year=2024`);
+                const response = await fetch(`${CONFIG.API_BASE}/holidays?year=2026`);
                 const data = await response.json();
                 
                 if (response.ok) {
@@ -1206,6 +1233,59 @@
             } catch (error) {
                 console.error('Password reset error:', error);
                 alert('Failed to reset password. Please try again.');
+            } finally {
+                hideLoading();
+            }
+        });
+        // User Change Password Link - Open Modal
+        document.getElementById('userChangePasswordLink')?.addEventListener('click', function(e) {
+            e.preventDefault();
+            document.getElementById('userChangePasswordModal').classList.add('show');
+        });
+
+        // User Change Password Form Handler
+        document.getElementById('userChangePasswordForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            showLoading();
+            
+            const currentPassword = document.getElementById('userCurrentPassword').value;
+            const newPassword = document.getElementById('userNewPassword').value;
+            const confirmPassword = document.getElementById('userConfirmPassword').value;
+            
+            if (newPassword !== confirmPassword) {
+                alert('Passwords do not match!');
+                hideLoading();
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                alert('Password must be at least 6 characters long.');
+                hideLoading();
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/auth/change-password`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showSuccess('Password changed successfully!');
+                    closeModal();
+                    this.reset();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Password change error:', error);
+                alert('Failed to change password. Please try again.');
             } finally {
                 hideLoading();
             }
