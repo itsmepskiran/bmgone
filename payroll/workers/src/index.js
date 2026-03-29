@@ -529,6 +529,52 @@ router.post('/api/attendance/mark', async (request, env) => {
     }
 });
 
+// Get positions and employees for onboarding dropdowns
+router.get('/api/onboarding/dropdowns', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Only admins can access this endpoint
+        if (user.role !== 'master_admin' && user.role !== 'admin') {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Insufficient permissions' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Get unique positions from employees table
+        const positions = await env.DB.prepare(
+            'SELECT DISTINCT position FROM employees WHERE position IS NOT NULL AND position != "" ORDER BY position'
+        ).all();
+        
+        // Get employee IDs and names for reporting manager dropdown
+        const employees = await env.DB.prepare(
+            'SELECT employee_id, first_name, last_name FROM employees WHERE is_active = 1 ORDER BY first_name, last_name'
+        ).all();
+        
+        return withCors(new Response(
+            JSON.stringify({
+                positions: positions.results || positions,
+                employees: employees.results || employees
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+        
+    } catch (error) {
+        console.error('Get dropdowns error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: 'Internal server error' }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
 // Get last 7 days attendance
 router.get('/api/attendance/last7days', async (request, env) => {
     try {
@@ -549,7 +595,7 @@ router.get('/api/attendance/last7days', async (request, env) => {
         ).bind(user.employeeId).all();
         
         return withCors(new Response(
-            JSON.stringify({ attendance: attendance.results || [] }),
+            JSON.stringify({ attendance: attendance.results || attendance }),
             { status: 200, headers: { 'Content-Type': 'application/json' } }
         ));
         

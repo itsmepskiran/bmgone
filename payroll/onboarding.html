@@ -345,7 +345,10 @@
                     </div>
                     <div class="form-group">
                         <label>Position <span class="required">*</span></label>
-                        <input type="text" id="position" name="position" required>
+                        <select id="position" name="position" required>
+                            <option value="">Select Position</option>
+                            <!-- Options will be populated dynamically -->
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Role</label>
@@ -357,7 +360,10 @@
                     </div>
                     <div class="form-group">
                         <label>Reporting Manager</label>
-                        <input type="text" id="reportingManager" name="reporting_manager" placeholder="Employee ID">
+                        <select id="reportingManager" name="reporting_manager">
+                            <option value="">Select Reporting Manager</option>
+                            <!-- Options will be populated dynamically -->
+                        </select>
                     </div>
                     <div class="form-group">
                         <label>Join Date <span class="required">*</span></label>
@@ -461,6 +467,48 @@
         
         // Set default join date to today
         document.getElementById('joinDate').valueAsDate = new Date();
+        
+        // Load dropdown data
+        loadDropdownData();
+        
+        async function loadDropdownData() {
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/onboarding/dropdowns`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Populate positions dropdown
+                    const positionSelect = document.getElementById('position');
+                    positionSelect.innerHTML = '<option value="">Select Position</option>';
+                    
+                    if (data.positions && data.positions.length > 0) {
+                        data.positions.forEach(pos => {
+                            positionSelect.innerHTML += `<option value="${pos.position}">${pos.position}</option>`;
+                        });
+                    }
+                    
+                    // Populate reporting manager dropdown
+                    const managerSelect = document.getElementById('reportingManager');
+                    managerSelect.innerHTML = '<option value="">Select Reporting Manager</option>';
+                    
+                    if (data.employees && data.employees.length > 0) {
+                        data.employees.forEach(emp => {
+                            const displayName = `${emp.first_name} ${emp.last_name} (${emp.employee_id})`;
+                            managerSelect.innerHTML += `<option value="${emp.employee_id}">${displayName}</option>`;
+                        });
+                    }
+                } else {
+                    console.error('Failed to load dropdown data:', data.error);
+                }
+            } catch (error) {
+                console.error('Error loading dropdown data:', error);
+            }
+        }
         
         // Handle form submission
         document.getElementById('onboardingForm').addEventListener('submit', async function(e) {

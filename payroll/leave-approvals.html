@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Approvals - BMGOne Payroll</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .leave-approvals-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .leave-approvals-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .filter-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+        
+        .tab {
+            padding: 0.75rem 1.5rem;
+            background: none;
+            border: none;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-weight: 500;
+            color: #6b7280;
+            transition: all 0.3s ease;
+        }
+        
+        .tab.active {
+            color: var(--primary-teal);
+            border-bottom-color: var(--primary-teal);
+        }
+        
+        .leave-requests-table {
+            width: 100%;
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .leave-requests-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .leave-requests-table th {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+        }
+        
+        .leave-requests-table td {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        .leave-requests-table tr:hover {
+            background-color: #f9fafb;
+        }
+        
+        .status-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        .status-approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        .status-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+        
+        .leave-type-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .type-casual {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .type-sick {
+            background: #fce7f3;
+            color: #9f1239;
+        }
+        
+        .type-annual {
+            background: #f3e8ff;
+            color: #6b21a8;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 0.5rem;
+        }
+        
+        .btn-action {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        
+        .btn-approve {
+            background: #10b981;
+            color: white;
+        }
+        
+        .btn-reject {
+            background: #ef4444;
+            color: white;
+        }
+        
+        .btn-view {
+            background: #3b82f6;
+            color: white;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: #6b7280;
+        }
+        
+        .leave-details-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #6b7280;
+        }
+        
+        .detail-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid #f3f4f6;
+        }
+        
+        .detail-label {
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .detail-value {
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="logos/banner.png" alt="BMGOne" class="logo-img">
+            </div>
+            <div class="nav-menu">
+                <a href="index.html">Dashboard</a>
+                <a href="onboarding.html">Employee Onboarding</a>
+                <a href="employees.html">View All Employees</a>
+                <a href="leave-approvals.html" class="active">Leave Approvals</a>
+                <a href="#" id="reportsLink">Reports</a>
+                <a href="#" id="logoutBtn">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="leave-approvals-container">
+        <div class="leave-approvals-header">
+            <h1>Leave Approvals</h1>
+            <div class="summary-stats">
+                <span>Pending: <strong id="pendingCount">0</strong></span>
+                <span>Approved: <strong id="approvedCount">0</strong></span>
+                <span>Rejected: <strong id="rejectedCount">0</strong></span>
+            </div>
+        </div>
+
+        <div class="filter-tabs">
+            <button class="tab active" onclick="filterByStatus('all', this)">All Requests</button>
+            <button class="tab" onclick="filterByStatus('pending', this)">Pending</button>
+            <button class="tab" onclick="filterByStatus('approved', this)">Approved</button>
+            <button class="tab" onclick="filterByStatus('rejected', this)">Rejected</button>
+        </div>
+
+        <div class="leave-requests-table">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Employee</th>
+                        <th>Leave Type</th>
+                        <th>From Date</th>
+                        <th>To Date</th>
+                        <th>Days</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="leaveRequestsTableBody">
+                    <!-- Will be populated dynamically -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Leave Details Modal -->
+    <div class="leave-details-modal" id="leaveDetailsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Leave Request Details</h2>
+                <button class="close-btn" onclick="closeLeaveDetailsModal()">&times;</button>
+            </div>
+            <div id="leaveDetailsContent">
+                <!-- Will be populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <script src="../script.js"></script>
+    <script>
+        const CONFIG = {
+            API_BASE: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+                ? 'http://127.0.0.1:8788/api' 
+                : 'https://pay.bmgone.com/api'
+        };
+
+        const token = localStorage.getItem('token');
+        const employee = JSON.parse(localStorage.getItem('employee') || '{}');
+
+        if (!token || (employee.role !== 'admin' && employee.role !== 'master_admin')) {
+            alert('Access denied. Admin privileges required.');
+            window.location.href = 'index.html';
+        }
+
+        let allLeaveRequests = [];
+        let currentFilter = 'all';
+
+        // Load leave requests
+        loadLeaveRequests();
+
+        async function loadLeaveRequests() {
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/leave/requests`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    allLeaveRequests = data.requests || [];
+                    updateSummaryStats();
+                    displayLeaveRequests(allLeaveRequests);
+                } else {
+                    alert('Failed to load leave requests: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error loading leave requests:', error);
+                alert('Failed to load leave requests. Please try again.');
+            }
+        }
+
+        function updateSummaryStats() {
+            const pending = allLeaveRequests.filter(req => req.status === 'pending').length;
+            const approved = allLeaveRequests.filter(req => req.status === 'approved').length;
+            const rejected = allLeaveRequests.filter(req => req.status === 'rejected').length;
+
+            document.getElementById('pendingCount').textContent = pending;
+            document.getElementById('approvedCount').textContent = approved;
+            document.getElementById('rejectedCount').textContent = rejected;
+        }
+
+        function filterByStatus(status, tabElement) {
+            currentFilter = status;
+            
+            // Update active tab
+            document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
+            tabElement.classList.add('active');
+
+            // Filter and display
+            const filtered = status === 'all' 
+                ? allLeaveRequests 
+                : allLeaveRequests.filter(req => req.status === status);
+            
+            displayLeaveRequests(filtered);
+        }
+
+        function displayLeaveRequests(requests) {
+            const tbody = document.getElementById('leaveRequestsTableBody');
+            
+            if (requests.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" class="no-results">No leave requests found</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = requests.map(req => {
+                const leaveTypeClass = `type-${req.leave_type}`;
+                const statusClass = `status-${req.status}`;
+                const leaveTypeText = req.leave_type.charAt(0).toUpperCase() + req.leave_type.slice(1);
+                const statusText = req.status.charAt(0).toUpperCase() + req.status.slice(1);
+
+                const actionButtons = req.status === 'pending' ? `
+                    <div class="action-buttons">
+                        <button class="btn-action btn-approve" onclick="approveLeave(${req.id})">Approve</button>
+                        <button class="btn-action btn-reject" onclick="rejectLeave(${req.id})">Reject</button>
+                        <button class="btn-action btn-view" onclick="viewLeaveDetails(${req.id})">View</button>
+                    </div>
+                ` : `
+                    <div class="action-buttons">
+                        <button class="btn-action btn-view" onclick="viewLeaveDetails(${req.id})">View</button>
+                    </div>
+                `;
+
+                return `
+                    <tr>
+                        <td>${req.employee_name}</td>
+                        <td><span class="leave-type-badge ${leaveTypeClass}">${leaveTypeText}</span></td>
+                        <td>${formatDate(req.start_date)}</td>
+                        <td>${formatDate(req.end_date)}</td>
+                        <td>${req.total_days}</td>
+                        <td>${req.reason || '-'}</td>
+                        <td><span class="status-badge ${statusClass}">${statusText}</span></td>
+                        <td>${actionButtons}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric', 
+                year: 'numeric' 
+            });
+        }
+
+        async function approveLeave(requestId) {
+            if (!confirm('Are you sure you want to approve this leave request?')) return;
+
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/leave/approve/${requestId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Leave request approved successfully!');
+                    loadLeaveRequests();
+                } else {
+                    alert('Failed to approve leave: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error approving leave:', error);
+                alert('Failed to approve leave. Please try again.');
+            }
+        }
+
+        async function rejectLeave(requestId) {
+            const reason = prompt('Please provide reason for rejection:');
+            if (!reason) return;
+
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/leave/reject/${requestId}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ reason })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    alert('Leave request rejected successfully!');
+                    loadLeaveRequests();
+                } else {
+                    alert('Failed to reject leave: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Error rejecting leave:', error);
+                alert('Failed to reject leave. Please try again.');
+            }
+        }
+
+        function viewLeaveDetails(requestId) {
+            const request = allLeaveRequests.find(req => req.id === requestId);
+            if (!request) return;
+
+            const content = `
+                <div class="detail-row">
+                    <span class="detail-label">Employee:</span>
+                    <span class="detail-value">${request.employee_name}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Employee ID:</span>
+                    <span class="detail-value">${request.employee_id}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Leave Type:</span>
+                    <span class="detail-value">${request.leave_type}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">From Date:</span>
+                    <span class="detail-value">${formatDate(request.start_date)}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">To Date:</span>
+                    <span class="detail-value">${formatDate(request.end_date)}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Total Days:</span>
+                    <span class="detail-value">${request.total_days}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Reason:</span>
+                    <span class="detail-value">${request.reason || '-'}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Applied On:</span>
+                    <span class="detail-value">${formatDate(request.created_at)}</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">Status:</span>
+                    <span class="detail-value">${request.status}</span>
+                </div>
+            `;
+
+            document.getElementById('leaveDetailsContent').innerHTML = content;
+            document.getElementById('leaveDetailsModal').style.display = 'flex';
+        }
+
+        function closeLeaveDetailsModal() {
+            document.getElementById('leaveDetailsModal').style.display = 'none';
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', async function(e) {
+            e.preventDefault();
+            try {
+                await fetch(`${CONFIG.API_BASE}/auth/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+            
+            localStorage.removeItem('token');
+            localStorage.removeItem('employee');
+            window.location.href = 'index.html';
+        });
+    </script>
+</body>
+</html>
