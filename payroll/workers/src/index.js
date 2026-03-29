@@ -134,7 +134,7 @@ const logAudit = async (env, employeeId, action, tableName, recordId, oldValues,
 // ============= AUTH ENDPOINTS =============
 
 // Health check endpoint
-router.get('/health', async (request, env) => {
+router.get('/api/health', async (request, env) => {
     try {
         // Test database connection
         const dbTest = await env.DB.prepare('SELECT 1 as test').first();
@@ -161,7 +161,7 @@ router.get('/health', async (request, env) => {
 });
 
 // Login endpoint - uses employee_id instead of email
-router.post('/auth/login', async (request, env) => {
+router.post('/api/auth/login', async (request, env) => {
     try {
         const { employeeId, password } = await request.json();
         
@@ -235,7 +235,7 @@ router.post('/auth/login', async (request, env) => {
 });
 
 // Change password endpoint (for first login)
-router.post('/auth/change-password', async (request, env) => {
+router.post('/api/auth/change-password', async (request, env) => {
     try {
         const user = await authenticate(request, env);
         if (!user) {
@@ -314,7 +314,7 @@ router.post('/auth/change-password', async (request, env) => {
 });
 
 // Logout endpoint
-router.post('/auth/logout', async (request, env) => {
+router.post('/api/auth/logout', async (request, env) => {
     try {
         const user = await authenticate(request, env);
         if (!user) {
@@ -350,7 +350,7 @@ router.post('/auth/logout', async (request, env) => {
 // ============= EMPLOYEE ONBOARDING ENDPOINTS =============
 
 // Create new employee (Admin/Master Admin only)
-router.post('/employees/create', async (request, env) => {
+router.post('/api/employees/create', async (request, env) => {
     try {
         const user = await authenticate(request, env);
         if (!user) {
@@ -449,7 +449,7 @@ router.post('/employees/create', async (request, env) => {
 });
 
 // Get employee profile
-router.get('/profile', async (request, env) => {
+router.get('/api/profile', async (request, env) => {
     try {
         const user = await authenticate(request, env);
         if (!user) {
@@ -482,7 +482,7 @@ router.get('/profile', async (request, env) => {
 // ============= ATTENDANCE ENDPOINTS =============
 
 // Mark attendance (login/logout)
-router.post('/attendance/mark', async (request, env) => {
+router.post('/api/attendance/mark', async (request, env) => {
     try {
         const user = await authenticate(request, env);
         if (!user) {
@@ -574,7 +574,7 @@ router.post('/attendance/mark', async (request, env) => {
 });
 
 // Get attendance records
-router.get('/attendance', async (request, env) => {
+router.get('/api/attendance', async (request, env) => {
     try {
         const user = await authenticate(request, env);
         if (!user) {
@@ -610,7 +610,7 @@ router.get('/attendance', async (request, env) => {
 });
 
 // Get last 7 days attendance
-router.get('/attendance/last7days', async (request, env) => {
+router.get('/api/attendance/last7days', async (request, env) => {
     try {
         const user = await authenticate(request, env);
         if (!user) {
@@ -656,7 +656,7 @@ router.get('/attendance/last7days', async (request, env) => {
 // ============= LEAVE ENDPOINTS =============
 
 // Get leave balances
-router.get('/leave/balances', async (request, env) => {
+router.get('/api/leave/balances', async (request, env) => {
     try {
         const user = await authenticate(request, env);
         if (!user) {
@@ -687,7 +687,7 @@ router.get('/leave/balances', async (request, env) => {
 });
 
 // Apply for leave
-router.post('/leave/apply', async (request, env) => {
+router.post('/api/leave/apply', async (request, env) => {
     try {
         const user = await authenticate(request, env);
         if (!user) {
@@ -748,7 +748,7 @@ router.post('/leave/apply', async (request, env) => {
 });
 
 // Get leave applications (for managers/admins)
-router.get('/leave/applications', async (request, env) => {
+router.get('/api/leave/applications', async (request, env) => {
     try {
         const user = await authenticate(request, env);
         if (!user) {
@@ -798,7 +798,7 @@ router.get('/leave/applications', async (request, env) => {
 });
 
 // Get pending leave approvals for reporting manager
-router.get('/leave/pending-approvals', async (request, env) => {
+router.get('/api/leave/pending-approvals', async (request, env) => {
     try {
         const user = await authenticate(request, env);
         if (!user) {
@@ -849,7 +849,7 @@ router.get('/leave/pending-approvals', async (request, env) => {
 });
 
 // Approve/Reject leave
-router.put('/leave/:id/approve', async (request, env) => {
+router.put('/api/leave/:id/approve', async (request, env) => {
     try {
         const user = await authenticate(request, env);
         if (!user) {
@@ -935,7 +935,7 @@ router.put('/leave/:id/approve', async (request, env) => {
 // ============= HOLIDAY ENDPOINTS =============
 
 // Get holidays
-router.get('/holidays', async (request, env) => {
+router.get('/api/holidays', async (request, env) => {
     try {
         const { year } = new URL(request.url).searchParams;
         const currentYear = year || new Date().getFullYear();
@@ -961,7 +961,7 @@ router.get('/holidays', async (request, env) => {
 // ============= ADMIN ENDPOINTS =============
 
 // Get all employees (Admin/Master Admin only)
-router.get('/admin/employees', async (request, env) => {
+router.get('/api/admin/employees', async (request, env) => {
     try {
         const user = await authenticate(request, env);
         if (!user || (user.role !== 'admin' && user.role !== 'master_admin')) {
@@ -990,7 +990,7 @@ router.get('/admin/employees', async (request, env) => {
 });
 
 // Update employee status (Admin/Master Admin only) - simplified to use is_active only
-router.post('/employees/:employeeId/status', async (request, env) => {
+router.post('/api/employees/:employeeId/status', async (request, env) => {
     try {
         const user = await authenticate(request, env);
         if (!user) {
@@ -1057,7 +1057,7 @@ router.post('/employees/:employeeId/status', async (request, env) => {
 });
 
 // Get employee status history
-router.get('/employees/:employeeId/status-history', async (request, env) => {
+router.get('/api/employees/:employeeId/status-history', async (request, env) => {
     try {
         const user = await authenticate(request, env);
         if (!user) {
@@ -1107,7 +1107,7 @@ router.get('/employees/:employeeId/status-history', async (request, env) => {
 });
 
 // Admin password reset endpoint (Admin/Master Admin only)
-router.post('/admin/reset-password', async (request, env) => {
+router.post('/api/admin/reset-password', async (request, env) => {
     try {
         const user = await authenticate(request, env);
         if (!user) {
@@ -1205,7 +1205,7 @@ router.post('/admin/reset-password', async (request, env) => {
 });
 
 // Monthly Attendance Report Endpoint
-router.get('/reports/monthly-attendance', async (request, env) => {
+router.get('/api/reports/monthly-attendance', async (request, env) => {
     try {
         const user = await authenticate(request, env);
         if (!user) {
@@ -1419,7 +1419,7 @@ router.get('/reports/monthly-attendance', async (request, env) => {
 });
 
 // Check for absconding employees (3 continuous days absence)
-router.post('/admin/check-absconding', async (request, env) => {
+router.post('/api/admin/check-absconding', async (request, env) => {
     try {
         const user = await authenticate(request, env);
         if (!user) {
