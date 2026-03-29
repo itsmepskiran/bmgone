@@ -620,16 +620,27 @@ router.get('/api/attendance/last7days', async (request, env) => {
             ));
         }
         
-        // Get attendance for last 7 days
+        // Get attendance for last 7 days with total_hours
         const attendance = await env.DB.prepare(
-            `SELECT date, login_time, logout_time, status 
+            `SELECT date, login_time, logout_time, total_hours, status 
              FROM attendance 
              WHERE employee_id = ? AND date >= date('now', '-7 days')
              ORDER BY date DESC`
         ).bind(user.employeeId).all();
         
+        // Process records to ensure total_hours is calculated if not stored
+        const processedAttendance = (attendance.results || []).map(record => {
+            if (!record.total_hours && record.login_time && record.logout_time) {
+                const login = new Date(record.login_time);
+                const logout = new Date(record.logout_time);
+                const hours = (logout - login) / (1000 * 60 * 60);
+                record.total_hours = parseFloat(hours.toFixed(2));
+            }
+            return record;
+        });
+        
         return withCors(new Response(
-            JSON.stringify({ attendance: attendance.results || [] }),
+            JSON.stringify({ attendance: processedAttendance }),
             { status: 200, headers: { 'Content-Type': 'application/json' } }
         ));
         
@@ -936,7 +947,12 @@ router.post('/api/employees/:employeeId/status', async (request, env) => {
         }
         
         const { employeeId } = request.params;
-        const { employment_status, status_reason, status_notes } = await request.json();
+        const { status, reason, subreason, effectiveDate, notes } = await request.json();
+        
+        // Map frontend fields to database fields
+        const employment_status = status;
+        const status_reason = reason || subreason;
+        const status_notes = notes;
         
         // Validate employment status
         const validStatuses = ['active', 'inactive', 'terminated', 'resigned', 'retired', 'on_leave'];
@@ -964,7 +980,7 @@ router.post('/api/employees/:employeeId/status', async (request, env) => {
             UPDATE employees SET 
                 employment_status = ?, 
                 status_reason = ?, 
-                status_effective_date = date('now'),
+                status_effective_date = ?,
                 status_updated_by = ?,
                 status_notes = ?,
                 is_active = ?,
@@ -973,6 +989,7 @@ router.post('/api/employees/:employeeId/status', async (request, env) => {
         `).bind(
             employment_status,
             status_reason || null,
+            effectiveDate || new Date().toISOString().split('T')[0],
             user.employeeId,
             status_notes || null,
             employment_status === 'active' ? 1 : 0,
