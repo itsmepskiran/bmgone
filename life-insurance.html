@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Insurance - BMGOne</title>
+    <meta name="description" content="BMGOne offers comprehensive life insurance solutions from leading providers including LIC, Tata AIG Life, HDFC Life, and ICICI Prudential.">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="logos/logo.png">
+</head>
+<body>
+    <!-- Logos Section -->
+    <section class="logos-section">
+        <div class="container">
+            <h2 class="section-title">Life Insurance</h2>
+            <p class="section-subtitle">In Association with</p>
+            <div class="logos-grid">
+                <div class="logo-item" onclick="toggleProviderContainer('lic')">
+                    <img src="logos/lic_logo.png" alt="LIC Life Insurance" class="provider-logo">
+                </div>
+                
+                <!-- LIC Provider Container -->
+                <div id="lic-container" class="provider-container" style="display: none;">
+                    <div class="provider-content">
+                        <h4>LIC Life Insurance</h4>
+                        <p>LIC Life Insurance offers comprehensive life coverage with trusted security and extensive network across India.</p>
+                        <div class="provider-plans">
+                            <h5>Available Plans</h5>
+                            <div class="plans-list">
+                                <div class="plan-item">
+                                    <span class="plan-name">Term Insurance Plan</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('LIC Term Plan', 'lic/term-plan.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Jeevan Anand</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('LIC Jeevan Anand', 'lic/jeevan-anand.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Jeevan Lakshya</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('LIC Jeevan Lakshya', 'lic/jeevan-lakshya.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">New Endowment Plan</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('LIC New Endowment', 'lic/new-endowment.pdf')">View Brochure</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="provider-form">
+                            <h5>Get Quote</h5>
+                            <form id="lic-form">
+                                <div class="form-group">
+                                    <input type="text" placeholder="Your Name" required>
+                                </div>
+                                <div class="form-group">
+                                    <input type="email" placeholder="Your Email" required>
+                                </div>
+                                <div class="form-group">
+                                    <input type="tel" placeholder="Your Phone" required>
+                                </div>
+                                <div class="form-group">
+                                    <select required>
+                                        <option value="">Select Plan</option>
+                                        <option value="Term Insurance Plan">Term Insurance Plan</option>
+                                        <option value="Jeevan Anand">Jeevan Anand</option>
+                                        <option value="Jeevan Lakshya">Jeevan Lakshya</option>
+                                        <option value="New Endowment Plan">New Endowment Plan</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Get Quote</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="logo-item" onclick="toggleProviderContainer('tata-aig')">
+                    <img src="logos/tata-aia-life.png" alt="Tata AIG Life Insurance" class="provider-logo">
+                </div>
+                
+                <!-- Tata AIG Life Provider Container -->
+                <div id="tata-aig-container" class="provider-container" style="display: none;">
+                    <div class="provider-content">
+                        <h4>Tata AIG Life Insurance</h4>
+                        <p>Tata AIG Life Insurance offers comprehensive life coverage with innovative features and extensive network.</p>
+                        <div class="provider-plans">
+                            <h5>Available Plans</h5>
+                            <div class="plans-list">
+                                <div class="plan-item">
+                                    <span class="plan-name">Tata AIG Term</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Tata AIG Term', 'tata-aig/term-insurance.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Tata AIG Savings</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Tata AIG Savings', 'tata-aig/savings-plan.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Tata AIG Retirement</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Tata AIG Retirement', 'tata-aig/retirement.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">Tata AIG Child</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('Tata AIG Child', 'tata-aig/child-plan.pdf')">View Brochure</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="provider-form">
+                            <h5>Get Quote</h5>
+                            <form id="tata-aig-form">
+                                <div class="form-group">
+                                    <input type="text" placeholder="Your Name" required>
+                                </div>
+                                <div class="form-group">
+                                    <input type="email" placeholder="Your Email" required>
+                                </div>
+                                <div class="form-group">
+                                    <input type="tel" placeholder="Your Phone" required>
+                                </div>
+                                <div class="form-group">
+                                    <select required>
+                                        <option value="">Select Plan</option>
+                                        <option value="Tata AIG Term">Tata AIG Term</option>
+                                        <option value="Tata AIG Savings">Tata AIG Savings</option>
+                                        <option value="Tata AIG Retirement">Tata AIG Retirement</option>
+                                        <option value="Tata AIG Child">Tata AIG Child</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Get Quote</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="logo-item" onclick="toggleProviderContainer('hdfc-life')">
+                    <img src="logos/hdfc_life.png" alt="HDFC Life Insurance" class="provider-logo">
+                </div>
+                
+                <!-- HDFC Life Provider Container -->
+                <div id="hdfc-life-container" class="provider-container" style="display: none;">
+                    <div class="provider-content">
+                        <h4>HDFC Life Insurance</h4>
+                        <p>HDFC Life Insurance provides comprehensive life coverage with innovative investment options and extensive network.</p>
+                        <div class="provider-plans">
+                            <h5>Available Plans</h5>
+                            <div class="plans-list">
+                                <div class="plan-item">
+                                    <span class="plan-name">HDFC Term</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('HDFC Term', 'hdfc-life/term-insurance.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">HDFC Sanchay</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('HDFC Sanchay', 'hdfc-life/sanchay.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">HDFC Pension</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('HDFC Pension', 'hdfc-life/pension.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">HDFC YoungStar</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('HDFC YoungStar', 'hdfc-life/youngstar.pdf')">View Brochure</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="provider-form">
+                            <h5>Get Quote</h5>
+                            <form id="hdfc-life-form">
+                                <div class="form-group">
+                                    <input type="text" placeholder="Your Name" required>
+                                </div>
+                                <div class="form-group">
+                                    <input type="email" placeholder="Your Email" required>
+                                </div>
+                                <div class="form-group">
+                                    <input type="tel" placeholder="Your Phone" required>
+                                </div>
+                                <div class="form-group">
+                                    <select required>
+                                        <option value="">Select Plan</option>
+                                        <option value="HDFC Term">HDFC Term</option>
+                                        <option value="HDFC Sanchay">HDFC Sanchay</option>
+                                        <option value="HDFC Pension">HDFC Pension</option>
+                                        <option value="HDFC YoungStar">HDFC YoungStar</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Get Quote</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="logo-item" onclick="toggleProviderContainer('icici-prudential')">
+                    <img src="logos/icici_prudential.png" alt="ICICI Prudential Life Insurance" class="provider-logo">
+                </div>
+                
+                <!-- ICICI Prudential Provider Container -->
+                <div id="icici-prudential-container" class="provider-container" style="display: none;">
+                    <div class="provider-content">
+                        <h4>ICICI Prudential Life Insurance</h4>
+                        <p>ICICI Prudential Life Insurance offers comprehensive life coverage with innovative investment options and extensive network.</p>
+                        <div class="provider-plans">
+                            <h5>Available Plans</h5>
+                            <div class="plans-list">
+                                <div class="plan-item">
+                                    <span class="plan-name">ICICI Term</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('ICICI Term', 'icici-prudential/term-insurance.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">ICICI Wealth</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('ICICI Wealth', 'icici-prudential/wealth-plan.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">ICICI Retirement</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('ICICI Retirement', 'icici-prudential/retirement.pdf')">View Brochure</button>
+                                </div>
+                                <div class="plan-item">
+                                    <span class="plan-name">ICICI SmartKid</span>
+                                    <button class="btn btn-primary" onclick="openBrochure('ICICI SmartKid', 'icici-prudential/smartkid.pdf')">View Brochure</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="provider-form">
+                            <h5>Get Quote</h5>
+                            <form id="icici-prudential-form">
+                                <div class="form-group">
+                                    <input type="text" placeholder="Your Name" required>
+                                </div>
+                                <div class="form-group">
+                                    <input type="email" placeholder="Your Email" required>
+                                </div>
+                                <div class="form-group">
+                                    <input type="tel" placeholder="Your Phone" required>
+                                </div>
+                                <div class="form-group">
+                                    <select required>
+                                        <option value="">Select Plan</option>
+                                        <option value="ICICI Term">ICICI Term</option>
+                                        <option value="ICICI Wealth">ICICI Wealth</option>
+                                        <option value="ICICI Retirement">ICICI Retirement</option>
+                                        <option value="ICICI SmartKid">ICICI SmartKid</option>
+                                    </select>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Get Quote</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </section>
+
+    <!-- Brochure Modal -->
+    <div id="brochureModal" class="brochure-modal">
+        <div class="brochure-modal-content">
+            <div class="brochure-modal-header">
+                <h3 id="brochureTitle">Brochure</h3>
+                <button class="brochure-close" onclick="closeBrochureModal()">×</button>
+            </div>
+            <div class="brochure-modal-body">
+                <iframe id="brochureFrame" src="" width="100%" height="100%"></iframe>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-logo">
+                    <img src="logos/logo.webp" alt="BMGOne" class="footer-logo-img">
+                    <span>BMGOne</span>
+                </div>
+                <p class="footer-text">&copy; 2025 BMG Enterprise. All rights reserved.</p>
+                <div class="footer-links">
+                    <a href="index.html">Home</a>
+                    <a href="insurance.html">Insurance</a>
+                    <a href="#contact">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

@@ -194,22 +194,32 @@ body {
     transform: translateY(-2px);
 }
 
+/* Staff Login Button */
 .btn-staff-login {
     background: var(--gradient-primary);
-    color: white;
+    color: white !important;
     border: none;
     font-weight: 600;
-    padding: 10px 25px;
+    padding: 12px 28px;
     font-size: 0.9rem;
     border-radius: 25px;
     transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(0, 168, 204, 0.2);
+    text-decoration: none !important;
+    display: inline-block;
+    cursor: pointer;
 }
 
 .btn-staff-login:hover {
     background: var(--primary-blue);
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(0, 168, 204, 0.4);
+    color: white !important;
+    text-decoration: none !important;
+}
+
+.btn-staff-login:active {
+    transform: translateY(0);
 }
 
 .hero-image {

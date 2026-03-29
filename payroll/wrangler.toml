@@ -1,16 +1,51 @@
-name = "bmgone-payroll"
-compatibility_date = "2024-09-23"
+# Cloudflare Worker Configuration
+# Payroll branch - Worker API backend
+# Usage: wrangler deploy
 
-# Pages build output directory
-pages_build_output_dir = "."
+name = "bmgone-payroll-api-new"
+main = "workers/src/index.js"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+
+# Routes configuration for custom domain
+routes = [
+  { pattern = "pay.bmgone.com/api/*", zone_name = "bmgone.com" }
+]
+
+# D1 Database Binding for local development
+[[d1_databases]]
+binding = "DB"
+database_name = "bmgpayroll"
+database_id = "ceceeaf8-8c03-4299-9df9-9f0330b88493"
 
 [env.production]
-vars = { ENVIRONMENT = "production", API_BASE = "https://pay.bmgone.com/api" }
+vars = { ENVIRONMENT = "production", JWT_SECRET = "hpIZKETmdvai3DCP0UML12Ycwob4986jgryWtkGRfxl7VHSXuQABzsFqJ5nONe", CORS_ORIGIN = "https://bmgone.com", API_VERSION = "v1" }
 
-[env.preview]
-vars = { ENVIRONMENT = "preview", API_BASE = "https://pay.bmgone.com/api" }
+[env.development]
+vars = { ENVIRONMENT = "development", JWT_SECRET = "viLejTlX4kOGKuamyJnU8S7HcQ1R532dDWw9VhogzsZ6EtMYNxbIrBqPp0CAfF", CORS_ORIGIN = "http://localhost:3000", API_VERSION = "v1" }
+
+# Production D1 Database Binding
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "bmgpayroll"
+database_id = "ceceeaf8-8c03-4299-9df9-9f0330b88493"
+
+# Development D1 Database Binding
+[[env.development.d1_databases]]
+binding = "DB"
+database_name = "bmgpayroll"
+database_id = "ceceeaf8-8c03-4299-9df9-9f0330b88493"
+
+# R2 Bucket for file uploads (optional)
+[[env.production.r2_buckets]]
+binding = "FILES"
+bucket_name = "bmgpayroll"
+
+[[env.development.r2_buckets]]
+binding = "FILES"
+bucket_name = "bmgpayroll"
 
 # Environment variables
 [vars]
-API_BASE = "https://pay.bmgone.com/api"
-ENVIRONMENT = "production"
+CORS_ORIGIN = "https://bmgone.com"
+API_VERSION = "v1"

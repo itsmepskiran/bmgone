@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Status Management - BMGOne Payroll</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .status-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .status-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .status-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border-left: 4px solid;
+        }
+        
+        .status-card.active { border-left-color: #10b981; }
+        .status-card.inactive { border-left-color: #f59e0b; }
+        .status-card.terminated { border-left-color: #ef4444; }
+        .status-card.resigned { border-left-color: #8b5cf6; }
+        .status-card.retired { border-left-color: #6b7280; }
+        .status-card.on_leave { border-left-color: #3b82f6; }
+        
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+        
+        .status-badge.active { background: #d1fae5; color: #065f46; }
+        .status-badge.inactive { background: #fed7aa; color: #92400e; }
+        .status-badge.terminated { background: #fee2e2; color: #991b1b; }
+        .status-badge.resigned { background: #ede9fe; color: #5b21b6; }
+        .status-badge.retired { background: #f3f4f6; color: #374151; }
+        .status-badge.on_leave { background: #dbeafe; color: #1e40af; }
+        
+        .employees-table {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .table-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        th, td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        
+        th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .status-form {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+        
+        .form-row {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+        
+        .form-group select,
+        .form-group input,
+        .form-group textarea {
+            padding: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .btn-update {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-update:hover {
+            background: var(--primary-blue);
+            transform: translateY(-2px);
+        }
+        
+        .search-box {
+            display: flex;
+            align-items: center;
+            background: white;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            padding: 0.5rem 1rem;
+            width: 300px;
+        }
+        
+        .search-box input {
+            border: none;
+            outline: none;
+            flex: 1;
+            margin-left: 0.5rem;
+        }
+        
+        .filter-tabs {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .filter-tab {
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            background: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .filter-tab.active {
+            background: var(--gradient-primary);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+        
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .history-item {
+            border-left: 3px solid #e5e7eb;
+            padding-left: 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .history-date {
+            font-size: 0.875rem;
+            color: #6b7280;
+            margin-bottom: 0.25rem;
+        }
+        
+        .history-change {
+            font-weight: 600;
+            color: #374151;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar" style="display: none;">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="/logos/banner.png" alt="BMGOne" class="logo-img">
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="https://bmgone.com" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link active">Status Management</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="onboarding.html" class="nav-link">Onboarding</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" id="logoutBtn">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Status Management Container -->
+    <div class="status-container">
+        <!-- Header -->
+        <div class="status-header">
+            <h1>Employee Status Management</h1>
+            <p>Manage employee employment status and track changes</p>
+        </div>
+
+        <!-- Status Overview Cards -->
+        <div class="status-grid" id="statusGrid">
+            <!-- Will be populated dynamically -->
+        </div>
+
+        <!-- Status Update Form -->
+        <div class="status-form" id="statusForm">
+            <h2>Update Employee Status</h2>
+            <form id="updateStatusForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="employeeSelect">Select Employee</label>
+                        <select id="employeeSelect" required>
+                            <option value="">Choose an employee...</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="statusSelect">Employment Status</label>
+                        <select id="statusSelect" required>
+                            <option value="">Select status...</option>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                            <option value="terminated">Terminated</option>
+                            <option value="resigned">Resigned</option>
+                            <option value="retired">Retired</option>
+                            <option value="on_leave">On Leave</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="reasonInput">Reason</label>
+                        <input type="text" id="reasonInput" placeholder="e.g., Performance issues, Resignation, Retirement">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group" style="grid-column: 1 / -1;">
+                        <label for="notesInput">Additional Notes</label>
+                        <textarea id="notesInput" placeholder="Any additional information about the status change..."></textarea>
+                    </div>
+                </div>
+                <button type="submit" class="btn-update">Update Status</button>
+            </form>
+        </div>
+
+        <!-- Employees Table -->
+        <div class="employees-table">
+            <div class="table-header">
+                <h3>All Employees</h3>
+                <div class="search-box">
+                    <span>🔍</span>
+                    <input type="text" id="searchInput" placeholder="Search employees...">
+                </div>
+            </div>
+            
+            <!-- Filter Tabs -->
+            <div class="filter-tabs" id="filterTabs">
+                <button class="filter-tab active" data-filter="all">All</button>
+                <button class="filter-tab" data-filter="active">Active</button>
+                <button class="filter-tab" data-filter="inactive">Inactive</button>
+                <button class="filter-tab" data-filter="terminated">Terminated</button>
+                <button class="filter-tab" data-filter="resigned">Resigned</button>
+                <button class="filter-tab" data-filter="retired">Retired</button>
+                <button class="filter-tab" data-filter="on_leave">On Leave</button>
+            </div>
+
+            <table id="employeesTable">
+                <thead>
+                    <tr>
+                        <th>Employee ID</th>
+                        <th>Name</th>
+                        <th>Department</th>
+                        <th>Position</th>
+                        <th>Status</th>
+                        <th>Reason</th>
+                        <th>Effective Date</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="employeesTableBody">
+                    <!-- Will be populated dynamically -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Status History Modal -->
+    <div id="historyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Status History</h2>
+                <button class="btn-close-modal" onclick="closeHistoryModal()">×</button>
+            </div>
+            <div id="historyContent">
+                <!-- Will be populated dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script>
+        // Configuration
+        const CONFIG = {
+            API_BASE: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+                ? 'http://127.0.0.1:8788/api' 
+                : 'https://pay.bmgone.com/api',
+            ENVIRONMENT: window.location.hostname === 'localhost' ? 'Development' : 'Production'
+        };
+
+        let token = null;
+        let employee = null;
+        let allEmployees = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication
+            token = localStorage.getItem('token');
+            const storedEmployee = localStorage.getItem('employee');
+            
+            if (!token || !storedEmployee) {
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            employee = JSON.parse(storedEmployee);
+            
+            // Check permissions
+            if (employee.role !== 'admin' && employee.role !== 'master_admin') {
+                alert('You do not have permission to access this page.');
+                window.location.href = 'index.html';
+                return;
+            }
+            
+            // Show navbar
+            document.getElementById('navbar').style.display = 'block';
+            
+            // Load data
+            loadEmployees();
+            setupEventListeners();
+        });
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Status form submission
+            document.getElementById('updateStatusForm').addEventListener('submit', updateEmployeeStatus);
+            
+            // Search functionality
+            document.getElementById('searchInput').addEventListener('input', filterEmployees);
+            
+            // Filter tabs
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.addEventListener('click', function() {
+                    document.querySelectorAll('.filter-tab').forEach(t => t.classList.remove('active'));
+                    this.classList.add('active');
+                    filterEmployees();
+                });
+            });
+            
+            // Logout
+            document.getElementById('logoutBtn').addEventListener('click', logout);
+        }
+
+        // Load employees
+        async function loadEmployees() {
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/admin/employees`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    allEmployees = data.employees;
+                    populateEmployeeSelect();
+                    updateStatusOverview();
+                    populateEmployeesTable();
+                } else {
+                    console.error('Failed to load employees:', data.error);
+                    alert('Failed to load employees: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Load employees error:', error);
+                alert('Failed to load employees. Please try again.');
+            }
+        }
+
+        // Populate employee select dropdown
+        function populateEmployeeSelect() {
+            const select = document.getElementById('employeeSelect');
+            select.innerHTML = '<option value="">Choose an employee...</option>';
+            
+            allEmployees.forEach(emp => {
+                const option = document.createElement('option');
+                option.value = emp.employee_id;
+                option.textContent = `${emp.employee_id} - ${emp.first_name} ${emp.last_name}`;
+                select.appendChild(option);
+            });
+        }
+
+        // Update status overview cards
+        function updateStatusOverview() {
+            const statusCounts = {};
+            const statusGrid = document.getElementById('statusGrid');
+            
+            // Count employees by status
+            allEmployees.forEach(emp => {
+                const status = emp.employment_status || 'active';
+                statusCounts[status] = (statusCounts[status] || 0) + 1;
+            });
+            
+            // Create status cards
+            const statusConfig = {
+                active: { label: 'Active', color: '#10b981', icon: '✅' },
+                inactive: { label: 'Inactive', color: '#f59e0b', icon: '⏸️' },
+                terminated: { label: 'Terminated', color: '#ef4444', icon: '❌' },
+                resigned: { label: 'Resigned', color: '#8b5cf6', icon: '📋' },
+                retired: { label: 'Retired', color: '#6b7280', icon: '🌅' },
+                on_leave: { label: 'On Leave', color: '#3b82f6', icon: '🏖️' }
+            };
+            
+            statusGrid.innerHTML = '';
+            
+            Object.entries(statusConfig).forEach(([status, config]) => {
+                const count = statusCounts[status] || 0;
+                const card = document.createElement('div');
+                card.className = `status-card ${status}`;
+                card.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: space-between;">
+                        <div>
+                            <div style="font-size: 2rem;">${config.icon}</div>
+                            <h3 style="margin: 0.5rem 0; color: ${config.color};">${config.label}</h3>
+                            <p style="font-size: 1.5rem; font-weight: 700; margin: 0;">${count}</p>
+                        </div>
+                        <div class="status-badge ${status}">${count}</div>
+                    </div>
+                `;
+                statusGrid.appendChild(card);
+            });
+        }
+
+        // Populate employees table
+        function populateEmployeesTable() {
+            const tbody = document.getElementById('employeesTableBody');
+            tbody.innerHTML = '';
+            
+            const filteredEmployees = getFilteredEmployees();
+            
+            filteredEmployees.forEach(emp => {
+                const row = document.createElement('tr');
+                const status = emp.employment_status || 'active';
+                const effectiveDate = emp.status_effective_date ? new Date(emp.status_effective_date).toLocaleDateString() : 'N/A';
+                
+                row.innerHTML = `
+                    <td>${emp.employee_id}</td>
+                    <td>${emp.first_name} ${emp.last_name}</td>
+                    <td>${emp.department}</td>
+                    <td>${emp.position}</td>
+                    <td><span class="status-badge ${status}">${status.replace('_', ' ')}</span></td>
+                    <td>${emp.status_reason || 'N/A'}</td>
+                    <td>${effectiveDate}</td>
+                    <td>
+                        <button onclick="viewStatusHistory('${emp.employee_id}')" style="background: #3b82f6; color: white; border: none; padding: 0.25rem 0.75rem; border-radius: 3px; cursor: pointer; margin-right: 0.5rem;">History</button>
+                        <button onclick="editEmployeeStatus('${emp.employee_id}')" style="background: #10b981; color: white; border: none; padding: 0.25rem 0.75rem; border-radius: 3px; cursor: pointer;">Edit</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // Get filtered employees
+        function getFilteredEmployees() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const activeFilter = document.querySelector('.filter-tab.active').dataset.filter;
+            
+            return allEmployees.filter(emp => {
+                const matchesSearch = !searchTerm || 
+                    emp.employee_id.toLowerCase().includes(searchTerm) ||
+                    emp.first_name.toLowerCase().includes(searchTerm) ||
+                    emp.last_name.toLowerCase().includes(searchTerm) ||
+                    emp.department.toLowerCase().includes(searchTerm);
+                
+                const matchesFilter = activeFilter === 'all' || 
+                    (emp.employment_status || 'active') === activeFilter;
+                
+                return matchesSearch && matchesFilter;
+            });
+        }
+
+        // Filter employees
+        function filterEmployees() {
+            populateEmployeesTable();
+        }
+
+        // Update employee status
+        async function updateEmployeeStatus(e) {
+            e.preventDefault();
+            
+            const employeeId = document.getElementById('employeeSelect').value;
+            const status = document.getElementById('statusSelect').value;
+            const reason = document.getElementById('reasonInput').value;
+            const notes = document.getElementById('notesInput').value;
+            
+            if (!employeeId || !status) {
+                alert('Please select an employee and status.');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/employees/${employeeId}/status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        employment_status: status,
+                        status_reason: reason,
+                        status_notes: notes
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    alert('Employee status updated successfully!');
+                    document.getElementById('updateStatusForm').reset();
+                    loadEmployees(); // Reload data
+                } else {
+                    alert('Failed to update status: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Update status error:', error);
+                alert('Failed to update status. Please try again.');
+            }
+        }
+
+        // Edit employee status
+        function editEmployeeStatus(employeeId) {
+            const emp = allEmployees.find(e => e.employee_id === employeeId);
+            if (emp) {
+                document.getElementById('employeeSelect').value = employeeId;
+                document.getElementById('statusSelect').value = emp.employment_status || 'active';
+                document.getElementById('reasonInput').value = emp.status_reason || '';
+                document.getElementById('statusForm').scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        // View status history
+        async function viewStatusHistory(employeeId) {
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/employees/${employeeId}/status-history`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayStatusHistory(data);
+                } else {
+                    alert('Failed to load status history: ' + data.error);
+                }
+            } catch (error) {
+                console.error('Load history error:', error);
+                alert('Failed to load status history. Please try again.');
+            }
+        }
+
+        // Display status history
+        function displayStatusHistory(data) {
+            const modal = document.getElementById('historyModal');
+            const content = document.getElementById('historyContent');
+            
+            let html = `
+                <div style="margin-bottom: 1.5rem;">
+                    <h3>${data.employee.first_name} ${data.employee.last_name}</h3>
+                    <p><strong>Current Status:</strong> <span class="status-badge ${data.employee.employment_status}">${data.employee.employment_status?.replace('_', ' ') || 'active'}</span></p>
+                    <p><strong>Reason:</strong> ${data.employee.status_reason || 'N/A'}</p>
+                    <p><strong>Effective Date:</strong> ${data.employee.status_effective_date ? new Date(data.employee.status_effective_date).toLocaleDateString() : 'N/A'}</p>
+                </div>
+                <h4>Status Change History</h4>
+            `;
+            
+            if (data.statusHistory.length === 0) {
+                html += '<p>No status changes recorded.</p>';
+            } else {
+                data.statusHistory.forEach(change => {
+                    const oldValues = JSON.parse(change.old_values || '{}');
+                    const newValues = JSON.parse(change.new_values || '{}');
+                    const date = new Date(change.created_at).toLocaleString();
+                    
+                    html += `
+                        <div class="history-item">
+                            <div class="history-date">${date}</div>
+                            <div class="history-change">
+                                Changed from <strong>${oldValues.old_status || 'N/A'}</strong> to <strong>${newValues.new_status}</strong>
+                            </div>
+                            ${newValues.new_reason ? `<div><strong>Reason:</strong> ${newValues.new_reason}</div>` : ''}
+                            ${newValues.notes ? `<div><strong>Notes:</strong> ${newValues.notes}</div>` : ''}
+                            <div style="font-size: 0.75rem; color: #6b7280; margin-top: 0.25rem;">IP: ${change.ip_address}</div>
+                        </div>
+                    `;
+                });
+            }
+            
+            content.innerHTML = html;
+            modal.classList.add('show');
+        }
+
+        // Close history modal
+        function closeHistoryModal() {
+            document.getElementById('historyModal').classList.remove('show');
+        }
+
+        // Logout
+        async function logout() {
+            try {
+                await fetch(`${CONFIG.API_BASE}/auth/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+            
+            localStorage.removeItem('token');
+            localStorage.removeItem('employee');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

@@ -133,6 +133,33 @@ const logAudit = async (env, employeeId, action, tableName, recordId, oldValues,
 
 // ============= AUTH ENDPOINTS =============
 
+// Health check endpoint
+router.get('/api/health', async (request, env) => {
+    try {
+        // Test database connection
+        const dbTest = await env.DB.prepare('SELECT 1 as test').first();
+        
+        return withCors(new Response(
+            JSON.stringify({
+                status: 'online',
+                timestamp: new Date().toISOString(),
+                database: dbTest ? 'connected' : 'disconnected',
+                version: '1.0.0'
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+    } catch (error) {
+        return withCors(new Response(
+            JSON.stringify({
+                status: 'offline',
+                timestamp: new Date().toISOString(),
+                error: error.message
+            }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
 // Login endpoint - uses employee_id instead of email
 router.post('/api/auth/login', async (request, env) => {
     try {
@@ -152,20 +179,20 @@ router.post('/api/auth/login', async (request, env) => {
         
         if (!employee) {
             return withCors(new Response(
-                JSON.stringify({ error: 'Invalid credentials' }),
+                JSON.stringify({ error: 'Employee not found' }),
                 { status: 401, headers: { 'Content-Type': 'application/json' } }
             ));
         }
         
         // Verify password using bcrypt
         let isValidPassword = false;
-        
         try {
             isValidPassword = await bcrypt.compare(password, employee.password_hash);
         } catch (error) {
             console.error('Bcrypt error:', error);
             isValidPassword = false;
         }
+        
         if (!isValidPassword) {
             return withCors(new Response(
                 JSON.stringify({ error: 'Invalid credentials' }),
@@ -173,22 +200,27 @@ router.post('/api/auth/login', async (request, env) => {
             ));
         }
         
-        // Create JWT token
+        // Create JWT token (now using proper JWT since we have secure secret)
         const token = await createToken(employee.employee_id, env);
         
         // Log login event
-        await logAudit(env, employee.employee_id, 'login', 'employees', employee.employee_id, null, null, 
-                      request.headers.get('CF-Connecting-IP'), request.headers.get('User-Agent'));
+        try {
+            await logAudit(env, employee.employee_id, 'login', 'employees', employee.employee_id, null, null, 
+                          request.headers.get('CF-Connecting-IP'), request.headers.get('User-Agent'));
+        } catch (error) {
+            console.error('Audit log error:', error);
+            // Continue even if audit fails
+        }
         
         // Return employee data (without password)
         const { password_hash, ...employeeData } = employee;
         
         return withCors(new Response(
             JSON.stringify({
-                message: 'Login successful',
-                token,
+                success: true,
+                token: token,
                 employee: employeeData,
-                isFirstLogin: employee.is_first_login
+                isFirstLogin: employee.is_first_login === 1
             }),
             { status: 200, headers: { 'Content-Type': 'application/json' } }
         ));
@@ -196,7 +228,7 @@ router.post('/api/auth/login', async (request, env) => {
     } catch (error) {
         console.error('Login error:', error);
         return withCors(new Response(
-            JSON.stringify({ error: 'Internal server error' }),
+            JSON.stringify({ error: 'Internal server error', details: error.message }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }
         ));
     }
@@ -234,8 +266,20 @@ router.post('/api/auth/change-password', async (request, env) => {
             ));
         }
         
-        // Verify current password
-        const isValid = await bcrypt.compare(currentPassword, employee.password_hash);
+        if (!employee.password_hash) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'No password hash found' }),
+                { status: 500, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Verify current password using bcrypt only
+        let isValid = false;
+        try {
+            isValid = await bcrypt.compare(currentPassword, employee.password_hash);
+        } catch (bcryptError) {
+            console.error('Bcrypt comparison error:', bcryptError);
+        }
         
         if (!isValid) {
             return withCors(new Response(
@@ -529,102 +573,6 @@ router.post('/api/attendance/mark', async (request, env) => {
     }
 });
 
-// Get positions and employees for onboarding dropdowns
-router.get('/api/onboarding/dropdowns', async (request, env) => {
-    try {
-        const user = await authenticate(request, env);
-        if (!user) {
-            return withCors(new Response(
-                JSON.stringify({ error: 'Unauthorized' }),
-                { status: 401, headers: { 'Content-Type': 'application/json' } }
-            ));
-        }
-        
-        // Only admins can access this endpoint
-        if (user.role !== 'master_admin' && user.role !== 'admin') {
-            return withCors(new Response(
-                JSON.stringify({ error: 'Insufficient permissions' }),
-                { status: 403, headers: { 'Content-Type': 'application/json' } }
-            ));
-        }
-        
-        const url = new URL(request.url);
-        const department = url.searchParams.get('department');
-        
-        let positions, employees;
-        
-        if (department) {
-            // Get positions for specific department
-            positions = await env.DB.prepare(
-                'SELECT DISTINCT position FROM employees WHERE department = ? AND position IS NOT NULL AND position != "" ORDER BY position'
-            ).bind(department).all();
-            
-            // Get employees for specific department
-            employees = await env.DB.prepare(
-                'SELECT employee_id, first_name, last_name FROM employees WHERE department = ? AND is_active = 1 ORDER BY first_name, last_name'
-            ).bind(department).all();
-        } else {
-            // Get all unique positions
-            positions = await env.DB.prepare(
-                'SELECT DISTINCT position FROM employees WHERE position IS NOT NULL AND position != "" ORDER BY position'
-            ).all();
-            
-            // Get all active employees
-            employees = await env.DB.prepare(
-                'SELECT employee_id, first_name, last_name FROM employees WHERE is_active = 1 ORDER BY first_name, last_name'
-            ).all();
-        }
-        
-        return withCors(new Response(
-            JSON.stringify({
-                positions: positions.results || positions,
-                employees: employees.results || employees
-            }),
-            { status: 200, headers: { 'Content-Type': 'application/json' } }
-        ));
-        
-    } catch (error) {
-        console.error('Get dropdowns error:', error);
-        return withCors(new Response(
-            JSON.stringify({ error: 'Internal server error' }),
-            { status: 500, headers: { 'Content-Type': 'application/json' } }
-        ));
-    }
-});
-
-// Get last 7 days attendance
-router.get('/api/attendance/last7days', async (request, env) => {
-    try {
-        const user = await authenticate(request, env);
-        if (!user) {
-            return withCors(new Response(
-                JSON.stringify({ error: 'Unauthorized' }),
-                { status: 401, headers: { 'Content-Type': 'application/json' } }
-            ));
-        }
-        
-        // Get attendance for last 7 days
-        const attendance = await env.DB.prepare(
-            `SELECT date, login_time, logout_time, status 
-             FROM attendance 
-             WHERE employee_id = ? AND date >= date('now', '-7 days')
-             ORDER BY date DESC`
-        ).bind(user.employeeId).all();
-        
-        return withCors(new Response(
-            JSON.stringify({ attendance: attendance.results || attendance }),
-            { status: 200, headers: { 'Content-Type': 'application/json' } }
-        ));
-        
-    } catch (error) {
-        console.error('Get last 7 days attendance error:', error);
-        return withCors(new Response(
-            JSON.stringify({ error: 'Internal server error' }),
-            { status: 500, headers: { 'Content-Type': 'application/json' } }
-        ));
-    }
-});
-
 // Get attendance records
 router.get('/api/attendance', async (request, env) => {
     try {
@@ -654,6 +602,39 @@ router.get('/api/attendance', async (request, env) => {
         
     } catch (error) {
         console.error('Get attendance error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: 'Internal server error' }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
+// Get last 7 days attendance
+router.get('/api/attendance/last7days', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Get attendance for last 7 days
+        const attendance = await env.DB.prepare(
+            `SELECT date, login_time, logout_time, status 
+             FROM attendance 
+             WHERE employee_id = ? AND date >= date('now', '-7 days')
+             ORDER BY date DESC`
+        ).bind(user.employeeId).all();
+        
+        return withCors(new Response(
+            JSON.stringify({ attendance: attendance.results || [] }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+        
+    } catch (error) {
+        console.error('Get last 7 days attendance error:', error);
         return withCors(new Response(
             JSON.stringify({ error: 'Internal server error' }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }
@@ -918,7 +899,7 @@ router.get('/api/admin/employees', async (request, env) => {
         }
         
         const employees = await env.DB.prepare(
-            'SELECT employee_id, first_name, last_name, email, phone, department, position, role, join_date, is_active FROM employees ORDER BY created_at DESC'
+            'SELECT employee_id, first_name, last_name, email, phone, department, position, role, join_date, is_active, employment_status, status_reason, status_effective_date FROM employees ORDER BY created_at DESC'
         ).all();
         
         return withCors(new Response(
@@ -928,6 +909,249 @@ router.get('/api/admin/employees', async (request, env) => {
         
     } catch (error) {
         console.error('Get employees error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: 'Internal server error' }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
+// Update employee status (Admin/Master Admin only)
+router.post('/api/employees/:employeeId/status', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Check if user has permission (master_admin or admin)
+        if (user.role !== 'master_admin' && user.role !== 'admin') {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Insufficient permissions' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        const { employeeId } = request.params;
+        const { employment_status, status_reason, status_notes } = await request.json();
+        
+        // Validate employment status
+        const validStatuses = ['active', 'inactive', 'terminated', 'resigned', 'retired', 'on_leave'];
+        if (!validStatuses.includes(employment_status)) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Invalid employment status' }),
+                { status: 400, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Get current employee data for audit
+        const currentEmployee = await env.DB.prepare(
+            'SELECT * FROM employees WHERE employee_id = ?'
+        ).bind(employeeId).first();
+        
+        if (!currentEmployee) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Employee not found' }),
+                { status: 404, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Update employee status
+        await env.DB.prepare(`
+            UPDATE employees SET 
+                employment_status = ?, 
+                status_reason = ?, 
+                status_effective_date = date('now'),
+                status_updated_by = ?,
+                status_notes = ?,
+                is_active = ?,
+                updated_at = datetime('now')
+            WHERE employee_id = ?
+        `).bind(
+            employment_status,
+            status_reason || null,
+            user.employeeId,
+            status_notes || null,
+            employment_status === 'active' ? 1 : 0,
+            employeeId
+        ).run();
+        
+        // Log audit
+        await logAudit(env, user.employeeId, 'employee_status_update', 'employees', employeeId, 
+                      { 
+                        old_status: currentEmployee.employment_status, 
+                        old_reason: currentEmployee.status_reason 
+                      }, 
+                      { 
+                        new_status: employment_status, 
+                        new_reason: status_reason,
+                        notes: status_notes 
+                      }, 
+                      request.headers.get('CF-Connecting-IP'), request.headers.get('User-Agent'));
+        
+        return withCors(new Response(
+            JSON.stringify({ 
+                success: true, 
+                message: 'Employee status updated successfully',
+                employeeId: employeeId,
+                newStatus: employment_status
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+        
+    } catch (error) {
+        console.error('Update employee status error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: 'Internal server error' }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
+// Get employee status history
+router.get('/api/employees/:employeeId/status-history', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        const { employeeId } = request.params;
+        
+        // Get employee details
+        const employee = await env.DB.prepare(
+            'SELECT employee_id, first_name, last_name, employment_status, status_reason, status_effective_date, status_notes FROM employees WHERE employee_id = ?'
+        ).bind(employeeId).first();
+        
+        if (!employee) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Employee not found' }),
+                { status: 404, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Get audit log for status changes
+        const statusHistory = await env.DB.prepare(`
+            SELECT action, old_values, new_values, created_at, ip_address
+            FROM audit_log 
+            WHERE employee_id = ? AND table_name = 'employees' AND action = 'employee_status_update'
+            ORDER BY created_at DESC
+        `).bind(employeeId).all();
+        
+        return withCors(new Response(
+            JSON.stringify({ 
+                employee: employee,
+                statusHistory: statusHistory.results 
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+        
+    } catch (error) {
+        console.error('Get employee status history error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: 'Internal server error' }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
+// Admin password reset endpoint (Admin/Master Admin only)
+router.post('/api/admin/reset-password', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Check if user has permission (master_admin or admin)
+        if (user.role !== 'master_admin' && user.role !== 'admin') {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Insufficient permissions' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        const { targetEmployeeId, newPassword } = await request.json();
+        
+        if (!targetEmployeeId || !newPassword) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Employee ID and new password are required' }),
+                { status: 400, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        if (newPassword.length < 6) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Password must be at least 6 characters long' }),
+                { status: 400, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Check if target employee exists
+        const targetEmployee = await env.DB.prepare(
+            'SELECT employee_id, first_name, last_name, role FROM employees WHERE employee_id = ?'
+        ).bind(targetEmployeeId).first();
+        
+        if (!targetEmployee) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Employee not found' }),
+                { status: 404, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Prevent admin from resetting another admin's password (only master_admin can)
+        if (targetEmployee.role === 'admin' && user.role !== 'master_admin') {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Only master admin can reset admin passwords' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Prevent anyone from resetting master_admin password
+        if (targetEmployee.role === 'master_admin') {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Master admin password cannot be reset' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Hash new password
+        const newPasswordHash = await bcrypt.hash(newPassword, 10);
+        
+        // Update password and set is_first_login to true to force password change
+        await env.DB.prepare(
+            'UPDATE employees SET password_hash = ?, is_first_login = 1, updated_at = datetime("now") WHERE employee_id = ?'
+        ).bind(newPasswordHash, targetEmployeeId).run();
+        
+        await logAudit(env, user.employeeId, 'password_reset', 'employees', targetEmployeeId, null, 
+                      { 
+                        reset_by: user.employeeId,
+                        target_employee: targetEmployeeId,
+                        target_name: `${targetEmployee.first_name} ${targetEmployee.last_name}`
+                      }, 
+                      request.headers.get('CF-Connecting-IP'), request.headers.get('User-Agent'));
+        
+        return withCors(new Response(
+            JSON.stringify({ 
+                message: 'Password reset successfully',
+                employeeId: targetEmployeeId,
+                employeeName: `${targetEmployee.first_name} ${targetEmployee.last_name}`,
+                note: 'Employee must change password on next login'
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+        
+    } catch (error) {
+        console.error('Password reset error:', error);
         return withCors(new Response(
             JSON.stringify({ error: 'Internal server error' }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }

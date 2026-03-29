@@ -1,0 +1,31 @@
+{
+  "name": "bmgone-payroll",
+  "version": "1.0.0",
+  "description": "BMGOne Payroll Portal - Employee Management System",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8080",
+    "dev": "python -m http.server 8080",
+    "build": "node build.js",
+    "build-branch": "node build-branch.js",
+    "serve": "python -m http.server 8080"
+  },
+  "keywords": [
+    "payroll",
+    "hr",
+    "employee-management",
+    "attendance",
+    "leave-management",
+    "bmgone"
+  ],
+  "author": "BMGOne",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/itsmepskiran/bmgone-payroll"
+  },
+  "homepage": "https://pay.bmgone.com"
+}

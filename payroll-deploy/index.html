@@ -15,8 +15,8 @@
     <meta property="og:url" content="https://pay.bmgone.com">
     
     <!-- Favicon -->
-    <link rel="icon" type="image/png" href="logos/logo.png">
-    <link rel="apple-touch-icon" href="logos/logo.png">
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
     
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -116,11 +116,11 @@
     <nav class="navbar" id="navbar" style="display: none;">
         <div class="nav-container">
             <div class="nav-logo">
-                <img src="/logos/banner.png" alt="BMGOne" class="logo-img">
+                <img src="banner.png" alt="BMGOne" class="logo-img">
             </div>
             <ul class="nav-menu">
                 <li class="nav-item">
-                    <a href="https://bmgone.com" class="nav-link">Home</a>
+                    <a href="https://bmgone.com" class="nav-link">Main Site</a>
                 </li>
                 <li class="nav-item">
                     <a href="#" class="nav-link active">Payroll Portal</a>
@@ -141,7 +141,7 @@
     <div class="login-container" id="loginContainer">
         <div class="login-box">
             <div class="login-header">
-                <img src="/logos/banner.png" alt="BMGOne">
+                <img src="banner.png" alt="BMGOne">
                 <h1>BMGOne Payroll Portal</h1>
                 <p>Login to access your employee dashboard</p>
             </div>
@@ -204,11 +204,9 @@
         <div class="admin-nav" id="adminNav" style="display: none;">
             <ul>
                 <li><a href="onboarding.html">Employee Onboarding</a></li>
-                <li><a href="employee-status.html">Employee Status</a></li>
                 <li><a href="#" id="viewEmployeesLink">View All Employees</a></li>
                 <li><a href="#" id="leaveApprovalsLink">Leave Approvals</a></li>
                 <li><a href="#" id="reportsLink">Reports</a></li>
-                <li><a href="#" id="resetPasswordLink">Reset Password</a></li>
             </ul>
         </div>
 
@@ -258,21 +256,6 @@
                     <div class="status-item">
                         <span class="status-label">Total Hours:</span>
                         <span class="status-value" id="totalHours">--</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Employee Status Card -->
-            <div class="dashboard-card" id="statusCard" style="display: none;">
-                <div class="card-header">
-                    <h2 class="card-title">Employment Status</h2>
-                    <span style="font-size: 2rem;">👤</span>
-                </div>
-                <div style="text-align: center; padding: 1rem;">
-                    <div class="status-badge" id="userStatusBadge" style="font-size: 1rem; padding: 0.5rem 1rem; margin-bottom: 0.5rem;">Active</div>
-                    <p style="margin: 0; color: #6b7280; font-size: 0.9rem;">Current Employment Status</p>
-                    <div id="statusDetails" style="margin-top: 1rem; font-size: 0.85rem; color: #4b5563;">
-                        <!-- Will be populated dynamically -->
                     </div>
                 </div>
             </div>
@@ -343,42 +326,13 @@
         </div>
     </div>
 
-    <!-- Admin Password Reset Modal -->
-    <div id="adminResetPasswordModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>Reset Employee Password</h2>
-                <p>Reset password for any employee. They will be required to change it on next login.</p>
-            </div>
-            <div class="warning-box">
-                <p>⚠️ Only reset passwords for staff employees. Admin passwords can only be reset by Master Admin.</p>
-            </div>
-            <form id="adminResetPasswordForm">
-                <div class="form-group">
-                    <label for="targetEmployeeId">Employee ID</label>
-                    <input type="text" id="targetEmployeeId" placeholder="e.g., BMGHYD12345" required>
-                </div>
-                <div class="form-group">
-                    <label for="resetNewPassword">New Password</label>
-                    <input type="password" id="resetNewPassword" required minlength="6" placeholder="Minimum 6 characters">
-                </div>
-                <div class="form-group">
-                    <label for="resetConfirmPassword">Confirm New Password</label>
-                    <input type="password" id="resetConfirmPassword" required minlength="6" placeholder="Re-enter new password">
-                </div>
-                <button type="submit" class="btn-submit">Reset Password</button>
-                <button type="button" class="btn-close-modal" onclick="closeModal()" style="margin-top: 1rem; background: #6b7280;">Cancel</button>
-            </form>
-        </div>
-    </div>
-
     <!-- Scripts -->
     <script src="script.js"></script>
     <script>
         // Configuration for deployment
         const CONFIG = {
             API_BASE: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
-                ? 'http://127.0.0.1:8788/api' 
+                ? 'http://127.0.0.1:8787/api' 
                 : 'https://pay.bmgone.com/api',
             ENVIRONMENT: window.location.hostname === 'localhost' ? 'Development' : 'Production'
         };
@@ -413,25 +367,12 @@
         async function checkAPIStatus() {
             const statusElement = document.getElementById('apiStatus');
             try {
-                // Try to reach the API with a simple request
-                const response = await fetch(`${CONFIG.API_BASE}/auth/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ employeeId: 'health_check', password: 'health_check' })
-                });
-                
-                // If we get any response (even 401), API is online
-                // 401 Unauthorized means API is working but credentials are invalid
-                if (response.status === 401 || response.ok) {
+                const response = await fetch(`${CONFIG.API_BASE}/health`);
+                if (response.ok) {
                     statusElement.textContent = '✅ Online';
                     statusElement.style.color = '#10b981';
-                    console.log('API Status: Online - Response received with status:', response.status);
                 } else {
-                    statusElement.textContent = '✅ Online';
-                    statusElement.style.color = '#10b981';
-                    console.log('API Status: Online - Response received with status:', response.status);
+                    throw new Error('API not responding');
                 }
             } catch (error) {
                 statusElement.textContent = '⚠️ Offline';
@@ -450,50 +391,10 @@
             document.getElementById('loading').classList.remove('show');
         }
 
-        // Show success message as toast notification
-        function showSuccess(message, duration = 3000) {
-            // Create notification element
-            const notification = document.createElement('div');
-            notification.className = 'notification notification-success';
-            notification.textContent = message;
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                padding: 1rem 1.5rem;
-                border-radius: 10px;
-                color: white;
-                font-weight: 600;
-                z-index: 10001;
-                background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-                box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-                animation: slideIn 0.3s ease;
-            `;
-            
-            // Add animation styles if not present
-            if (!document.getElementById('notification-styles')) {
-                const style = document.createElement('style');
-                style.id = 'notification-styles';
-                style.textContent = `
-                    @keyframes slideIn {
-                        from { transform: translateX(100%); opacity: 0; }
-                        to { transform: translateX(0); opacity: 1; }
-                    }
-                    @keyframes fadeOut {
-                        from { opacity: 1; }
-                        to { opacity: 0; }
-                    }
-                `;
-                document.head.appendChild(style);
-            }
-            
-            document.body.appendChild(notification);
-            
-            // Auto-dismiss
-            setTimeout(() => {
-                notification.style.animation = 'fadeOut 0.3s ease';
-                setTimeout(() => notification.remove(), 300);
-            }, duration);
+        // Show success message
+        function showSuccess(message) {
+            document.getElementById('successMessage').textContent = message;
+            document.getElementById('successModal').classList.add('show');
         }
 
         // Close modal
@@ -627,7 +528,6 @@
             loadLeaveBalances();
             loadHolidays();
             checkTodayAttendance();
-            loadEmployeeStatus();
         }
 
         // Load Leave Balances
@@ -689,70 +589,12 @@
             }
         }
 
-        // Load Employee Status
-        async function loadEmployeeStatus() {
-            try {
-                // Get current employee's detailed information including status
-                const response = await fetch(`${CONFIG.API_BASE}/profile`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-                
-                const data = await response.json();
-                
-                if (response.ok) {
-                    const status = data.employment_status || 'active';
-                    const statusReason = data.status_reason || '';
-                    const statusDate = data.status_effective_date;
-                    
-                    // Update status badge
-                    const statusBadge = document.getElementById('userStatusBadge');
-                    statusBadge.textContent = status.replace('_', ' ');
-                    statusBadge.className = `status-badge ${status}`;
-                    
-                    // Update status details
-                    const statusDetails = document.getElementById('statusDetails');
-                    let detailsHTML = '';
-                    
-                    if (statusReason) {
-                        detailsHTML += `<div><strong>Reason:</strong> ${statusReason}</div>`;
-                    }
-                    
-                    if (statusDate) {
-                        const formattedDate = new Date(statusDate).toLocaleDateString();
-                        detailsHTML += `<div><strong>Effective:</strong> ${formattedDate}</div>`;
-                    }
-                    
-                    if (status !== 'active') {
-                        detailsHTML += `<div style="color: #ef4444; margin-top: 0.5rem;">⚠️ Please contact HR for more information</div>`;
-                    }
-                    
-                    statusDetails.innerHTML = detailsHTML;
-                    
-                    // Show status card for all employees
-                    document.getElementById('statusCard').style.display = 'block';
-                    
-                } else {
-                    console.error('Failed to load employee status:', data.error);
-                    // Hide status card if failed to load
-                    document.getElementById('statusCard').style.display = 'none';
-                }
-            } catch (error) {
-                console.error('Load employee status error:', error);
-                // Hide status card if failed to load
-                document.getElementById('statusCard').style.display = 'none';
-            }
-        }
-
         // Check Today's Attendance
         async function checkTodayAttendance() {
             try {
                 const today = new Date();
                 const month = today.getMonth() + 1;
                 const year = today.getFullYear();
-                
-                console.log('Checking attendance for:', today.toISOString().split('T')[0]);
                 
                 const response = await fetch(`${CONFIG.API_BASE}/attendance?month=${month}&year=${year}`, {
                     headers: {
@@ -761,24 +603,17 @@
                 });
                 
                 const data = await response.json();
-                console.log('Attendance data:', data);
                 
                 if (response.ok) {
                     const todayStr = today.toISOString().split('T')[0];
                     const todayRecord = data.attendance.find(a => a.date === todayStr);
                     
-                    console.log('Today record:', todayRecord);
-                    
                     if (todayRecord) {
-                        console.log('Login time:', todayRecord.login_time);
-                        console.log('Logout time:', todayRecord.logout_time);
-                        
                         if (todayRecord.login_time) {
                             const loginTime = new Date(todayRecord.login_time);
                             document.getElementById('loginTime').textContent = loginTime.toLocaleTimeString();
                             document.getElementById('loginBtn').disabled = true;
                             document.getElementById('logoutBtn').disabled = false;
-                            console.log('Set state: Login disabled, Logout enabled');
                         }
                         
                         if (todayRecord.logout_time) {
@@ -786,12 +621,10 @@
                             document.getElementById('logoutTime').textContent = logoutTime.toLocaleTimeString();
                             document.getElementById('logoutBtn').disabled = true;
                             document.getElementById('totalHours').textContent = todayRecord.total_hours.toFixed(2) + ' hrs';
-                            console.log('Set state: Logout disabled (already logged out)');
                         }
                     } else {
                         document.getElementById('loginBtn').disabled = false;
                         document.getElementById('logoutBtn').disabled = true;
-                        console.log('Set state: Login enabled, Logout disabled (no record)');
                     }
                 }
             } catch (error) {
@@ -903,64 +736,6 @@
         document.getElementById('reportsLink')?.addEventListener('click', function(e) {
             e.preventDefault();
             showSuccess('Reports feature coming soon!');
-        });
-
-        // Reset Password Link - Open Modal
-        document.getElementById('resetPasswordLink')?.addEventListener('click', function(e) {
-            e.preventDefault();
-            document.getElementById('adminResetPasswordModal').classList.add('show');
-        });
-
-        // Admin Reset Password Form Handler
-        document.getElementById('adminResetPasswordForm')?.addEventListener('submit', async function(e) {
-            e.preventDefault();
-            showLoading();
-
-            const targetEmployeeId = document.getElementById('targetEmployeeId').value.trim();
-            const newPassword = document.getElementById('resetNewPassword').value;
-            const confirmPassword = document.getElementById('resetConfirmPassword').value;
-
-            // Validation
-            if (newPassword !== confirmPassword) {
-                alert('Passwords do not match!');
-                hideLoading();
-                return;
-            }
-
-            if (newPassword.length < 6) {
-                alert('Password must be at least 6 characters long.');
-                hideLoading();
-                return;
-            }
-
-            try {
-                const response = await fetch(`${CONFIG.API_BASE}/admin/reset-password`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        targetEmployeeId: targetEmployeeId,
-                        newPassword: newPassword
-                    })
-                });
-
-                const data = await response.json();
-
-                if (response.ok) {
-                    showSuccess(`Password reset successfully for ${data.employeeName} (${data.employeeId}). They must change password on next login.`);
-                    closeModal();
-                    this.reset();
-                } else {
-                    alert('Error: ' + data.error);
-                }
-            } catch (error) {
-                console.error('Password reset error:', error);
-                alert('Failed to reset password. Please try again.');
-            } finally {
-                hideLoading();
-            }
         });
     </script>
 </body>
