@@ -868,6 +868,23 @@
                 document.getElementById('managerNav').style.display = 'block';
             }
             
+            // Show monthly reports for admin/master_admin OR staff with M01+ designation
+            const isAdmin = employee.role === 'admin' || employee.role === 'master_admin';
+            const isStaffWithManagerDesignation = employee.role === 'staff' && 
+                employee.position && (
+                    employee.position.includes('Assistant Manager') ||
+                    employee.position.includes('Manager') ||
+                    employee.position.includes('Senior Manager') ||
+                    employee.position.includes('Head') ||
+                    employee.position.includes('Director')
+                );
+            
+            if (isAdmin || isStaffWithManagerDesignation) {
+                document.getElementById('monthlyReportsCard').style.display = 'block';
+            } else {
+                document.getElementById('monthlyReportsCard').style.display = 'none';
+            }
+            
             // Show pending approvals card and load data for managers and admins
             if (employee.role === 'manager' || employee.role === 'admin' || employee.role === 'master_admin') {
                 loadPendingApprovals();
