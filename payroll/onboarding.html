@@ -481,6 +481,9 @@
                 
                 const data = await response.json();
                 
+                console.log('Dropdown data received:', data);
+                console.log('Employees for reporting manager:', data.employees);
+                
                 if (response.ok) {
                     // Populate departments dropdown
                     const deptSelect = document.getElementById('department');
@@ -501,10 +504,14 @@
                     managerSelect.innerHTML = '<option value="">Select Reporting Manager</option>';
                     
                     if (data.employees && data.employees.length > 0) {
+                        console.log('Populating reporting manager dropdown with', data.employees.length, 'employees');
                         data.employees.forEach(emp => {
                             const displayName = `${emp.first_name} ${emp.last_name} (${emp.employee_id})`;
                             managerSelect.innerHTML += `<option value="${emp.employee_id}">${displayName}</option>`;
                         });
+                    } else {
+                        console.log('No employees found for reporting manager dropdown');
+                        managerSelect.innerHTML += '<option value="" disabled>No managers available</option>';
                     }
                 } else {
                     console.error('Failed to load dropdown data:', data.error);
@@ -552,10 +559,14 @@
                     managerSelect.innerHTML = '<option value="">Select Reporting Manager</option>';
                     
                     if (data.employees && data.employees.length > 0) {
+                        console.log('Populating reporting manager with', data.employees.length, 'employees for department');
                         data.employees.forEach(emp => {
                             const displayName = `${emp.first_name} ${emp.last_name} (${emp.employee_id})`;
                             managerSelect.innerHTML += `<option value="${emp.employee_id}">${displayName}</option>`;
                         });
+                    } else {
+                        console.log('No employees found for this department');
+                        managerSelect.innerHTML += '<option value="" disabled>No managers available in this department</option>';
                     }
                     
                     // Restore selected manager if it still exists

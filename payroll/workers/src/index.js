@@ -510,14 +510,17 @@ router.get('/api/onboarding/dropdowns', async (request, env) => {
             responseData.all_designations = allDesignationsResult.results || [];
         }
         
-        // Get potential reporting managers (employees with designation level M01 and above)
+        // Get potential reporting managers (employees with designation level M01 and above OR admin/master_admin role)
         // M01 = Assistant Manager, M02 = Manager, M03 = Senior Manager, M04 = Head, B01 = Director
         let employeesQuery = `
             SELECT e.employee_id, e.first_name, e.last_name, e.department, e.position, d.level
             FROM employees e
-            JOIN designations d ON e.position = d.designation_name AND d.is_active = 1
+            LEFT JOIN designations d ON e.position = d.designation_name AND d.is_active = 1
             WHERE e.is_active = 1 
-            AND d.level IN ('M01', 'M02', 'M03', 'M04', 'B01')
+            AND (
+                d.level IN ('M01', 'M02', 'M03', 'M04', 'B01')
+                OR e.role IN ('admin', 'master_admin')
+            )
         `;
         
         if (department) {
@@ -525,9 +528,15 @@ router.get('/api/onboarding/dropdowns', async (request, env) => {
         }
         employeesQuery += ' ORDER BY e.first_name, e.last_name';
         
+        console.log('Reporting manager query:', employeesQuery);
+        console.log('Department filter:', department);
+        
         const employeesResult = department 
             ? await env.DB.prepare(employeesQuery).bind(department).all()
             : await env.DB.prepare(employeesQuery).all();
+        
+        console.log('Employees result:', JSON.stringify(employeesResult));
+        console.log('Employees count:', employeesResult.results ? employeesResult.results.length : 0);
         
         responseData.employees = employeesResult.results || [];
         
