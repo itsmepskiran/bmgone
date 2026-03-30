@@ -1101,6 +1101,150 @@ router.get('/api/admin/employees', async (request, env) => {
     }
 });
 
+// Update employee details (Admin/Master Admin only)
+router.put('/api/admin/employees/:employeeId', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Check if user has permission (master_admin or admin)
+        if (user.role !== 'master_admin' && user.role !== 'admin') {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Insufficient permissions' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        const { employeeId } = request.params;
+        const updateData = await request.json();
+        
+        // Check if employee exists
+        const existingEmployee = await env.DB.prepare(
+            'SELECT employee_id, role FROM employees WHERE employee_id = ?'
+        ).bind(employeeId).first();
+        
+        if (!existingEmployee) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Employee not found' }),
+                { status: 404, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Prevent editing master_admin (only master_admin can edit themselves)
+        if (existingEmployee.role === 'master_admin' && user.employeeId !== employeeId) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Cannot edit master admin details' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Build update query dynamically based on provided fields
+        const allowedFields = [
+            'first_name', 'last_name', 'email', 'phone', 'alternate_phone',
+            'date_of_birth', 'gender', 'address', 'city', 'state', 'pincode',
+            'department', 'position', 'role', 'reporting_manager', 'salary',
+            'bank_name', 'bank_account', 'ifsc_code', 'pan_number', 'aadhaar_number',
+            'emergency_contact_name', 'emergency_contact_phone', 'emergency_contact_relation'
+        ];
+        
+        const updates = [];
+        const values = [];
+        
+        for (const field of allowedFields) {
+            if (updateData[field] !== undefined) {
+                updates.push(`${field} = ?`);
+                values.push(updateData[field]);
+            }
+        }
+        
+        if (updates.length === 0) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'No fields to update' }),
+                { status: 400, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Add updated_at timestamp
+        updates.push('updated_at = datetime("now")');
+        
+        // Add employeeId to values
+        values.push(employeeId);
+        
+        const query = `UPDATE employees SET ${updates.join(', ')} WHERE employee_id = ?`;
+        
+        await env.DB.prepare(query).bind(...values).run();
+        
+        // Log audit
+        await logAudit(env, user.employeeId, 'employee_update', 'employees', employeeId, 
+            null, updateData, 
+            request.headers.get('CF-Connecting-IP'), request.headers.get('User-Agent'));
+        
+        return withCors(new Response(
+            JSON.stringify({ 
+                success: true, 
+                message: 'Employee updated successfully',
+                employeeId: employeeId
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+        
+    } catch (error) {
+        console.error('Update employee error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: 'Internal server error', details: error.message }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
+// Get single employee details (Admin/Master Admin only)
+router.get('/api/admin/employees/:employeeId', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user || (user.role !== 'admin' && user.role !== 'master_admin')) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        const { employeeId } = request.params;
+        
+        const employee = await env.DB.prepare(
+            `SELECT employee_id, first_name, last_name, email, phone, alternate_phone,
+                    date_of_birth, gender, address, city, state, pincode,
+                    department, position, role, reporting_manager, join_date, is_active,
+                    salary, bank_name, bank_account, ifsc_code, pan_number, aadhaar_number,
+                    emergency_contact_name, emergency_contact_phone, emergency_contact_relation
+             FROM employees WHERE employee_id = ?`
+        ).bind(employeeId).first();
+        
+        if (!employee) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Employee not found' }),
+                { status: 404, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        return withCors(new Response(
+            JSON.stringify({ employee }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+        
+    } catch (error) {
+        console.error('Get employee error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: 'Internal server error', details: error.message }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
 // Update employee status (Admin/Master Admin only) - simplified to use is_active only
 router.post('/api/employees/:employeeId/status', async (request, env) => {
     try {
