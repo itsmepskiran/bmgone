@@ -639,11 +639,15 @@
                     </div>
                     <div class="form-group">
                         <label for="editDepartment">Department</label>
-                        <input type="text" id="editDepartment">
+                        <select id="editDepartment" onchange="updateEditDropdownsForDepartment()">
+                            <option value="">Select Department</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="editPosition">Position</label>
-                        <input type="text" id="editPosition">
+                        <select id="editPosition">
+                            <option value="">Select Designation</option>
+                        </select>
                     </div>
                     <div class="form-group">
                         <label for="editRole">Role</label>
@@ -663,8 +667,10 @@
                         <input type="date" id="editJoinDate">
                     </div>
                     <div class="form-group">
-                        <label for="editReportingManager">Reporting Manager ID</label>
-                        <input type="text" id="editReportingManager">
+                        <label for="editReportingManager">Reporting Manager</label>
+                        <select id="editReportingManager">
+                            <option value="">Select Reporting Manager</option>
+                        </select>
                     </div>
                 </div>
                 
@@ -1292,11 +1298,118 @@
             }
         }
 
+        // Store current edit employee data for dropdown management
+        let currentEditEmployee = null;
+        let editDropdownData = null;
+
+        // Load dropdown data for edit modal
+        async function loadEditDropdownData() {
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/onboarding/dropdowns`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    editDropdownData = data;
+                    
+                    // Populate department dropdown
+                    const deptSelect = document.getElementById('editDepartment');
+                    const currentDept = deptSelect.value;
+                    deptSelect.innerHTML = '<option value="">Select Department</option>';
+                    
+                    if (data.departments && data.departments.length > 0) {
+                        data.departments.forEach(dept => {
+                            deptSelect.innerHTML += `<option value="${dept.department_id}">${dept.department_name}</option>`;
+                        });
+                    }
+                    
+                    // Restore selected department if it still exists
+                    if (currentDept) {
+                        deptSelect.value = currentDept;
+                    }
+                }
+            } catch (error) {
+                console.error('Load edit dropdown data error:', error);
+            }
+        }
+
+        // Update position and reporting manager dropdowns based on department
+        async function updateEditDropdownsForDepartment() {
+            const department = document.getElementById('editDepartment').value;
+            
+            if (!department) {
+                // Clear position and reporting manager dropdowns
+                document.getElementById('editPosition').innerHTML = '<option value="">Select Designation</option>';
+                document.getElementById('editReportingManager').innerHTML = '<option value="">Select Reporting Manager</option>';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/onboarding/dropdowns?department=${encodeURIComponent(department)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Update position dropdown
+                    const positionSelect = document.getElementById('editPosition');
+                    const currentPosition = positionSelect.value;
+                    positionSelect.innerHTML = '<option value="">Select Designation</option>';
+                    
+                    if (data.designations && data.designations.length > 0) {
+                        data.designations.forEach(desig => {
+                            positionSelect.innerHTML += `<option value="${desig.designation_name}">${desig.designation_name} (${desig.level})</option>`;
+                        });
+                    }
+                    
+                    // Restore selected position if it still exists
+                    if (currentPosition) {
+                        positionSelect.value = currentPosition;
+                    }
+                    
+                    // Update reporting manager dropdown
+                    const managerSelect = document.getElementById('editReportingManager');
+                    const currentManager = managerSelect.value;
+                    managerSelect.innerHTML = '<option value="">Select Reporting Manager</option>';
+                    
+                    if (data.employees && data.employees.length > 0) {
+                        data.employees.forEach(emp => {
+                            const displayName = `${emp.first_name} ${emp.last_name} (${emp.employee_id})`;
+                            managerSelect.innerHTML += `<option value="${emp.employee_id}">${displayName}</option>`;
+                        });
+                    } else {
+                        managerSelect.innerHTML += '<option value="" disabled>No managers available in this department</option>';
+                    }
+                    
+                    // Restore selected manager if it still exists
+                    if (currentManager) {
+                        // Check if the option exists
+                        const options = Array.from(managerSelect.options).map(opt => opt.value);
+                        if (options.includes(currentManager)) {
+                            managerSelect.value = currentManager;
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Update edit dropdowns error:', error);
+            }
+        }
+
         // Open Edit Employee Modal
         async function openEditEmployeeModal(employeeId) {
             showLoading();
             
             try {
+                // First load dropdown data
+                await loadEditDropdownData();
+                
                 const response = await fetch(`${CONFIG.API_BASE}/admin/employees/${employeeId}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
@@ -1307,6 +1420,7 @@
                 
                 if (response.ok && data.employee) {
                     const emp = data.employee;
+                    currentEditEmployee = emp;
                     
                     // Populate form fields
                     document.getElementById('editEmployeeId').textContent = emp.employee_id;
@@ -1314,7 +1428,16 @@
                     document.getElementById('editLastName').value = emp.last_name || '';
                     document.getElementById('editEmail').value = emp.email || '';
                     document.getElementById('editPhone').value = emp.phone || '';
+                    
+                    // Set department and trigger dropdown update
                     document.getElementById('editDepartment').value = emp.department || '';
+                    
+                    // Update position and reporting manager dropdowns for this department
+                    if (emp.department) {
+                        await updateEditDropdownsForDepartment();
+                    }
+                    
+                    // Now set the position and reporting manager values
                     document.getElementById('editPosition').value = emp.position || '';
                     document.getElementById('editRole').value = emp.role || 'staff';
                     document.getElementById('editSalary').value = emp.salary || '';

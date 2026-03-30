@@ -524,7 +524,8 @@ router.get('/api/onboarding/dropdowns', async (request, env) => {
         `;
         
         if (department) {
-            employeesQuery += ' AND e.department = ?';
+            // Include employees from selected department (M01+) AND all admin/master_admin regardless of department
+            employeesQuery += ` AND (e.department = ? OR e.role IN ('admin', 'master_admin'))`;
         }
         employeesQuery += ' ORDER BY e.first_name, e.last_name';
         
