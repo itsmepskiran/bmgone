@@ -448,6 +448,91 @@ router.post('/api/employees/create', async (request, env) => {
     }
 });
 
+// Get onboarding dropdown data (positions and reporting managers)
+router.get('/api/onboarding/dropdowns', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        // Check if user has permission (master_admin or admin)
+        if (user.role !== 'master_admin' && user.role !== 'admin') {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Insufficient permissions' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+        
+        const { department } = new URL(request.url).searchParams;
+        
+        // Get unique positions from existing employees (or use predefined list)
+        let positionsQuery = 'SELECT DISTINCT position FROM employees WHERE position IS NOT NULL';
+        if (department) {
+            positionsQuery += ' AND department = ?';
+        }
+        positionsQuery += ' ORDER BY position';
+        
+        const positionsResult = await env.DB.prepare(positionsQuery).bind(department || []).all();
+        
+        // If no positions found, provide default positions based on department
+        let positions = positionsResult.results || [];
+        if (positions.length === 0) {
+            const defaultPositions = {
+                'HR': ['HR Manager', 'HR Executive', 'HR Assistant', 'Recruiter'],
+                'IT Consulting': ['IT Consultant', 'Senior IT Consultant', 'IT Manager', 'System Administrator', 'Developer', 'Senior Developer', 'Tech Lead'],
+                'Business Consulting': ['Business Consultant', 'Senior Consultant', 'Project Manager', 'Analyst', 'Senior Analyst', 'Consulting Manager'],
+                'Finance': ['Finance Manager', 'Accountant', 'Financial Analyst', 'Accounts Executive'],
+                'Operations': ['Operations Manager', 'Operations Executive', 'Team Lead', 'Supervisor'],
+                'Sales': ['Sales Manager', 'Sales Executive', 'Business Development Manager', 'Account Manager'],
+                'Marketing': ['Marketing Manager', 'Marketing Executive', 'Content Writer', 'SEO Specialist']
+            };
+            
+            const deptPositions = defaultPositions[department] || ['Staff', 'Executive', 'Manager', 'Senior Manager'];
+            positions = deptPositions.map(pos => ({ position: pos }));
+        }
+        
+        // Get potential reporting managers (active employees with manager role or senior positions)
+        let employeesQuery = `
+            SELECT employee_id, first_name, last_name, department, position 
+            FROM employees 
+            WHERE is_active = 1 
+            AND (role IN ('manager', 'admin', 'master_admin') 
+                 OR position LIKE '%Manager%' 
+                 OR position LIKE '%Lead%' 
+                 OR position LIKE '%Senior%'
+                 OR position LIKE '%Head%')
+        `;
+        
+        if (department) {
+            employeesQuery += ' AND department = ?';
+        }
+        employeesQuery += ' ORDER BY first_name, last_name';
+        
+        const employeesResult = department 
+            ? await env.DB.prepare(employeesQuery).bind(department).all()
+            : await env.DB.prepare(employeesQuery).all();
+        
+        return withCors(new Response(
+            JSON.stringify({
+                positions: positions,
+                employees: employeesResult.results || []
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+        
+    } catch (error) {
+        console.error('Get onboarding dropdowns error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: 'Internal server error', details: error.message }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
 // Get employee profile
 router.get('/api/profile', async (request, env) => {
     try {
