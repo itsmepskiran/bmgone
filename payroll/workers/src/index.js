@@ -467,7 +467,7 @@ router.get('/api/onboarding/dropdowns', async (request, env) => {
             ));
         }
         
-        const { department } = new URL(request.url).searchParams;
+        const department = new URL(request.url).searchParams.get('department');
         
         // Get all active departments
         const departmentsResult = await env.DB.prepare(
