@@ -534,6 +534,12 @@ router.get('/api/onboarding/dropdowns', async (request, env) => {
         
         responseData.employees = employeesResult.results || [];
         
+        // Add debug info to response
+        responseData.debug = {
+            requestedDepartment: department,
+            designationsCount: responseData.designations ? responseData.designations.length : 0
+        };
+        
         return withCors(new Response(
             JSON.stringify(responseData),
             { status: 200, headers: { 'Content-Type': 'application/json' } }
