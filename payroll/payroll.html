@@ -692,7 +692,8 @@
             
             if (token && storedEmployee) {
                 employee = JSON.parse(storedEmployee);
-                showDashboard();
+                // Redirect to index.html for full dashboard
+                window.location.href = 'index.html';
             }
             
             // Update time every second
@@ -729,7 +730,8 @@
                         // Show password change modal
                         document.getElementById('passwordChangeModal').classList.add('show');
                     } else {
-                        showDashboard();
+                        // Redirect to index.html for full dashboard
+                        window.location.href = 'index.html';
                     }
                 } else {
                     alert('Login failed: ' + data.error);
@@ -773,7 +775,8 @@
                 if (response.ok) {
                     alert('Password changed successfully!');
                     document.getElementById('passwordChangeModal').classList.remove('show');
-                    showDashboard();
+                    // Redirect to index.html for full dashboard
+                    window.location.href = 'index.html';
                 } else {
                     alert('Error: ' + data.error);
                 }
