@@ -448,7 +448,7 @@ router.post('/api/employees/create', async (request, env) => {
     }
 });
 
-// Get onboarding dropdown data (positions and reporting managers)
+// Get onboarding dropdown data (departments and designations from database)
 router.get('/api/onboarding/dropdowns', async (request, env) => {
     try {
         const user = await authenticate(request, env);
@@ -469,30 +469,42 @@ router.get('/api/onboarding/dropdowns', async (request, env) => {
         
         const { department } = new URL(request.url).searchParams;
         
-        // Get unique positions from existing employees (or use predefined list)
-        let positionsQuery = 'SELECT DISTINCT position FROM employees WHERE position IS NOT NULL';
+        // Get all active departments
+        const departmentsResult = await env.DB.prepare(
+            'SELECT department_id, department_name FROM departments WHERE is_active = 1 ORDER BY department_name'
+        ).all();
+        
+        let responseData = {
+            departments: departmentsResult.results || []
+        };
+        
+        // Get designations based on department filter
         if (department) {
-            positionsQuery += ' AND department = ?';
-        }
-        positionsQuery += ' ORDER BY position';
-        
-        const positionsResult = await env.DB.prepare(positionsQuery).bind(department || []).all();
-        
-        // If no positions found, provide default positions based on department
-        let positions = positionsResult.results || [];
-        if (positions.length === 0) {
-            const defaultPositions = {
-                'HR': ['HR Manager', 'HR Executive', 'HR Assistant', 'Recruiter'],
-                'IT Consulting': ['IT Consultant', 'Senior IT Consultant', 'IT Manager', 'System Administrator', 'Developer', 'Senior Developer', 'Tech Lead'],
-                'Business Consulting': ['Business Consultant', 'Senior Consultant', 'Project Manager', 'Analyst', 'Senior Analyst', 'Consulting Manager'],
-                'Finance': ['Finance Manager', 'Accountant', 'Financial Analyst', 'Accounts Executive'],
-                'Operations': ['Operations Manager', 'Operations Executive', 'Team Lead', 'Supervisor'],
-                'Sales': ['Sales Manager', 'Sales Executive', 'Business Development Manager', 'Account Manager'],
-                'Marketing': ['Marketing Manager', 'Marketing Executive', 'Content Writer', 'SEO Specialist']
-            };
-            
-            const deptPositions = defaultPositions[department] || ['Staff', 'Executive', 'Manager', 'Senior Manager'];
-            positions = deptPositions.map(pos => ({ position: pos }));
+            const designationsResult = await env.DB.prepare(
+                `SELECT designation_id, level, designation_name 
+                 FROM designations 
+                 WHERE department_id = ? AND is_active = 1 
+                 ORDER BY level`
+            ).bind(department).all();
+            responseData.designations = designationsResult.results || [];
+        } else {
+            // Return all designations grouped by department
+            const allDesignationsResult = await env.DB.prepare(
+                `SELECT d.department_id, d.department_name, 
+                        json_group_array(
+                            json_object(
+                                'designation_id', des.designation_id,
+                                'level', des.level,
+                                'designation_name', des.designation_name
+                            )
+                        ) as designations
+                 FROM departments d
+                 LEFT JOIN designations des ON d.department_id = des.department_id AND des.is_active = 1
+                 WHERE d.is_active = 1
+                 GROUP BY d.department_id
+                 ORDER BY d.department_name`
+            ).all();
+            responseData.all_designations = allDesignationsResult.results || [];
         }
         
         // Get potential reporting managers (active employees with manager role or senior positions)
@@ -504,7 +516,8 @@ router.get('/api/onboarding/dropdowns', async (request, env) => {
                  OR position LIKE '%Manager%' 
                  OR position LIKE '%Lead%' 
                  OR position LIKE '%Senior%'
-                 OR position LIKE '%Head%')
+                 OR position LIKE '%Head%'
+                 OR position LIKE '%Director%')
         `;
         
         if (department) {
@@ -516,11 +529,10 @@ router.get('/api/onboarding/dropdowns', async (request, env) => {
             ? await env.DB.prepare(employeesQuery).bind(department).all()
             : await env.DB.prepare(employeesQuery).all();
         
+        responseData.employees = employeesResult.results || [];
+        
         return withCors(new Response(
-            JSON.stringify({
-                positions: positions,
-                employees: employeesResult.results || []
-            }),
+            JSON.stringify(responseData),
             { status: 200, headers: { 'Content-Type': 'application/json' } }
         ));
         

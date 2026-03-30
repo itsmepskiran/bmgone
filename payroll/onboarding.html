@@ -335,18 +335,13 @@
                         <label>Department <span class="required">*</span></label>
                         <select id="department" name="department" required>
                             <option value="">Select Department</option>
-                            <option value="HR">HR</option>
-                            <option value="IT Consulting">IT Consulting</option>
-                            <option value="Business Consulting">Business Consulting</option>
-                            <option value="Finance">Finance</option>
-                            <option value="Marketing">Marketing</option>
-                            <option value="Operations">Operations</option>
+                            <!-- Options will be populated dynamically -->
                         </select>
                     </div>
                     <div class="form-group">
-                        <label>Position <span class="required">*</span></label>
+                        <label>Designation <span class="required">*</span></label>
                         <select id="position" name="position" required>
-                            <option value="">Select Position</option>
+                            <option value="">Select Designation</option>
                             <!-- Options will be populated dynamically -->
                         </select>
                     </div>
@@ -487,15 +482,19 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    // Populate positions dropdown
-                    const positionSelect = document.getElementById('position');
-                    positionSelect.innerHTML = '<option value="">Select Position</option>';
+                    // Populate departments dropdown
+                    const deptSelect = document.getElementById('department');
+                    deptSelect.innerHTML = '<option value="">Select Department</option>';
                     
-                    if (data.positions && data.positions.length > 0) {
-                        data.positions.forEach(pos => {
-                            positionSelect.innerHTML += `<option value="${pos.position}">${pos.position}</option>`;
+                    if (data.departments && data.departments.length > 0) {
+                        data.departments.forEach(dept => {
+                            deptSelect.innerHTML += `<option value="${dept.department_id}">${dept.department_name}</option>`;
                         });
                     }
+                    
+                    // Populate designations dropdown (initially empty until department selected)
+                    const positionSelect = document.getElementById('position');
+                    positionSelect.innerHTML = '<option value="">Select Designation</option>';
                     
                     // Populate reporting manager dropdown
                     const managerSelect = document.getElementById('reportingManager');
@@ -531,18 +530,18 @@
                 const data = await response.json();
                 
                 if (response.ok) {
-                    // Update positions dropdown
+                    // Update designations dropdown
                     const positionSelect = document.getElementById('position');
                     const currentPosition = positionSelect.value;
-                    positionSelect.innerHTML = '<option value="">Select Position</option>';
+                    positionSelect.innerHTML = '<option value="">Select Designation</option>';
                     
-                    if (data.positions && data.positions.length > 0) {
-                        data.positions.forEach(pos => {
-                            positionSelect.innerHTML += `<option value="${pos.position}">${pos.position}</option>`;
+                    if (data.designations && data.designations.length > 0) {
+                        data.designations.forEach(desig => {
+                            positionSelect.innerHTML += `<option value="${desig.designation_name}">${desig.designation_name} (${desig.level})</option>`;
                         });
                     }
                     
-                    // Restore selected position if it still exists
+                    // Restore selected designation if it still exists
                     if (currentPosition) {
                         positionSelect.value = currentPosition;
                     }

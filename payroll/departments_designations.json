@@ -1,0 +1,464 @@
+{
+  "departments": [
+    {
+      "department_id": "HYD01",
+      "department_name": "HR & Talent Acquisition",
+      "designations": [
+        {
+          "designation_id": "BMG001",
+          "level": "E01",
+          "designation_name": "Executive"
+        },
+        {
+          "designation_id": "BMG002",
+          "level": "E02",
+          "designation_name": "Senior Executive"
+        },
+        {
+          "designation_id": "BMG003",
+          "level": "L01",
+          "designation_name": "Lead"
+        },
+        {
+          "designation_id": "BMG004",
+          "level": "M01",
+          "designation_name": "Assistant Manager"
+        },
+        {
+          "designation_id": "BMG005",
+          "level": "M02",
+          "designation_name": "Manager"
+        },
+        {
+          "designation_id": "BMG006",
+          "level": "M03",
+          "designation_name": "Senior Manager"
+        },
+        {
+          "designation_id": "BMG007",
+          "level": "M04",
+          "designation_name": "Head of Department"
+        },
+        {
+          "designation_id": "BMG008",
+          "level": "B01",
+          "designation_name": "Director"
+        }
+      ]
+    },
+    {
+      "department_id": "HYD02",
+      "department_name": "Insurance Services",
+      "designations": [
+        {
+          "designation_id": "BMG009",
+          "level": "E01",
+          "designation_name": "Executive"
+        },
+        {
+          "designation_id": "BMG010",
+          "level": "E02",
+          "designation_name": "Senior Executive"
+        },
+        {
+          "designation_id": "BMG011",
+          "level": "L01",
+          "designation_name": "Lead"
+        },
+        {
+          "designation_id": "BMG012",
+          "level": "M01",
+          "designation_name": "Assistant Manager"
+        },
+        {
+          "designation_id": "BMG013",
+          "level": "M02",
+          "designation_name": "Manager"
+        },
+        {
+          "designation_id": "BMG014",
+          "level": "M03",
+          "designation_name": "Senior Manager"
+        },
+        {
+          "designation_id": "BMG015",
+          "level": "M04",
+          "designation_name": "Head of Department"
+        },
+        {
+          "designation_id": "BMG016",
+          "level": "B01",
+          "designation_name": "Director"
+        }
+      ]
+    },
+    {
+      "department_id": "HYD03",
+      "department_name": "Consulting & Advisory",
+      "designations": [
+        {
+          "designation_id": "BMG017",
+          "level": "E01",
+          "designation_name": "Executive"
+        },
+        {
+          "designation_id": "BMG018",
+          "level": "E02",
+          "designation_name": "Senior Executive"
+        },
+        {
+          "designation_id": "BMG019",
+          "level": "L01",
+          "designation_name": "Lead"
+        },
+        {
+          "designation_id": "BMG020",
+          "level": "M01",
+          "designation_name": "Assistant Manager"
+        },
+        {
+          "designation_id": "BMG021",
+          "level": "M02",
+          "designation_name": "Manager"
+        },
+        {
+          "designation_id": "BMG022",
+          "level": "M03",
+          "designation_name": "Senior Manager"
+        },
+        {
+          "designation_id": "BMG023",
+          "level": "M04",
+          "designation_name": "Head of Department"
+        },
+        {
+          "designation_id": "BMG024",
+          "level": "B01",
+          "designation_name": "Director"
+        }
+      ]
+    },
+    {
+      "department_id": "HYD04",
+      "department_name": "Information Technology",
+      "designations": [
+        {
+          "designation_id": "BMG025",
+          "level": "E01",
+          "designation_name": "Executive"
+        },
+        {
+          "designation_id": "BMG026",
+          "level": "E02",
+          "designation_name": "Senior Executive"
+        },
+        {
+          "designation_id": "BMG027",
+          "level": "L01",
+          "designation_name": "Lead"
+        },
+        {
+          "designation_id": "BMG028",
+          "level": "M01",
+          "designation_name": "Assistant Manager"
+        },
+        {
+          "designation_id": "BMG029",
+          "level": "M02",
+          "designation_name": "Manager"
+        },
+        {
+          "designation_id": "BMG030",
+          "level": "M03",
+          "designation_name": "Senior Manager"
+        },
+        {
+          "designation_id": "BMG031",
+          "level": "M04",
+          "designation_name": "Head of Department"
+        },
+        {
+          "designation_id": "BMG032",
+          "level": "B01",
+          "designation_name": "Director"
+        }
+      ]
+    },
+    {
+      "department_id": "HYD05",
+      "department_name": "Mutual Funds",
+      "designations": [
+        {
+          "designation_id": "BMG033",
+          "level": "E01",
+          "designation_name": "Executive"
+        },
+        {
+          "designation_id": "BMG034",
+          "level": "E02",
+          "designation_name": "Senior Executive"
+        },
+        {
+          "designation_id": "BMG035",
+          "level": "L01",
+          "designation_name": "Lead"
+        },
+        {
+          "designation_id": "BMG036",
+          "level": "M01",
+          "designation_name": "Assistant Manager"
+        },
+        {
+          "designation_id": "BMG037",
+          "level": "M02",
+          "designation_name": "Manager"
+        },
+        {
+          "designation_id": "BMG038",
+          "level": "M03",
+          "designation_name": "Senior Manager"
+        },
+        {
+          "designation_id": "BMG039",
+          "level": "M04",
+          "designation_name": "Head of Department"
+        },
+        {
+          "designation_id": "BMG040",
+          "level": "B01",
+          "designation_name": "Director"
+        }
+      ]
+    },
+    {
+      "department_id": "HYD06",
+      "department_name": "Operations",
+      "designations": [
+        {
+          "designation_id": "BMG041",
+          "level": "E01",
+          "designation_name": "Executive"
+        },
+        {
+          "designation_id": "BMG042",
+          "level": "E02",
+          "designation_name": "Senior Executive"
+        },
+        {
+          "designation_id": "BMG043",
+          "level": "L01",
+          "designation_name": "Lead"
+        },
+        {
+          "designation_id": "BMG044",
+          "level": "M01",
+          "designation_name": "Assistant Manager"
+        },
+        {
+          "designation_id": "BMG045",
+          "level": "M02",
+          "designation_name": "Manager"
+        },
+        {
+          "designation_id": "BMG046",
+          "level": "M03",
+          "designation_name": "Senior Manager"
+        },
+        {
+          "designation_id": "BMG047",
+          "level": "M04",
+          "designation_name": "Head of Department"
+        },
+        {
+          "designation_id": "BMG048",
+          "level": "B01",
+          "designation_name": "Director"
+        }
+      ]
+    },
+    {
+      "department_id": "HYD07",
+      "department_name": "Administration",
+      "designations": [
+        {
+          "designation_id": "BMG049",
+          "level": "E01",
+          "designation_name": "Executive"
+        },
+        {
+          "designation_id": "BMG050",
+          "level": "E02",
+          "designation_name": "Senior Executive"
+        },
+        {
+          "designation_id": "BMG051",
+          "level": "L01",
+          "designation_name": "Lead"
+        },
+        {
+          "designation_id": "BMG052",
+          "level": "M01",
+          "designation_name": "Assistant Manager"
+        },
+        {
+          "designation_id": "BMG053",
+          "level": "M02",
+          "designation_name": "Manager"
+        },
+        {
+          "designation_id": "BMG054",
+          "level": "M03",
+          "designation_name": "Senior Manager"
+        },
+        {
+          "designation_id": "BMG055",
+          "level": "M04",
+          "designation_name": "Head of Department"
+        },
+        {
+          "designation_id": "BMG056",
+          "level": "B01",
+          "designation_name": "Director"
+        }
+      ]
+    },
+    {
+      "department_id": "HYD08",
+      "department_name": "Finance & Accounts",
+      "designations": [
+        {
+          "designation_id": "BMG057",
+          "level": "E01",
+          "designation_name": "Executive"
+        },
+        {
+          "designation_id": "BMG058",
+          "level": "E02",
+          "designation_name": "Senior Executive"
+        },
+        {
+          "designation_id": "BMG059",
+          "level": "L01",
+          "designation_name": "Lead"
+        },
+        {
+          "designation_id": "BMG060",
+          "level": "M01",
+          "designation_name": "Assistant Manager"
+        },
+        {
+          "designation_id": "BMG061",
+          "level": "M02",
+          "designation_name": "Manager"
+        },
+        {
+          "designation_id": "BMG062",
+          "level": "M03",
+          "designation_name": "Senior Manager"
+        },
+        {
+          "designation_id": "BMG063",
+          "level": "M04",
+          "designation_name": "Head of Department"
+        },
+        {
+          "designation_id": "BMG064",
+          "level": "B01",
+          "designation_name": "Director"
+        }
+      ]
+    },
+    {
+      "department_id": "HYD09",
+      "department_name": "Sales & Marketing",
+      "designations": [
+        {
+          "designation_id": "BMG065",
+          "level": "E01",
+          "designation_name": "Executive"
+        },
+        {
+          "designation_id": "BMG066",
+          "level": "E02",
+          "designation_name": "Senior Executive"
+        },
+        {
+          "designation_id": "BMG067",
+          "level": "L01",
+          "designation_name": "Lead"
+        },
+        {
+          "designation_id": "BMG068",
+          "level": "M01",
+          "designation_name": "Assistant Manager"
+        },
+        {
+          "designation_id": "BMG069",
+          "level": "M02",
+          "designation_name": "Manager"
+        },
+        {
+          "designation_id": "BMG070",
+          "level": "M03",
+          "designation_name": "Senior Manager"
+        },
+        {
+          "designation_id": "BMG071",
+          "level": "M04",
+          "designation_name": "Head of Department"
+        },
+        {
+          "designation_id": "BMG072",
+          "level": "B01",
+          "designation_name": "Director"
+        }
+      ]
+    },
+    {
+      "department_id": "HYD10",
+      "department_name": "Payroll & Compliance",
+      "designations": [
+        {
+          "designation_id": "BMG073",
+          "level": "E01",
+          "designation_name": "Executive"
+        },
+        {
+          "designation_id": "BMG074",
+          "level": "E02",
+          "designation_name": "Senior Executive"
+        },
+        {
+          "designation_id": "BMG075",
+          "level": "L01",
+          "designation_name": "Lead"
+        },
+        {
+          "designation_id": "BMG076",
+          "level": "M01",
+          "designation_name": "Assistant Manager"
+        },
+        {
+          "designation_id": "BMG077",
+          "level": "M02",
+          "designation_name": "Manager"
+        },
+        {
+          "designation_id": "BMG078",
+          "level": "M03",
+          "designation_name": "Senior Manager"
+        },
+        {
+          "designation_id": "BMG079",
+          "level": "M04",
+          "designation_name": "Head of Department"
+        },
+        {
+          "designation_id": "BMG080",
+          "level": "B01",
+          "designation_name": "Director"
+        }
+      ]
+    }
+  ]
+}
