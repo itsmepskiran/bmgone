@@ -480,13 +480,16 @@ router.get('/api/onboarding/dropdowns', async (request, env) => {
         
         // Get designations based on department filter
         if (department) {
+            console.log('Fetching designations for department:', department);
             const designationsResult = await env.DB.prepare(
                 `SELECT designation_id, level, designation_name 
                  FROM designations 
                  WHERE department_id = ? AND is_active = 1 
                  ORDER BY level`
             ).bind(department).all();
+            console.log('Designations result:', JSON.stringify(designationsResult));
             responseData.designations = designationsResult.results || [];
+            console.log('Response designations count:', responseData.designations.length);
         } else {
             // Return all designations grouped by department
             const allDesignationsResult = await env.DB.prepare(
