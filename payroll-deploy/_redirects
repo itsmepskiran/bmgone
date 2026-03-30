@@ -1,6 +1,0 @@
-# Cloudflare Pages Redirects File
-# Handle API routes for production
-/api/* https://pay.bmgone.com/api/:splat 200
-
-# Handle SPA routing - all routes go to index.html
-/* /index.html 200
