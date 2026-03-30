@@ -513,7 +513,7 @@ router.get('/api/onboarding/dropdowns', async (request, env) => {
         // Get potential reporting managers (employees with designation level M01 and above OR admin/master_admin role)
         // M01 = Assistant Manager, M02 = Manager, M03 = Senior Manager, M04 = Head, B01 = Director
         let employeesQuery = `
-            SELECT e.employee_id, e.first_name, e.last_name, e.department, e.position, d.level
+            SELECT DISTINCT e.employee_id, e.first_name, e.last_name, e.department, e.position, d.level
             FROM employees e
             LEFT JOIN designations d ON e.position = d.designation_name AND d.is_active = 1
             WHERE e.is_active = 1 
