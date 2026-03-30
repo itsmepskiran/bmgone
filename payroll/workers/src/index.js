@@ -510,23 +510,20 @@ router.get('/api/onboarding/dropdowns', async (request, env) => {
             responseData.all_designations = allDesignationsResult.results || [];
         }
         
-        // Get potential reporting managers (active employees with manager role or senior positions)
+        // Get potential reporting managers (employees with designation level M01 and above)
+        // M01 = Assistant Manager, M02 = Manager, M03 = Senior Manager, M04 = Head, B01 = Director
         let employeesQuery = `
-            SELECT employee_id, first_name, last_name, department, position 
-            FROM employees 
-            WHERE is_active = 1 
-            AND (role IN ('manager', 'admin', 'master_admin') 
-                 OR position LIKE '%Manager%' 
-                 OR position LIKE '%Lead%' 
-                 OR position LIKE '%Senior%'
-                 OR position LIKE '%Head%'
-                 OR position LIKE '%Director%')
+            SELECT e.employee_id, e.first_name, e.last_name, e.department, e.position, d.level
+            FROM employees e
+            JOIN designations d ON e.position = d.designation_name AND d.is_active = 1
+            WHERE e.is_active = 1 
+            AND d.level IN ('M01', 'M02', 'M03', 'M04', 'B01')
         `;
         
         if (department) {
-            employeesQuery += ' AND department = ?';
+            employeesQuery += ' AND e.department = ?';
         }
-        employeesQuery += ' ORDER BY first_name, last_name';
+        employeesQuery += ' ORDER BY e.first_name, e.last_name';
         
         const employeesResult = department 
             ? await env.DB.prepare(employeesQuery).bind(department).all()

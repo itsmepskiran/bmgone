@@ -674,8 +674,12 @@
 
     <script src="../script.js"></script>
     <script>
-        // API Base URL
-        const API_BASE = 'http://127.0.0.1:8788/api';
+        // API Base URL - Dynamic based on environment
+        const CONFIG = {
+            API_BASE: window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' 
+                ? 'http://127.0.0.1:8788/api' 
+                : 'https://pay.bmgone.com/api'
+        };
         
         let token = null;
         let employee = null;
@@ -704,7 +708,7 @@
             const password = document.getElementById('password').value;
             
             try {
-                const response = await fetch(`${API_BASE}/auth/login`, {
+                const response = await fetch(`${CONFIG.API_BASE}/auth/login`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json'
@@ -755,7 +759,7 @@
             }
             
             try {
-                const response = await fetch(`${API_BASE}/auth/change-password`, {
+                const response = await fetch(`${CONFIG.API_BASE}/auth/change-password`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -806,7 +810,7 @@
         // Mark Attendance
         async function markAttendance(type) {
             try {
-                const response = await fetch(`${API_BASE}/attendance/mark`, {
+                const response = await fetch(`${CONFIG.API_BASE}/attendance/mark`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -836,7 +840,7 @@
                 const month = today.getMonth() + 1;
                 const year = today.getFullYear();
                 
-                const response = await fetch(`${API_BASE}/attendance?month=${month}&year=${year}`, {
+                const response = await fetch(`${CONFIG.API_BASE}/attendance?month=${month}&year=${year}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -875,7 +879,7 @@
         // Load Leave Balances
         async function loadLeaveBalances() {
             try {
-                const response = await fetch(`${API_BASE}/leave/balances`, {
+                const response = await fetch(`${CONFIG.API_BASE}/leave/balances`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -905,7 +909,7 @@
         // Load Holidays
         async function loadHolidays() {
             try {
-                const response = await fetch(`${API_BASE}/holidays?year=2024`);
+                const response = await fetch(`${CONFIG.API_BASE}/holidays?year=2024`);
                 const data = await response.json();
                 
                 if (response.ok) {
@@ -943,7 +947,7 @@
             };
             
             try {
-                const response = await fetch(`${API_BASE}/leave/apply`, {
+                const response = await fetch(`${CONFIG.API_BASE}/leave/apply`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -972,7 +976,7 @@
             e.preventDefault();
             
             try {
-                await fetch(`${API_BASE}/auth/logout`, {
+                await fetch(`${CONFIG.API_BASE}/auth/logout`, {
                     method: 'POST',
                     headers: {
                         'Authorization': `Bearer ${token}`
