@@ -418,12 +418,35 @@ router.post('/api/employees/create', async (request, env) => {
             employeeData.emergency_contact_relation, 1, user.employeeId
         ).run();
         
-        // Create default leave balances
+        // Create prorated leave balances based on date of joining
+        const joinDate = new Date(employeeData.join_date);
+        const fyStart = new Date(joinDate.getFullYear(), 3, 1); // April 1 of joining year
+        const fyEnd = new Date(joinDate.getFullYear() + 1, 2, 31); // March 31 of next year
+        
+        // Calculate remaining months in FY from join date
+        let remainingMonths = 12;
+        if (joinDate > fyStart) {
+            // Calculate months from join date to March 31
+            const monthsFromStart = (joinDate.getFullYear() - fyStart.getFullYear()) * 12 + 
+                                   (joinDate.getMonth() - fyStart.getMonth());
+            const dayOfMonth = joinDate.getDate();
+            // Calculate fractional month (assuming 30 days/month for simplicity)
+            const fractionalMonth = dayOfMonth > 1 ? (30 - dayOfMonth) / 30 : 1;
+            remainingMonths = 12 - monthsFromStart - (1 - fractionalMonth);
+            remainingMonths = Math.max(0, remainingMonths);
+        }
+        
+        // Annual defaults: CL=12, SL=6, EL=12
+        // Monthly rates: CL=1, SL=0.5, EL=1
+        const casualLeave = Math.round(remainingMonths * 1 * 10) / 10; // Round to 1 decimal
+        const sickLeave = Math.round(remainingMonths * 0.5 * 10) / 10;
+        const earnedLeave = Math.round(remainingMonths * 1 * 10) / 10;
+        
         const currentYear = new Date().getFullYear();
         await env.DB.prepare(
             `INSERT INTO leave_balances (employee_id, leave_type, total_days, year) VALUES
-            (?, 'casual', 12, ?), (?, 'sick', 8, ?), (?, 'earned', 15, ?)`
-        ).bind(employeeId, currentYear, employeeId, currentYear, employeeId, currentYear).run();
+            (?, 'casual', ?, ?), (?, 'sick', ?, ?), (?, 'earned', ?, ?)`
+        ).bind(employeeId, casualLeave, currentYear, employeeId, sickLeave, currentYear, employeeId, earnedLeave, currentYear).run();
         
         await logAudit(env, user.employeeId, 'employee_create', 'employees', employeeId, null, 
                       { ...employeeData, employee_id: employeeId }, request.headers.get('CF-Connecting-IP'),
