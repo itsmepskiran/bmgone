@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Health Insurance Details - BMGOne</title>
+    <meta name="description" content="Share health insurance details for adults and family members to receive a quote.">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="../logos/logo.png">
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="../index.html">
+            <img src="../logos/banner.png" alt="BMGOne">
+        </a>
+        <nav class="header-nav">
+            <a href="index.html">Insurance Home</a>
+            <a class="active" href="health.html">Health Insurance</a>
+            <a href="life.html">Life Insurance</a>
+        </nav>
+    </header>
+
+    <main class="form-page">
+        <section class="page-intro">
+            <p class="eyebrow">Health Insurance</p>
+            <h1>Get health insurance quotes in a few simple steps</h1>
+            <p>Choose members, add ages, share location and contact details, then select your preferred cover.</p>
+        </section>
+
+        <section class="quote-shell">
+            <aside class="quote-aside">
+                <h2>Health cover made simple</h2>
+                <ul>
+                    <li>Compare plans for selected members</li>
+                    <li>Capture ages and medical needs upfront</li>
+                    <li>Get a callback from the BMGOne team</li>
+                </ul>
+            </aside>
+
+            <form id="healthInsuranceForm" class="quote-card">
+                <div class="progress-bar" aria-label="Quote progress">
+                    <span class="progress-step active">1</span>
+                    <span class="progress-line"></span>
+                    <span class="progress-step">2</span>
+                    <span class="progress-line"></span>
+                    <span class="progress-step">3</span>
+                    <span class="progress-line"></span>
+                    <span class="progress-step">4</span>
+                </div>
+
+                <div class="quote-step active" data-step="1">
+                    <p class="step-count">Step 1 of 4</p>
+                    <h2>Who do you want to insure?</h2>
+                    <p class="step-help">Select all members who need health insurance coverage.</p>
+                    <div class="member-picker">
+                        <label><input type="checkbox" name="members" value="Self"> <span>Self</span></label>
+                        <label><input type="checkbox" name="members" value="Spouse"> <span>Spouse</span></label>
+                        <label><input type="checkbox" name="members" value="Son"> <span>Son</span></label>
+                        <label><input type="checkbox" name="members" value="Daughter"> <span>Daughter</span></label>
+                        <label><input type="checkbox" name="members" value="Father"> <span>Father</span></label>
+                        <label><input type="checkbox" name="members" value="Mother"> <span>Mother</span></label>
+                        <label><input type="checkbox" name="members" value="Father-in-law"> <span>Father-in-law</span></label>
+                        <label><input type="checkbox" name="members" value="Mother-in-law"> <span>Mother-in-law</span></label>
+                    </div>
+                </div>
+
+                <div class="quote-step" data-step="2">
+                    <p class="step-count">Step 2 of 4</p>
+                    <h2>Tell us the age details</h2>
+                    <p class="step-help">Approximate age helps us identify suitable plans quickly.</p>
+                    <div class="form-grid">
+                        <label>
+                            Eldest Member Age
+                            <input type="number" name="eldestAge" min="18" max="100" placeholder="Example: 36" data-step-required>
+                        </label>
+                        <label>
+                            Number of Children
+                            <select name="childrenCount" data-step-required>
+                                <option value="">Select children</option>
+                                <option>0</option>
+                                <option>1</option>
+                                <option>2</option>
+                                <option>3</option>
+                                <option>4+</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="quote-step" data-step="3">
+                    <p class="step-count">Step 3 of 4</p>
+                    <h2>Where should we search plans?</h2>
+                    <p class="step-help">Location and contact details help us arrange a quote callback.</p>
+                    <div class="form-grid">
+                        <label>
+                            City
+                            <input type="text" name="city" placeholder="Enter city" data-step-required>
+                        </label>
+                        <label>
+                            Mobile Number
+                            <input type="tel" name="phone" placeholder="Enter mobile number" data-step-required>
+                        </label>
+                        <label>
+                            Full Name
+                            <input type="text" name="name" placeholder="Enter full name" data-step-required>
+                        </label>
+                        <label>
+                            Email Address
+                            <input type="email" name="email" placeholder="Enter email address">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="quote-step" data-step="4">
+                    <p class="step-count">Step 4 of 4</p>
+                    <h2>Top matching health policies</h2>
+                    <p class="step-help">Based on your member, age, and location details, these provider options are a good starting point.</p>
+                    <div class="quote-summary" id="quoteSummary" data-quote-summary></div>
+                    <div class="policy-results" id="policyResults" data-policy-results></div>
+                    <div class="additional-details">
+                        <label>
+                            Additional requirements
+                            <textarea name="requirements" rows="3" placeholder="Mention existing illnesses, preferred hospital, budget, or other needs"></textarea>
+                        </label>
+                    </div>
+                    <div class="saved-quotes">
+                        <h3>Saved Quote Requests</h3>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Phone</th>
+                                        <th>Members</th>
+                                        <th>Age</th>
+                                        <th>City</th>
+                                        <th>Lowest Premium</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="savedQuotesTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quote-actions">
+                    <button class="btn-secondary" type="button" data-prev-step>Back</button>
+                    <button class="btn-primary" type="button" data-next-step>Continue</button>
+                    <button class="btn-primary" type="submit" data-submit-step>Submit Health Details</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2025 BMG Enterprise. All rights reserved.</p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>

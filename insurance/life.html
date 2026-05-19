@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Insurance Details - BMGOne</title>
+    <meta name="description" content="Share life insurance details for protection and savings plans.">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" href="../logos/logo.png">
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="../index.html">
+            <img src="../logos/banner.png" alt="BMGOne">
+        </a>
+        <nav class="header-nav">
+            <a href="index.html">Insurance Home</a>
+            <a href="health.html">Health Insurance</a>
+            <a class="active" href="life.html">Life Insurance</a>
+        </nav>
+    </header>
+
+    <main class="form-page">
+        <section class="page-intro">
+            <p class="eyebrow">Life Insurance</p>
+            <h1>Secure your family’s financial future</h1>
+            <p>Share basic life, nominee, age, income, and coverage details to help us recommend suitable plans.</p>
+        </section>
+
+        <section class="quote-shell">
+            <aside class="quote-aside">
+                <h2>Life cover built around your responsibilities</h2>
+                <ul>
+                    <li>Estimate premiums from age, income, and cover amount</li>
+                    <li>Compare trusted life insurance providers</li>
+                    <li>Save enquiry details for callback and follow-up</li>
+                </ul>
+            </aside>
+
+            <form id="lifeInsuranceForm" class="quote-card">
+                <div class="progress-bar" aria-label="Quote progress">
+                    <span class="progress-step active">1</span>
+                    <span class="progress-line"></span>
+                    <span class="progress-step">2</span>
+                    <span class="progress-line"></span>
+                    <span class="progress-step">3</span>
+                    <span class="progress-line"></span>
+                    <span class="progress-step">4</span>
+                </div>
+
+                <div class="quote-step active" data-step="1">
+                    <p class="step-count">Step 1 of 4</p>
+                    <h2>Who depends on your income?</h2>
+                    <p class="step-help">Select family members who need financial protection.</p>
+                    <div class="member-picker">
+                        <label><input type="checkbox" name="dependents" value="Spouse"> <span>Spouse</span></label>
+                        <label><input type="checkbox" name="dependents" value="Children"> <span>Children</span></label>
+                        <label><input type="checkbox" name="dependents" value="Parents"> <span>Parents</span></label>
+                        <label><input type="checkbox" name="dependents" value="Other Family Members"> <span>Other Family Members</span></label>
+                    </div>
+                </div>
+
+                <div class="quote-step" data-step="2">
+                    <p class="step-count">Step 2 of 4</p>
+                    <h2>Coverage and income details</h2>
+                    <p class="step-help">These details are used for premium estimation.</p>
+                    <div class="form-grid">
+                        <label>
+                            Age
+                            <input type="number" name="age" min="18" max="75" placeholder="Enter age" data-step-required>
+                        </label>
+                        <label>
+                            Annual Income
+                            <select name="income" data-step-required>
+                                <option value="">Select annual income</option>
+                                <option>Below ₹3 Lakhs</option>
+                                <option>₹3 Lakhs - ₹5 Lakhs</option>
+                                <option>₹5 Lakhs - ₹10 Lakhs</option>
+                                <option>₹10 Lakhs - ₹25 Lakhs</option>
+                                <option>₹25 Lakhs+</option>
+                            </select>
+                        </label>
+                        <label>
+                            Plan Type
+                            <select name="planType" data-step-required>
+                                <option value="">Select plan type</option>
+                                <option>Term Insurance</option>
+                                <option>Savings Plan</option>
+                                <option>Child Plan</option>
+                                <option>Retirement Plan</option>
+                                <option>Whole Life Plan</option>
+                            </select>
+                        </label>
+                        <label>
+                            Required Coverage
+                            <select name="coverage" data-step-required>
+                                <option value="">Select coverage</option>
+                                <option>₹25 Lakhs</option>
+                                <option>₹50 Lakhs</option>
+                                <option>₹1 Crore</option>
+                                <option>₹2 Crore</option>
+                                <option>₹5 Crore+</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="quote-step" data-step="3">
+                    <p class="step-count">Step 3 of 4</p>
+                    <h2>Contact and nominee details</h2>
+                    <p class="step-help">We will save these details for quote follow-up.</p>
+                    <div class="form-grid">
+                        <label>
+                            Full Name
+                            <input type="text" name="name" placeholder="Enter full name" data-step-required>
+                        </label>
+                        <label>
+                            Mobile Number
+                            <input type="tel" name="phone" placeholder="Enter mobile number" data-step-required>
+                        </label>
+                        <label>
+                            Email Address
+                            <input type="email" name="email" placeholder="Enter email address">
+                        </label>
+                        <label>
+                            City
+                            <input type="text" name="city" placeholder="Enter city" data-step-required>
+                        </label>
+                        <label>
+                            Nominee Name
+                            <input type="text" name="nominee" placeholder="Enter nominee name">
+                        </label>
+                        <label>
+                            Nominee Relationship
+                            <input type="text" name="relationship" placeholder="Example: Spouse, Son, Daughter">
+                        </label>
+                    </div>
+                </div>
+
+                <div class="quote-step" data-step="4">
+                    <p class="step-count">Step 4 of 4</p>
+                    <h2>Top matching life policies</h2>
+                    <p class="step-help">Based on your age, income, coverage, and dependent details.</p>
+                    <div class="quote-summary" data-quote-summary></div>
+                    <div class="policy-results" data-policy-results></div>
+                    <div class="additional-details">
+                        <label>
+                            Additional details
+                            <textarea name="requirements" rows="3" placeholder="Mention existing policies, medical history, or special needs"></textarea>
+                        </label>
+                    </div>
+                    <div class="saved-quotes">
+                        <h3>Saved Life Quote Requests</h3>
+                        <div class="table-wrap">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Phone</th>
+                                        <th>Members</th>
+                                        <th>Age</th>
+                                        <th>City</th>
+                                        <th>Lowest Premium</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="savedLifeQuotesTable"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="quote-actions">
+                    <button class="btn-secondary" type="button" data-prev-step>Back</button>
+                    <button class="btn-primary" type="button" data-next-step>Continue</button>
+                    <button class="btn-primary" type="submit" data-submit-step>Submit Life Details</button>
+                </div>
+            </form>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2025 BMG Enterprise. All rights reserved.</p>
+    </footer>
+    <script src="script.js"></script>
+</body>
+</html>
