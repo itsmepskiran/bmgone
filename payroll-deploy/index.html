@@ -261,7 +261,7 @@
             </div>
 
             <!-- Leave Balance Card -->
-            <div class="dashboard-card">
+            <div class="dashboard-card" style="display:none;">
                 <div class="card-header">
                     <h2 class="card-title">Leave Balance</h2>
                     <span style="font-size: 2rem;">📊</span>
@@ -272,7 +272,7 @@
             </div>
 
             <!-- Apply Leave Card -->
-            <div class="dashboard-card">
+            <div class="dashboard-card" style="display:none;">
                 <div class="card-header">
                     <h2 class="card-title">Apply Leave</h2>
                     <span style="font-size: 2rem;">📝</span>
@@ -304,7 +304,7 @@
             </div>
 
             <!-- Holidays Card -->
-            <div class="dashboard-card">
+            <div class="dashboard-card" style="display:none;">
                 <div class="card-header">
                     <h2 class="card-title">Holiday List 2024</h2>
                     <span style="font-size: 2rem;">🎉</span>
@@ -315,17 +315,54 @@
             </div>
 
             <!-- Compare Plan / Customer Quotation Card (Staff only) -->
-            <div class="dashboard-card" style="cursor:pointer;" onclick="window.open('https://bmgone.com/insurance/compare.html','_blank')">
-                <div class="card-header">
-                    <h2 class="card-title">Compare Plan</h2>
-                    <span style="font-size: 2rem;">📋</span>
+            <div class="dashboard-card" style="
+                grid-column: 1 / -1;
+                background: linear-gradient(135deg, #0D47A1 0%, #1565C0 50%, #0D47A1 100%);
+                color: #fff;
+                cursor: pointer;
+                border: none;
+                box-shadow: 0 8px 32px rgba(13,71,161,0.35);
+            " onclick="window.open('https://bmgone.com/insurance/compare.html','_blank')">
+                <div class="card-header" style="border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom: 1rem; margin-bottom: 1rem;">
+                    <div style="display:flex; align-items:center; gap: 14px;">
+                        <span style="font-size: 3rem;">📋</span>
+                        <div>
+                            <h2 class="card-title" style="color:#fff; font-size:1.6rem;">Compare Plan &nbsp;·&nbsp; Customer Quotation</h2>
+                            <p style="color:rgba(255,255,255,0.75); font-size:0.95rem; margin-top:4px;">
+                                Compare health insurance plans across providers and generate a branded quotation for your customer.
+                            </p>
+                        </div>
+                    </div>
                 </div>
-                <p style="color:#6b7280;font-size:0.95rem;margin-bottom:1rem;">
-                    Generate a detailed Customer Quotation by comparing health insurance plans side-by-side across providers.
-                </p>
-                <button class="btn-submit" style="width:100%;margin-top:auto;" onclick="event.stopPropagation();window.open('https://bmgone.com/insurance/compare.html','_blank')">
-                    Open Compare Tool →
-                </button>
+                <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center; justify-content:space-between;">
+                    <div style="display:flex; gap:24px; flex-wrap:wrap;">
+                        <div style="text-align:center;">
+                            <div style="font-size:1.8rem; font-weight:800;">10+</div>
+                            <div style="font-size:0.8rem; opacity:0.75;">Insurers</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:1.8rem; font-weight:800;">PDF</div>
+                            <div style="font-size:0.8rem; opacity:0.75;">Print Ready</div>
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:1.8rem; font-weight:800;">∞</div>
+                            <div style="font-size:0.8rem; opacity:0.75;">Plans</div>
+                        </div>
+                    </div>
+                    <button style="
+                        background:#fff;
+                        color:#0D47A1;
+                        border:none;
+                        border-radius:8px;
+                        padding:12px 28px;
+                        font-size:1rem;
+                        font-weight:700;
+                        cursor:pointer;
+                        box-shadow:0 4px 12px rgba(0,0,0,0.2);
+                    " onclick="event.stopPropagation(); window.open('https://bmgone.com/insurance/compare.html','_blank')">
+                        Open Compare Tool →
+                    </button>
+                </div>
             </div>
         </div>
     </div>
