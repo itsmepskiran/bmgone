@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Data Migration - BMGOne Payroll</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .migration-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            margin-top: 80px;
+        }
+
+        .header-section {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .header-section h1 {
+            margin: 0 0 0.5rem 0;
+        }
+
+        .header-section p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .content-box {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .form-section {
+            margin-bottom: 2rem;
+        }
+
+        .form-section h2 {
+            color: #1f2937;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+
+        .form-group textarea {
+            width: 100%;
+            padding: 1rem;
+            border: 1.5px solid #d1d5db;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.875rem;
+            resize: vertical;
+            min-height: 100px;
+            box-sizing: border-box;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #d1d5db;
+        }
+
+        .preview-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #f9fafb;
+            border-radius: 5px;
+            border-left: 4px solid var(--primary-blue);
+        }
+
+        .preview-section h3 {
+            color: #1f2937;
+            margin-top: 0;
+        }
+
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .data-item {
+            background: white;
+            padding: 1rem;
+            border-radius: 5px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .data-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .data-value {
+            color: #1f2937;
+            word-break: break-word;
+        }
+
+        .status-message {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+            display: block;
+        }
+
+        .status-message.info {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 1px solid #93c5fd;
+            display: block;
+        }
+
+        .table-section {
+            margin-top: 1.5rem;
+            overflow-x: auto;
+        }
+
+        .table-section table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        .table-section th,
+        .table-section td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .table-section th {
+            background: #f3f4f6;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .table-section tr:hover {
+            background: #f9fafb;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-y {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .badge-n {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .badge-e {
+            background: #fed7aa;
+            color: #92400e;
+        }
+
+        @media (max-width: 768px) {
+            .migration-container {
+                padding: 10px;
+            }
+
+            .data-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="/logos/banner.png" alt="BMGOne" class="logo-img">
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="https://bmgone.com" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="btn btn-staff-login" id="logoutBtn">Logout</a>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Migration Container -->
+    <div class="migration-container">
+        <div class="header-section">
+            <h1>🔄 Data Migration Tool</h1>
+            <p>Import old comparison data (eyJ... format) into the database</p>
+        </div>
+
+        <div class="content-box">
+            <div class="status-message" id="statusMessage"></div>
+
+            <div class="form-section">
+                <h2>Step 1: Paste Your Encoded Data</h2>
+                <div class="form-group">
+                    <label for="encodedData">Paste the eyJ... code here:</label>
+                    <textarea id="encodedData" placeholder="Paste the encoded data starting with eyJ..."></textarea>
+                </div>
+                <div class="button-group">
+                    <button class="btn-primary" onclick="decodeData()">🔍 Decode & Preview</button>
+                    <button class="btn-secondary" onclick="clearForm()">Clear</button>
+                </div>
+            </div>
+
+            <div id="previewSection" class="preview-section" style="display: none;">
+                <h3>Step 2: Review Decoded Data</h3>
+
+                <div class="data-grid">
+                    <div class="data-item">
+                        <div class="data-label">Client Name</div>
+                        <div class="data-value" id="previewName">-</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Client Age</div>
+                        <div class="data-value" id="previewAge">-</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Members</div>
+                        <div class="data-value" id="previewMembers">-</div>
+                    </div>
+                    <div class="data-item">
+                        <div class="data-label">Total Questions</div>
+                        <div class="data-value" id="previewQuestionCount">-</div>
+                    </div>
+                </div>
+
+                <div class="table-section">
+                    <h4>Questions & Answers</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width: 30%;">Question</th>
+                                <th>AB</th>
+                                <th>ICICI</th>
+                                <th>Star</th>
+                                <th>Care</th>
+                                <th>Tata</th>
+                            </tr>
+                        </thead>
+                        <tbody id="previewTable">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div style="margin-top: 2rem;">
+                    <h4>⚠️ Import Options</h4>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="updateExisting" checked>
+                            Update existing questions (if they already exist in database)
+                        </label>
+                    </div>
+                    <div class="button-group">
+                        <button class="btn-primary" onclick="importData()">✅ Import Data to Database</button>
+                        <button class="btn-secondary" onclick="cancelImport()">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            API_BASE: 'https://pay.bmgone.com/api'
+        };
+
+        let token = localStorage.getItem('token');
+        let decodedData = null;
+        const BRANDS = ['ab', 'ic', 'star', 'care', 'tata'];
+        const BRAND_NAMES = {ab: 'AB', ic: 'ICICI', star: 'Star', care: 'Care', tata: 'Tata'};
+
+        // Check authentication
+        window.addEventListener('load', function() {
+            if (!token) {
+                alert('⚠️ Not authenticated. Please login first.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const employee = localStorage.getItem('employee');
+            if (employee) {
+                try {
+                    const employeeData = JSON.parse(employee);
+                    if (!employeeData.role || !['admin', 'master_admin'].includes(employeeData.role)) {
+                        alert('❌ Access Denied. Only admins can access this page.');
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                } catch (e) {
+                    alert('❌ Invalid authentication data.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+            }
+        });
+
+        // Decode the encoded data
+        function decodeData() {
+            const encodedData = document.getElementById('encodedData').value.trim();
+
+            if (!encodedData) {
+                showMessage('❌ Please paste the encoded data first', 'error');
+                return;
+            }
+
+            try {
+                // Decode base64
+                const decoded = atob(encodedData);
+                // Decode URI component
+                const jsonString = decodeURIComponent(escape(decoded));
+                // Parse JSON
+                decodedData = JSON.parse(jsonString);
+
+                // Validate structure
+                if (!decodedData.sections || !decodedData.brands) {
+                    throw new Error('Invalid data structure');
+                }
+
+                // Display preview
+                displayPreview();
+                showMessage('✅ Data decoded successfully!', 'success');
+            } catch (error) {
+                console.error('Decode error:', error);
+                showMessage(`❌ Error decoding data: ${error.message}`, 'error');
+                decodedData = null;
+            }
+        }
+
+        // Display preview of decoded data
+        function displayPreview() {
+            document.getElementById('previewName').textContent = decodedData.clientName || '-';
+            document.getElementById('previewAge').textContent = decodedData.clientAge || '-';
+            document.getElementById('previewMembers').textContent = decodedData.clientMembers || '-';
+
+            let totalQuestions = 0;
+            const tbody = document.getElementById('previewTable');
+            tbody.innerHTML = '';
+
+            decodedData.sections.forEach(section => {
+                section.features.forEach(feature => {
+                    totalQuestions++;
+                    const row = `
+                        <tr>
+                            <td><strong>${feature.label}</strong></td>
+                            ${BRANDS.map((brand, idx) => {
+                                const val = feature.vals[idx] || '-';
+                                const className = val === 'Y' ? 'badge-y' : val === 'N' ? 'badge-n' : val === 'E' ? 'badge-e' : '';
+                                return `<td><span class="badge ${className}">${val}</span></td>`;
+                            }).join('')}
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+            });
+
+            document.getElementById('previewQuestionCount').textContent = totalQuestions;
+            document.getElementById('previewSection').style.display = 'block';
+        }
+
+        // Import data to database
+        async function importData() {
+            if (!decodedData) {
+                showMessage('❌ No data to import', 'error');
+                return;
+            }
+
+            const updateExisting = document.getElementById('updateExisting').checked;
+
+            try {
+                showMessage('⏳ Importing data... Please wait', 'info');
+
+                let successCount = 0;
+                let errorCount = 0;
+
+                // Process each section and feature
+                for (const section of decodedData.sections) {
+                    for (const feature of section.features) {
+                        try {
+                            const payload = {
+                                feature_id: feature.id,
+                                feature_label: feature.label,
+                                section_id: section.id,
+                                values: {}
+                            };
+
+                            // Map brand values
+                            BRANDS.forEach((brand, idx) => {
+                                if (feature.vals[idx]) {
+                                    payload.values[brand] = feature.vals[idx];
+                                }
+                            });
+
+                            // Call API to save/update question
+                            const response = await fetch(`${CONFIG.API_BASE}/comparison/questions`, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${token}`,
+                                    'Content-Type': 'application/json'
+                                },
+                                body: JSON.stringify(payload)
+                            });
+
+                            if (response.ok) {
+                                successCount++;
+                            } else {
+                                const error = await response.json();
+                                console.error(`Error saving ${feature.id}:`, error);
+                                errorCount++;
+                            }
+                        } catch (error) {
+                            console.error(`Error processing ${feature.id}:`, error);
+                            errorCount++;
+                        }
+                    }
+                }
+
+                // Show final status
+                const message = `✅ Import completed!\n✓ ${successCount} questions imported\n✗ ${errorCount} errors`;
+                showMessage(message, 'success');
+
+                if (errorCount === 0) {
+                    setTimeout(() => {
+                        alert('🎉 All data imported successfully!');
+                        clearForm();
+                    }, 1000);
+                }
+            } catch (error) {
+                console.error('Import error:', error);
+                showMessage(`❌ Import failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Show status message
+        function showMessage(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message ${type}`;
+        }
+
+        // Clear form
+        function clearForm() {
+            document.getElementById('encodedData').value = '';
+            document.getElementById('previewSection').style.display = 'none';
+            document.getElementById('statusMessage').textContent = '';
+            document.getElementById('statusMessage').className = 'status-message';
+            decodedData = null;
+        }
+
+        // Cancel import
+        function cancelImport() {
+            document.getElementById('previewSection').style.display = 'none';
+        }
+
+        // Logout button
+        document.getElementById('logoutBtn')?.addEventListener('click', async function(e) {
+            e.preventDefault();
+            try {
+                await fetch(`${CONFIG.API_BASE}/auth/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+
+            localStorage.removeItem('token');
+            localStorage.removeItem('employee');
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>
