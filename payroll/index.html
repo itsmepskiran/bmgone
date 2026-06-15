@@ -330,6 +330,20 @@
                     <!-- Will be populated dynamically -->
                 </div>
             </div>
+
+            <!-- Compare Plans Card -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">Compare Plans</h2>
+                    <span style="font-size: 2rem;">📋</span>
+                </div>
+                <div style="text-align: center; padding: 2rem 1rem;">
+                    <p style="color: #6b7280; margin-bottom: 1.5rem;">Compare insurance plans and features to find the best coverage for your needs.</p>
+                    <button onclick="openComparePlans()" class="btn-submit" style="width: 100%; padding: 0.75rem;">
+                        Open Comparison Tool
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -962,6 +976,16 @@
                 hideLoading();
             }
         });
+
+        // Open Compare Plans
+        function openComparePlans() {
+            // Navigate to the comparison page - token already in localStorage from login
+            const comparePath = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                ? '/insurance/compare.html'
+                : 'https://pay.bmgone.com/insurance/compare.html';
+            
+            window.location.href = comparePath;
+        }
     </script>
 </body>
 </html>
