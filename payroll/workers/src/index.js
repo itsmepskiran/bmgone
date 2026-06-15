@@ -1237,7 +1237,7 @@ router.get('/api/comparison/data', async (request, env) => {
     }
 });
 
-// Save comparison report (staff only)
+// Save comparison report with individual answers (staff only)
 router.post('/api/comparison/save-report', async (request, env) => {
     try {
         const user = await authenticate(request, env);
@@ -1250,7 +1250,8 @@ router.post('/api/comparison/save-report', async (request, env) => {
 
         const { clientName, clientAge, membersCount, selectedBrands, reportData } = await request.json();
 
-        await env.DB.prepare(`
+        // Step 1: Insert comparison header
+        const reportResult = await env.DB.prepare(`
             INSERT INTO comparison_reports (employee_id, client_name, client_age, members_count, selected_brands, report_data)
             VALUES (?, ?, ?, ?, ?, ?)
         `).bind(
@@ -1262,10 +1263,45 @@ router.post('/api/comparison/save-report', async (request, env) => {
             JSON.stringify(reportData)
         ).run();
 
+        const comparisonId = reportResult.meta.last_row_id;
+
+        console.log('✅ Comparison saved with ID:', comparisonId);
+
+        // Step 2: Insert individual answers
+        let answersCount = 0;
+        for (const section of reportData.sections) {
+            for (const feature of section.features) {
+                // For each brand, insert the answer
+                for (let brandIndex = 0; brandIndex < reportData.brands.length; brandIndex++) {
+                    const brand = reportData.brands[brandIndex];
+                    const answerValue = feature.vals[brandIndex] || 'E';
+                    const comment = feature.explain[brandIndex] || '';
+
+                    await env.DB.prepare(`
+                        INSERT INTO comparison_answers (comparison_id, feature_id, brand_id, answer_value, comment, employee_id)
+                        VALUES (?, ?, ?, ?, ?, ?)
+                    `).bind(
+                        comparisonId,
+                        feature.id,
+                        brand.id,
+                        answerValue,
+                        comment,
+                        user.employeeId
+                    ).run();
+
+                    answersCount++;
+                }
+            }
+        }
+
+        console.log('✅ Saved', answersCount, 'individual answers');
+
         return withCors(new Response(
             JSON.stringify({
                 success: true,
-                message: 'Report saved successfully'
+                message: 'Report saved successfully',
+                comparisonId: comparisonId,
+                answersCount: answersCount
             }),
             { status: 200, headers: { 'Content-Type': 'application/json' } }
         ));
