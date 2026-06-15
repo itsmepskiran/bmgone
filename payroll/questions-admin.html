@@ -119,48 +119,53 @@ tr:hover{background:#F5F5F5;}
       <div class="providers-form">
         <div class="provider-input">
           <label>AB</label>
-          <select id="prov-ab">
+          <select id="prov-ab" style="margin-bottom:4px;">
             <option value="">Select...</option>
             <option value="Y">Yes (Y)</option>
             <option value="N">No (N)</option>
             <option value="E">Extra (E)</option>
           </select>
+          <input type="text" id="note-ab" placeholder="Comment..." style="font-size:11px;padding:6px;border:1px solid #ddd;border-radius:4px;width:100%;box-sizing:border-box;"/>
         </div>
         <div class="provider-input">
           <label>ICICI</label>
-          <select id="prov-ic">
+          <select id="prov-ic" style="margin-bottom:4px;">
             <option value="">Select...</option>
             <option value="Y">Yes (Y)</option>
             <option value="N">No (N)</option>
             <option value="E">Extra (E)</option>
           </select>
+          <input type="text" id="note-ic" placeholder="Comment..." style="font-size:11px;padding:6px;border:1px solid #ddd;border-radius:4px;width:100%;box-sizing:border-box;"/>
         </div>
         <div class="provider-input">
           <label>Star</label>
-          <select id="prov-star">
+          <select id="prov-star" style="margin-bottom:4px;">
             <option value="">Select...</option>
             <option value="Y">Yes (Y)</option>
             <option value="N">No (N)</option>
             <option value="E">Extra (E)</option>
           </select>
+          <input type="text" id="note-star" placeholder="Comment..." style="font-size:11px;padding:6px;border:1px solid #ddd;border-radius:4px;width:100%;box-sizing:border-box;"/>
         </div>
         <div class="provider-input">
           <label>Care</label>
-          <select id="prov-care">
+          <select id="prov-care" style="margin-bottom:4px;">
             <option value="">Select...</option>
             <option value="Y">Yes (Y)</option>
             <option value="N">No (N)</option>
             <option value="E">Extra (E)</option>
           </select>
+          <input type="text" id="note-care" placeholder="Comment..." style="font-size:11px;padding:6px;border:1px solid #ddd;border-radius:4px;width:100%;box-sizing:border-box;"/>
         </div>
         <div class="provider-input">
           <label>Tata</label>
-          <select id="prov-tata">
+          <select id="prov-tata" style="margin-bottom:4px;">
             <option value="">Select...</option>
             <option value="Y">Yes (Y)</option>
             <option value="N">No (N)</option>
             <option value="E">Extra (E)</option>
           </select>
+          <input type="text" id="note-tata" placeholder="Comment..." style="font-size:11px;padding:6px;border:1px solid #ddd;border-radius:4px;width:100%;box-sizing:border-box;"/>
         </div>
       </div>
     </div>
@@ -256,6 +261,7 @@ function renderTable() {
 
   tbody.innerHTML = questions.map(q => {
     const vals = q.values || {};
+    const notes = q.notes || {};
     return `
       <tr>
         <td class="question-cell">${q.feature_label}</td>
@@ -264,8 +270,10 @@ function renderTable() {
           <div class="providers-grid">
             ${PROVIDERS.map(p => {
               const val = vals[p] || '';
+              const note = notes[p] || '';
               const cls = val === 'Y' ? 'prov-y' : val === 'N' ? 'prov-n' : val === 'E' ? 'prov-e' : '';
-              return `<div class="provider-cell ${cls}">${val || '-'}</div>`;
+              const noteText = note ? `<div style="font-size:10px;color:#666;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60px;">${note}</div>` : '';
+              return `<div class="provider-cell ${cls}" title="${note}" style="position:relative;">${val || '-'}${noteText}</div>`;
             }).join('')}
           </div>
         </td>
@@ -292,6 +300,7 @@ function openAddModal() {
   document.getElementById('questionSection').value = '';
   PROVIDERS.forEach(p => {
     document.getElementById(`prov-${p}`).value = '';
+    document.getElementById(`note-${p}`).value = '';
   });
   document.getElementById('questionModal').classList.add('active');
 }
@@ -306,8 +315,10 @@ function openEditModal(featureId) {
   document.getElementById('questionSection').value = q.section_id;
 
   const vals = q.values || {};
+  const notes = q.notes || {};
   PROVIDERS.forEach(p => {
     document.getElementById(`prov-${p}`).value = vals[p] || '';
+    document.getElementById(`note-${p}`).value = notes[p] || '';
   });
 
   document.getElementById('questionModal').classList.add('active');
@@ -332,9 +343,12 @@ async function saveQuestion() {
   }
 
   const values = {};
+  const notes = {};
   PROVIDERS.forEach(p => {
     const val = document.getElementById(`prov-${p}`).value;
+    const note = document.getElementById(`note-${p}`).value.trim();
     if (val) values[p] = val;
+    if (note) notes[p] = note;
   });
 
   try {
@@ -342,7 +356,8 @@ async function saveQuestion() {
     const payload = {
       feature_label: label,
       section_id: section,
-      values: values
+      values: values,
+      notes: notes
     };
 
     if (currentEditId) {
