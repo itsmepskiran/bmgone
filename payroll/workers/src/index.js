@@ -1591,13 +1591,8 @@ router.get('/api/comparison/questions/all', async (request, env) => {
             ));
         }
 
-        // Check if user is admin+ (can manage questions)
-        if (!['admin', 'master_admin'].includes(user.role)) {
-            return withCors(new Response(
-                JSON.stringify({ error: 'Only admins can access question management' }),
-                { status: 403, headers: { 'Content-Type': 'application/json' } }
-            ));
-        }
+        // All authenticated users can read questions and notes (for compare.html)
+        // Only admins can modify via POST endpoint
 
         const features = await env.DB.prepare(`
             SELECT
