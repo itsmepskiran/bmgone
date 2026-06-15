@@ -627,16 +627,16 @@ const PED_LIST = [
 
 // ── AUTH CHECK ─────────────────────────────────────────────────────────────
 function getAuthToken() {
-  // Try to get token from dashboard login
+  // Try to get token from login (stored in localStorage by https://pay.bmgone.com)
   const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
 
   if (token) {
     window.authToken = token;
-    console.log('✅ Token found from dashboard login:', token.substring(0, 20) + '...');
+    console.log('✅ Token found from login:', token.substring(0, 20) + '...');
     return token;
   }
 
-  console.log('⚠️ No authentication token found');
+  console.log('⚠️ No authentication token found. User must log in first at https://pay.bmgone.com');
   return null;
 }
 
@@ -1423,8 +1423,8 @@ async function saveToDatabase() {
     });
 
     if (!token) {
-      showSaveStatus('❌ Not logged in. Please log in from staff dashboard first.', false);
-      console.error('❌ No authentication token found. User must log in first.');
+      showSaveStatus('❌ Not logged in. Please log in at https://pay.bmgone.com first.', false);
+      console.error('❌ No authentication token found. User must log in at https://pay.bmgone.com');
       return;
     }
 
