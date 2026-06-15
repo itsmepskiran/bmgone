@@ -627,16 +627,20 @@ const PED_LIST = [
 
 // ── AUTH CHECK ─────────────────────────────────────────────────────────────
 function getAuthToken() {
-  // Try to get token from login (stored in localStorage by https://pay.bmgone.com)
-  const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+  // Get token from login (stored in localStorage with key 'token')
+  const token = localStorage.getItem('token');
+  const employee = localStorage.getItem('employee');
 
-  if (token) {
+  if (token && employee) {
     window.authToken = token;
-    console.log('✅ Token found from login:', token.substring(0, 20) + '...');
+    console.log('✅ Authenticated user:', employee);
+    console.log('✅ Token found:', token.substring(0, 20) + '...');
     return token;
   }
 
-  console.log('⚠️ No authentication token found. User must log in first at https://pay.bmgone.com');
+  console.log('⚠️ Not logged in. Token or employee info missing.');
+  console.log('   localStorage.token:', token ? 'FOUND' : 'NOT FOUND');
+  console.log('   localStorage.employee:', employee ? 'FOUND' : 'NOT FOUND');
   return null;
 }
 
@@ -1412,19 +1416,24 @@ async function saveToDatabase() {
       reportData: reportData
     };
 
-    // Get auth token (required from dashboard login)
-    const token = window.authToken || localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    // Get auth token from localStorage (key: 'token')
+    const token = window.authToken || localStorage.getItem('token');
+    const employee = localStorage.getItem('employee');
 
     console.log('💾 Save to Database:', {
       token: token ? `${token.substring(0, 20)}...` : 'NOT FOUND',
+      employee: employee ? JSON.parse(employee).employee_id : 'NOT FOUND',
       endpoint: 'https://pay.bmgone.com/api/comparison/save-report',
       clientName: clientName,
       selectedBrands: Array.from(selectedProviders)
     });
 
-    if (!token) {
+    if (!token || !employee) {
       showSaveStatus('❌ Not logged in. Please log in at https://pay.bmgone.com first.', false);
-      console.error('❌ No authentication token found. User must log in at https://pay.bmgone.com');
+      console.error('❌ Authentication failed:', {
+        tokenFound: !!token,
+        employeeFound: !!employee
+      });
       return;
     }
 
