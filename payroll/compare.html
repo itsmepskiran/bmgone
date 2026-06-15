@@ -390,13 +390,13 @@ th,td{padding:8px 8px;vertical-align:middle;}
 <div class="tbl-wrap">
   <table id="mainTable">
     <colgroup>
-      <col style="width:15%"/>
-      <col style="width:11%"/>
-      <col style="width:14.8%"/>
-      <col style="width:14.8%"/>
-      <col style="width:14.8%"/>
-      <col style="width:14.8%"/>
-      <col style="width:14.8%"/>
+      <col style="width:12%"/>
+      <col style="width:12%"/>
+      <col style="width:13.5%"/>
+      <col style="width:13.5%"/>
+      <col style="width:13.5%"/>
+      <col style="width:13.5%"/>
+      <col style="width:22%"/>
     </colgroup>
     <thead id="tableHead"></thead>
     <tbody id="tableBody"></tbody>
@@ -1711,27 +1711,29 @@ function renderTableBody() {
 
     const secBg = sec.color || '#455A64';
     html += `<tr class="sec-hdr" style="background:${secBg};">`;
-    html += `<td colspan="${visibleBrands.length + 1}" style="text-align:left;">${sec.label}</td>`;
+    html += `<td colspan="${visibleBrands.length + 2}" style="text-align:left;">${sec.label}</td>`;
     html += '</tr>';
 
     sec.features.forEach((feat, fi) => {
       html += `<tr>
-        <td class="expl-th" style="text-align:left;padding:8px 12px;font-size:11px;font-weight:700;background:#FFFDE7;color:#333;border-right:2px solid #F0C040;">
+        <td class="expl-th" style="text-align:left;padding:8px 12px;font-size:11px;font-weight:700;background:#FFF;color:#333;border-right:2px solid #E0E0E0;border-bottom:1px solid #E0E0E0;">
           ${feat.label}
+        </td>
+        <td class="expl-th" style="text-align:left;padding:8px 12px;font-size:10px;color:#333;background:#FFFDE7;border-right:2px solid #F0C040;border-bottom:1px solid #E0E0E0;min-width:120px;">
+          <textarea rows="2" style="width:100%;font-size:10px;border:1px solid #F0C040;border-radius:4px;padding:3px 5px;resize:vertical;background:#fff;color:#333;line-height:1.4;box-sizing:border-box;outline:none;" placeholder="Explanation…" onchange="setExplain('${sec.id}','${feat.id}',this.value)">${feat.explain || ''}</textarea>
         </td>`;
 
       visibleBrands.forEach((b, bi) => {
         const ci = brands.findIndex(x => x.id === b.id);
         const v = feat.vals[ci] || 'E';
         const n = feat.notes[ci] || '';
-        const note = feat.explain[ci] || '';
         const tickCls = v === 'Y' ? 'tick-y' : (v === 'N' ? 'tick-n' : '');
 
-        html += `<td class="cell-td" style="background:${b.light};border-bottom:1px solid ${b.mid}88;border-right:1px solid ${b.mid}44;">
-          <div class="${tickCls} tick-btn" onclick="toggleCell('${sec.id}','${feat.id}',${ci})" title="Click to toggle">
+        html += `<td class="cell-td" style="background:${b.light};border-bottom:1px solid ${b.mid}88;border-right:1px solid ${b.mid}44;text-align:center;padding:8px 4px;">
+          <div class="${tickCls} tick-btn" onclick="toggleCell('${sec.id}','${feat.id}',${ci})" title="Click to toggle" style="font-weight:bold;font-size:16px;margin-bottom:4px;">
             ${v === 'Y' ? '✓' : (v === 'N' ? '✕' : '=')}
           </div>
-          <input type="text" class="cell-note" value="${note}" placeholder="comment…" onchange="saveCellNote('${sec.id}','${feat.id}',${ci},this.value)"/>
+          <input type="text" class="cell-note" value="${n}" placeholder="comment…" style="width:100%;font-size:8px;border:1px solid ${b.dark}33;padding:2px 3px;border-radius:4px;box-sizing:border-box;" onchange="setNote('${sec.id}','${feat.id}',${ci},this.value)"/>
         </td>`;
       });
 
@@ -1749,16 +1751,16 @@ function renderTableBody() {
   const maxS = Math.max(...scores);
 
   html += '<tr class="score-row">';
-  html += '<td class="score-label">SCORE</td>';
+  html += '<td class="score-label">⭐ Score</td>';
+  html += '<td style="background:#1B2631;border-top:3px solid #0D47A1;border-right:2px solid #263238;"></td>';
   visibleBrands.forEach((b, bi) => {
     const sc = scores[bi];
-    const rank = sc === maxS ? '🥇 Best Pick' : sc >= maxS - 2 ? '🥈 Recommended' : sc >= maxS - 4 ? '🥉 Good Value' : '⚠ Review';
+    const rank = sc === maxS ? '🥇 Best' : sc >= maxS - 2 ? '🥈 Recommended' : sc >= maxS - 4 ? '🥉 Good' : '⚠ Review';
     const rankBg = sc === maxS ? '#1B5E20' : sc >= maxS - 2 ? '#2E7D32' : sc >= maxS - 4 ? '#F57F17' : '#757575';
-    html += `<td class="score-cell" style="background:${b.light};border-top:3px solid ${b.dark};border-right:1px solid ${b.mid};">
-      <div class="score-num" style="color:${b.dark};">${sc}</div>
-      <div style="font-size:11px;color:#607D8B;">/50</div>
-      <div class="rank-badge" style="background:${rankBg};">${rank}</div>
-      <div class="score-bar"><div class="score-bar-fill" style="width:${sc / 50 * 100}%;background:${b.grad};"></div></div>
+    html += `<td class="score-cell" style="background:${b.light};border-top:3px solid ${b.dark};border-right:1px solid ${b.mid};text-align:center;">
+      <div class="score-num" style="color:${b.dark};font-size:18px;font-weight:bold;">${sc}</div>
+      <div style="font-size:9px;color:#607D8B;">/50</div>
+      <div class="rank-badge" style="background:${rankBg};color:#fff;padding:2px 6px;border-radius:3px;font-size:9px;">${rank}</div>
     </td>`;
   });
   html += '</tr>';
@@ -1773,24 +1775,17 @@ function renderTableHead() {
   const visibleBrands = brands.filter(b => selectedProviders.has(b.id));
   let html = '<tr>';
   html += '<th class="feat-th">📋 FEATURE</th>';
+  html += '<th class="expl-th">📝 Explanation</th>';
 
   visibleBrands.forEach(b => {
-    html += `<th class="brand-th" style="background:#fff;border-right:1px solid #ccc;padding:6px 4px;">
-      <div style="text-align:center;font-size:10px;font-weight:700;color:#1A1A1A;margin-bottom:4px;">💳 PLAN</div>
-      <input type="text" class="plan-name-td" value="${b.name}" onchange="updateBrandName(this.value)" style="width:95%;text-align:center;font-size:11px;font-weight:800;color:#1A1A1A;border-radius:6px;padding:4px 6px;outline:none;border:1.5px solid #ccc;"/>
-      <div style="font-size:9px;color:#666;margin-top:3px;">${b.plan}</div>
+    const logoUrl = LOGOS[b.id] || '';
+    html += `<th class="brand-th" style="background:#fff;border-right:1px solid #ccc;padding:8px 4px;text-align:center;">
+      ${logoUrl ? `<img src="${logoUrl}" alt="${b.name}" style="width:80px;height:45px;object-fit:contain;display:block;margin:0 auto 6px;"/>` : ''}
+      <div style="text-align:center;font-size:11px;font-weight:700;color:#1A1A1A;margin-bottom:4px;">${b.plan}</div>
+      <div style="font-size:9px;color:#666;margin-bottom:4px;">💰 ${b.premium}</div>
     </th>`;
   });
 
-  html += '</tr>';
-  html += '<tr>';
-  html += '<th class="expl-th">📝<br/>Detailed Explanation</th>';
-  visibleBrands.forEach(b => {
-    html += `<th class="prem-label-td" style="padding:8px 6px;">
-      <div style="color:#fff;font-weight:700;font-size:10px;margin-bottom:6px;">Premium</div>
-      <input type="text" value="${b.premium}" onchange="updateBrandPremium(this.value)" style="width:90%;text-align:center;font-size:11px;font-weight:700;padding:4px;border:1px solid #456;background:#2C3E50;color:#fff;border-radius:4px;outline:none;"/>
-    </th>`;
-  });
   html += '</tr>';
 
   thead.innerHTML = html;
