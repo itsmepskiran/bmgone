@@ -1,16 +1,27 @@
-# Cloudflare Pages Configuration
-# Root folder - Pages deployment (main branch frontend)
-# Usage: Pages will auto-detect and use this config
-
-name = "bmgone-main"
+# Cloudflare Workers Configuration
+# Main entry point for the payroll workers API
+name = "bmgone-payroll"
+type = "javascript"
+main = "payroll/workers/src/index.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
 
-# Pages build output directory (static site files are in root)
-pages_build_output_dir = "."
-
 [env.production]
+name = "bmgone-payroll-prod"
 vars = { ENVIRONMENT = "production", CORS_ORIGIN = "https://bmgone.com" }
+routes = [
+  { pattern = "api.bmgone.com/payroll/*", zone_name = "bmgone.com" }
+]
 
 [env.preview]
+name = "bmgone-payroll-preview"
 vars = { ENVIRONMENT = "preview", CORS_ORIGIN = "http://localhost:3000" }
+routes = [
+  { pattern = "preview-api.bmgone.com/payroll/*", zone_name = "bmgone.com" }
+]
+
+# Database binding for SQLite (D1)
+[[d1_databases]]
+binding = "DB"
+database_name = "bmgone"
+database_id = "your-database-id"
