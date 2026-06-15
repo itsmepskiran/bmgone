@@ -1237,12 +1237,16 @@ router.get('/api/comparison/data', async (request, env) => {
     }
 });
 
-// Save comparison report (public endpoint - anyone can save)
+// Save comparison report (staff only)
 router.post('/api/comparison/save-report', async (request, env) => {
     try {
-        // Optional authentication - use token if available, otherwise use session ID
         const user = await authenticate(request, env);
-        const employeeId = user ? user.employeeId : 'anonymous-' + crypto.randomUUID();
+        if (!user) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized - Please log in first' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
 
         const { clientName, clientAge, membersCount, selectedBrands, reportData } = await request.json();
 
@@ -1250,7 +1254,7 @@ router.post('/api/comparison/save-report', async (request, env) => {
             INSERT INTO comparison_reports (employee_id, client_name, client_age, members_count, selected_brands, report_data)
             VALUES (?, ?, ?, ?, ?, ?)
         `).bind(
-            employeeId,
+            user.employeeId,
             clientName || null,
             clientAge || null,
             membersCount || null,

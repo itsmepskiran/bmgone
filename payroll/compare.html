@@ -626,35 +626,29 @@ const PED_LIST = [
 ];
 
 // ── AUTH CHECK ─────────────────────────────────────────────────────────────
-function checkAuthentication() {
-  // Check for valid JWT token
+function getAuthToken() {
+  // Try to get token from dashboard login
   const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
 
-  console.log('🔐 Auth Check:', {
-    token: token ? `${token.substring(0, 20)}...` : 'NOT FOUND',
-    localStorage: localStorage.getItem('authToken') ? 'HAS TOKEN' : 'NO TOKEN',
-    sessionStorage: sessionStorage.getItem('authToken') ? 'HAS TOKEN' : 'NO TOKEN'
-  });
-
-  if (!token) {
-    // No token found - redirect to dashboard/login
-    alert('⚠️ Please log in first. Redirecting to staff dashboard...');
-    // Redirect to payroll dashboard (user will be redirected to login if needed)
-    window.location.href = '/payroll/';
-    return false;
+  if (token) {
+    window.authToken = token;
+    console.log('✅ Token found from dashboard login:', token.substring(0, 20) + '...');
+    return token;
   }
 
-  // Store token globally for API calls
-  window.authToken = token;
-  console.log('✅ Authentication successful. Token stored.');
-  return true;
+  console.log('⚠️ No authentication token found');
+  return null;
 }
 
 // ── INIT ───────────────────────────────────────────────────────────────────
 window.onload = function() {
-  // Check authentication first
-  if (!checkAuthentication()) {
-    return; // Stop initialization if not authenticated
+  // Get token if available (from dashboard login)
+  const token = getAuthToken();
+
+  if (token) {
+    console.log('🔐 Authenticated user accessing comparison tool');
+  } else {
+    console.log('⚠️ Unauthenticated access - some features may be limited');
   }
 
   document.getElementById('cover-date').textContent =
@@ -1418,32 +1412,35 @@ async function saveToDatabase() {
       reportData: reportData
     };
 
-    // Get auth token if available (optional)
+    // Get auth token (required from dashboard login)
     const token = window.authToken || localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
 
     console.log('💾 Save to Database:', {
-      token: token ? `${token.substring(0, 20)}...` : 'ANONYMOUS',
+      token: token ? `${token.substring(0, 20)}...` : 'NOT FOUND',
       endpoint: 'https://pay.bmgone.com/api/comparison/save-report',
       clientName: clientName,
       selectedBrands: Array.from(selectedProviders)
     });
 
+    if (!token) {
+      showSaveStatus('❌ Not logged in. Please log in from staff dashboard first.', false);
+      console.error('❌ No authentication token found. User must log in first.');
+      return;
+    }
+
     showSaveStatus('⏳ Saving to database...', true);
 
     const apiUrl = 'https://pay.bmgone.com/api/comparison/save-report';
     const requestHeaders = {
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
     };
-
-    // Add auth header if token available
-    if (token) {
-      requestHeaders['Authorization'] = `Bearer ${token}`;
-    }
 
     console.log('📤 API Request:', {
       url: apiUrl,
       method: 'POST',
-      authenticated: !!token,
+      authenticated: true,
+      tokenPreview: token.substring(0, 20) + '...',
       bodySize: JSON.stringify(payload).length + ' bytes'
     });
 
