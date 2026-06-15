@@ -200,39 +200,9 @@ th,td{padding:8px 8px;vertical-align:middle;}
   </div>
   <div style="display:flex;gap:10px;flex-wrap:wrap;">
     <button class="btn btn-teal" onclick="togglePanel('qf')">⚡ Quick Fill</button>
-    <button class="btn btn-purple" onclick="togglePanel('fill');fillStep=0;renderFillPanel()">📋 Fill Data</button>
-    <button class="btn btn-yellow" onclick="togglePanel('save')">💾 Save / Load</button>
     <button class="btn btn-blue" onclick="window.print()">🖨️ Print / PDF</button>
     <button class="btn btn-green" onclick="togglePanel('providers')">🏢 Select Providers</button>
-    <button class="btn" style="background:#9C27B0;color:#fff;" onclick="togglePanel('history');loadComparisons()">📚 Comparisons History</button>
     <button class="btn btn-orange" onclick="exitComparison()">❌ Exit</button>
-  </div>
-</div>
-
-<!-- COMPARISONS HISTORY PANEL -->
-<div id="panel-history" class="panel panel-fill" style="display:none;">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-    <div style="color:#CE93D8;font-weight:900;font-size:15px;">📚 Saved Comparisons History</div>
-    <button class="btn" style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.15);padding:6px 14px;font-size:12px;" onclick="togglePanel('history')">✕ Close</button>
-  </div>
-  <div id="historyStatus" style="display:none;padding:10px 16px;border-radius:9px;font-size:12px;font-weight:600;color:#fff;margin-bottom:12px;"></div>
-  <div style="display:flex;gap:12px;margin-bottom:16px;">
-    <input type="text" id="historySearch" placeholder="Search by client name..." style="flex:1;padding:10px 12px;border:1.5px solid rgba(156,39,176,.3);background:rgba(156,39,176,.05);border-radius:8px;color:#fff;font-size:12px;outline:none;" onkeyup="filterComparisons()">
-  </div>
-  <div style="max-height:400px;overflow-y:auto;border:1px solid rgba(156,39,176,.2);border-radius:8px;background:rgba(156,39,176,.05);">
-    <table style="width:100%;border-collapse:collapse;font-size:11px;">
-      <thead>
-        <tr style="background:rgba(156,39,176,.1);border-bottom:1px solid rgba(156,39,176,.2);">
-          <th style="padding:10px;text-align:left;color:#CE93D8;font-weight:700;">Client</th>
-          <th style="padding:10px;text-align:left;color:#CE93D8;font-weight:700;">Date</th>
-          <th style="padding:10px;text-align:left;color:#CE93D8;font-weight:700;">Providers</th>
-          <th style="padding:10px;text-align:center;color:#CE93D8;font-weight:700;">Actions</th>
-        </tr>
-      </thead>
-      <tbody id="historyBody">
-        <tr><td colspan="4" style="padding:20px;text-align:center;color:rgba(255,255,255,.4);">Loading...</td></tr>
-      </tbody>
-    </table>
   </div>
 </div>
 
@@ -291,54 +261,6 @@ th,td{padding:8px 8px;vertical-align:middle;}
     <button class="btn" style="background:linear-gradient(135deg,#1565C0,#0D47A1);flex:1;font-size:14px;padding:11px;" onclick="applyQuickFill()">✅ Apply & Update Instantly</button>
     <button class="btn" style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.15);" onclick="togglePanel('qf')">Cancel</button>
   </div>
-</div>
-
-<!-- SAVE/LOAD PANEL -->
-<div id="panel-save" class="panel panel-save" style="display:none;">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
-    <div style="color:#FFD54F;font-weight:900;font-size:15px;">💾 Save & Load Data</div>
-    <button class="btn" style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.15);padding:6px 14px;font-size:12px;" onclick="togglePanel('save')">✕ Close</button>
-  </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px;">
-    <div style="background:rgba(255,255,255,.05);border-radius:12px;padding:16px;border:1px solid rgba(249,168,37,.2);">
-      <div style="color:#FFD54F;font-weight:800;font-size:13px;margin-bottom:8px;">📤 SAVE — Export Your Data</div>
-      <div style="color:rgba(255,255,255,.6);font-size:11px;line-height:1.7;margin-bottom:12px;">Click below → data copied as a code.<br/>Paste in <b style="color:#FFD54F;">WhatsApp to yourself</b> or Notes.<br/>Next time → paste back to restore.</div>
-      <button class="btn" style="width:100%;background:linear-gradient(135deg,#F9A825,#FFD54F);color:#1A1A1A;padding:12px;font-size:14px;" onclick="exportData()">💾 Export & Copy My Data</button>
-    </div>
-    <div style="background:rgba(255,255,255,.05);border-radius:12px;padding:16px;border:1px solid rgba(100,181,246,.2);">
-      <div style="color:#90CAF9;font-weight:800;font-size:13px;margin-bottom:8px;">📥 LOAD — Restore Saved Data</div>
-      <div style="color:rgba(255,255,255,.6);font-size:11px;line-height:1.7;margin-bottom:8px;">Paste your saved code below and click Restore.</div>
-      <textarea id="importText" rows="3" placeholder="Paste your saved code here…" style="width:100%;border-radius:7px;border:1px solid rgba(100,181,246,.3);background:rgba(255,255,255,.07);color:#fff;font-size:11px;padding:8px 10px;font-family:monospace;resize:none;box-sizing:border-box;outline:none;margin-bottom:8px;"></textarea>
-      <button class="btn" style="width:100%;background:linear-gradient(135deg,#0D47A1,#1565C0);padding:11px;" onclick="importData()">📥 Restore All My Data</button>
-    </div>
-  </div>
-  <div style="background:rgba(255,255,255,.05);border-radius:12px;padding:16px;border:1px solid rgba(46,125,50,.2);margin-top:14px;">
-    <div style="color:#66BB6A;font-weight:800;font-size:13px;margin-bottom:8px;">💾 SAVE TO DATABASE — Secure Cloud Storage</div>
-    <div style="color:rgba(255,255,255,.6);font-size:11px;line-height:1.7;margin-bottom:12px;">Save your complete comparison with all answers to our secure database. Access anytime from any device.</div>
-    <button class="btn" style="width:100%;background:linear-gradient(135deg,#2E7D32,#1B5E20);padding:12px;font-size:14px;" onclick="saveToDatabase()">☁️ Save to Database</button>
-  </div>
-  <div id="saveStatus" style="display:none;padding:10px 16px;border-radius:9px;font-size:12px;font-weight:600;color:#fff;margin-top:12px;"></div>
-</div>
-
-<!-- FILL DATA PANEL -->
-<div id="panel-fill" class="panel panel-fill" style="display:none;">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px;">
-    <div>
-      <div style="color:#CE93D8;font-weight:900;font-size:14px;letter-spacing:1px;">📋 DATA FILL MODE</div>
-      <div id="fill-progress-label" style="color:rgba(255,255,255,.5);font-size:11px;margin-top:2px;"></div>
-    </div>
-    <button class="btn" style="background:rgba(255,255,255,.08);color:rgba(255,255,255,.6);border:1px solid rgba(255,255,255,.15);padding:6px 14px;font-size:12px;" onclick="togglePanel('fill')">✕ Close</button>
-  </div>
-  <div class="prog-bar"><div class="prog-fill" id="fill-prog-bar" style="width:0%"></div></div>
-  <div id="fill-sec-label" style="color:rgba(255,255,255,.35);font-size:10px;font-weight:700;letter-spacing:1.5px;margin-bottom:6px;"></div>
-  <div id="fill-feat-name" style="color:#fff;font-weight:900;font-size:18px;margin-bottom:18px;padding:10px 16px;background:rgba(255,255,255,.07);border-radius:10px;border:1px solid rgba(255,255,255,.1);"></div>
-  <div id="fill-companies"></div>
-  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px;">
-    <button class="btn" style="background:rgba(255,255,255,.12);" id="fill-prev-btn" onclick="fillNav(-1)">← Previous</button>
-    <select id="fill-jump" onchange="fillStep=parseInt(this.value);renderFillPanel()" style="flex:1;min-width:180px;padding:10px 12px;border-radius:8px;background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.2);font-size:12px;"></select>
-    <button class="btn" style="background:linear-gradient(135deg,#6A1B9A,#9C27B0);" id="fill-next-btn" onclick="fillNav(1)">Next →</button>
-  </div>
-  <div style="margin-top:10px;color:rgba(255,255,255,.25);font-size:10px;text-align:center;">💡 Changes update table instantly · Dropdown to jump to any feature · ✅ = all 5 filled</div>
 </div>
 
 <!-- COVER PAGE -->
@@ -630,7 +552,6 @@ const SECTIONS = [
 
 let sections = JSON.parse(JSON.stringify(SECTIONS));
 let editMode = false;
-let fillStep = 0;
 
 const WINNER_REASONS = [
   "2 Hours Hospitalisation — faster admission, quicker cashless approval",
@@ -1457,12 +1378,11 @@ function showHistoryStatus(msg, type) {
 
 // ── UI HELPERS ────────────────────────────────────────────────────────────
 function togglePanel(id) {
-  const ids = ['qf','save','fill','providers','history'];
+  const ids = ['qf','providers'];
   ids.forEach(p=>{
     const el=document.getElementById('panel-'+p);
     if(el) el.style.display=(p===id&&el.style.display==='none')?'block':'none';
   });
-  if(id==='fill') renderFillPanel();
 }
 
 function toggleEdit() {

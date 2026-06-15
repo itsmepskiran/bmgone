@@ -1514,6 +1514,216 @@ router.post('/api/comparison/save-preferences', async (request, env) => {
     }
 });
 
+// ═══════════════════════════════════════════════════════════════════════════
+// QUESTIONS MANAGEMENT ADMIN ENDPOINTS
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Get all questions (admin - includes hidden)
+router.get('/api/comparison/questions/all', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        // Check if user is manager+ (can manage questions)
+        if (!['manager', 'admin', 'master_admin'].includes(user.role)) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Only managers can access question management' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        const features = await env.DB.prepare(`
+            SELECT
+                feature_id,
+                feature_label,
+                section_id,
+                is_active,
+                sort_order
+            FROM comparison_features
+            ORDER BY section_id, sort_order
+        `).all();
+
+        // For each feature, get the values for all brands
+        const questions = [];
+        for (const feature of features.results || []) {
+            const values = await env.DB.prepare(`
+                SELECT brand_id, value_type
+                FROM comparison_values
+                WHERE feature_id = ?
+            `).bind(feature.feature_id).all();
+
+            const valuesMap = {};
+            for (const val of values.results || []) {
+                valuesMap[val.brand_id] = val.value_type;
+            }
+
+            questions.push({
+                feature_id: feature.feature_id,
+                feature_label: feature.feature_label,
+                section_id: feature.section_id,
+                is_active: feature.is_active,
+                sort_order: feature.sort_order,
+                values: valuesMap
+            });
+        }
+
+        return withCors(new Response(
+            JSON.stringify({
+                success: true,
+                questions: questions
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+
+    } catch (error) {
+        console.error('Get all questions error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
+// Add or update a question
+router.post('/api/comparison/questions', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        // Check if user is manager+
+        if (!['manager', 'admin', 'master_admin'].includes(user.role)) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Only managers can manage questions' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        const { feature_id, feature_label, section_id, values } = await request.json();
+
+        if (!feature_label || !section_id) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'feature_label and section_id are required' }),
+                { status: 400, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        if (feature_id) {
+            // Update existing feature
+            await env.DB.prepare(`
+                UPDATE comparison_features
+                SET feature_label = ?, section_id = ?, updated_at = datetime('now')
+                WHERE feature_id = ?
+            `).bind(feature_label, section_id, feature_id).run();
+        } else {
+            // Insert new feature - generate feature_id from label
+            const newFeatureId = feature_label.toLowerCase().replace(/\s+/g, '_').substring(0, 30);
+
+            await env.DB.prepare(`
+                INSERT INTO comparison_features (feature_id, feature_label, section_id, is_active)
+                VALUES (?, ?, ?, 1)
+            `).bind(newFeatureId, feature_label, section_id).run();
+        }
+
+        // Update values for each brand
+        const BRANDS = ['ab', 'ic', 'star', 'care', 'tata'];
+        if (values && typeof values === 'object') {
+            for (const brand of BRANDS) {
+                const valueType = values[brand];
+                const fid = feature_id || feature_label.toLowerCase().replace(/\s+/g, '_').substring(0, 30);
+
+                if (valueType && ['Y', 'N', 'E'].includes(valueType)) {
+                    await env.DB.prepare(`
+                        INSERT INTO comparison_values (feature_id, brand_id, value_type)
+                        VALUES (?, ?, ?)
+                        ON CONFLICT(feature_id, brand_id) DO UPDATE SET
+                            value_type = ?,
+                            updated_at = datetime('now')
+                    `).bind(fid, brand, valueType, valueType).run();
+                }
+            }
+        }
+
+        return withCors(new Response(
+            JSON.stringify({
+                success: true,
+                message: feature_id ? 'Question updated' : 'Question created',
+                feature_id: feature_id || feature_label.toLowerCase().replace(/\s+/g, '_').substring(0, 30)
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+
+    } catch (error) {
+        console.error('Save question error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
+// Toggle question visibility (hide/show)
+router.post('/api/comparison/questions/toggle', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        // Check if user is manager+
+        if (!['manager', 'admin', 'master_admin'].includes(user.role)) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Only managers can manage questions' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        const { feature_id, is_active } = await request.json();
+
+        if (!feature_id) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'feature_id is required' }),
+                { status: 400, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        await env.DB.prepare(`
+            UPDATE comparison_features
+            SET is_active = ?, updated_at = datetime('now')
+            WHERE feature_id = ?
+        `).bind(is_active ? 1 : 0, feature_id).run();
+
+        return withCors(new Response(
+            JSON.stringify({
+                success: true,
+                message: is_active ? 'Question shown' : 'Question hidden',
+                feature_id: feature_id,
+                is_active: is_active
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+
+    } catch (error) {
+        console.error('Toggle question error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
 // Root endpoint
 router.get('/', () => withCors(new Response(
     JSON.stringify({
