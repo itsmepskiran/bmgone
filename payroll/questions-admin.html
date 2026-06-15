@@ -179,10 +179,28 @@ const PROVIDER_LABELS = {ab:'AB', ic:'ICICI', star:'Star', care:'Care', tata:'Ta
 
 function getAuthToken() {
   const token = localStorage.getItem('token');
+  const employee = localStorage.getItem('employee');
+
   if (!token) {
     alert('❌ Not authenticated. Please login first.');
     window.location.href = 'index.html';
+    return null;
   }
+
+  // Check role - only admin and master_admin can access this page
+  try {
+    const employeeData = JSON.parse(employee);
+    if (!employeeData.role || !['admin', 'master_admin'].includes(employeeData.role)) {
+      alert('❌ Access Denied. Only admins can manage questions.');
+      window.location.href = 'index.html';
+      return null;
+    }
+  } catch (e) {
+    alert('❌ Invalid authentication data.');
+    window.location.href = 'index.html';
+    return null;
+  }
+
   return token;
 }
 

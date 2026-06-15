@@ -1529,10 +1529,10 @@ router.get('/api/comparison/questions/all', async (request, env) => {
             ));
         }
 
-        // Check if user is manager+ (can manage questions)
-        if (!['manager', 'admin', 'master_admin'].includes(user.role)) {
+        // Check if user is admin+ (can manage questions)
+        if (!['admin', 'master_admin'].includes(user.role)) {
             return withCors(new Response(
-                JSON.stringify({ error: 'Only managers can access question management' }),
+                JSON.stringify({ error: 'Only admins can access question management' }),
                 { status: 403, headers: { 'Content-Type': 'application/json' } }
             ));
         }

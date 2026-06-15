@@ -275,6 +275,20 @@
                     </button>
                 </div>
             </div>
+
+            <!-- Manage Questions Card (Admin Only) -->
+            <div class="dashboard-card" id="manageQuestionsCard" style="display: none;">
+                <div class="card-header">
+                    <h2 class="card-title">Manage Questions</h2>
+                    <span style="font-size: 2rem;">⚙️</span>
+                </div>
+                <div style="text-align: center; padding: 2rem 1rem;">
+                    <p style="color: #6b7280; margin-bottom: 1.5rem;">Manage all 47 questions and their provider responses for the comparison tool.</p>
+                    <button onclick="openManageQuestions()" class="btn-submit" style="width: 100%; padding: 0.75rem;">
+                        Manage Questions
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -566,6 +580,7 @@
             // Show admin navigation for admins
             if (employee.role === 'admin' || employee.role === 'master_admin') {
                 document.getElementById('adminNav').style.display = 'block';
+                document.getElementById('manageQuestionsCard').style.display = 'block';
             }
             
             // Load data
@@ -872,8 +887,18 @@
             const comparePath = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
                 ? '/compare.html'
                 : 'https://pay.bmgone.com/compare.html';
-            
+
             window.location.href = comparePath;
+        }
+
+        function openManageQuestions() {
+            // Navigate to the questions management page - token already in localStorage from login
+            // Only accessible to admin and master_admin users
+            const manageQuestionsPath = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                ? '/questions-admin.html'
+                : 'https://pay.bmgone.com/questions-admin.html';
+
+            window.location.href = manageQuestionsPath;
         }
     </script>
 </body>
