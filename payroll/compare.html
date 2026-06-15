@@ -845,11 +845,13 @@ function syncClientAge() {
 // ── TABLE HEAD ─────────────────────────────────────────────────────────────
 function renderTableHead() {
   const h = document.getElementById('tableHead');
+  const visibleBrands = brands.filter(b => selectedProviders.has(b.id));
+
   // Logo row
   let lr = `<tr>
     <th class="feat-th">FEATURE / BENEFIT</th>
     <th class="expl-th">📝<br/>Detailed Explanation</th>`;
-  brands.forEach((b,idx) => {
+  visibleBrands.forEach((b,idx) => {
     const logoHtml = LOGOS[b.id] ? `<img src="${LOGOS[b.id]}" alt="${b.name}" style="width:90px;height:50px;object-fit:contain;border-radius:4px;"/>` : `<div style="width:90px;height:50px;background:${b.light};border:2px solid ${b.mid};border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${b.dark};">${b.name}</div>`;
     lr += `<th class="brand-th" style="border-right:1px solid ${b.mid};border-top:6px solid ${b.dark};padding:10px 8px;background:${b.light};">
       <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
@@ -865,10 +867,11 @@ function renderTableHead() {
       <div style="color:#80CBC4;font-size:10px;font-weight:700;text-align:center;">Plan Name</div>
     </td>
     <td style="background:#263238;border-right:2px solid #37474F;border-bottom:2px solid #263238;"></td>`;
-  brands.forEach((b,i) => {
+  visibleBrands.forEach((b,i) => {
+    const brandIdx = brands.findIndex(x => x.id === b.id);
     pnr += `<td class="plan-name-td" style="background:${b.light};border-right:1px solid ${b.mid};border-bottom:2px solid ${b.dark}44;">
       <div style="font-size:9px;color:#1A1A1A;font-weight:700;margin-bottom:3px;">${b.name}</div>
-      <input type="text" value="${b.plan}" onchange="brands[${i}].plan=this.value;renderWinner();"
+      <input type="text" value="${b.plan}" onchange="brands[${brandIdx}].plan=this.value;renderWinner();"
         style="width:95%;text-align:center;font-size:12px;font-weight:800;color:#1A1A1A;border:1.5px solid ${b.dark}55;border-radius:6px;padding:5px 6px;outline:none;"/>
     </td>`;
   });
@@ -880,7 +883,7 @@ function renderTableHead() {
       <div style="color:#90A4AE;font-size:11px;font-weight:700;text-align:center;">Sum Insured</div>
     </td>
     <td style="background:#263238;border-right:2px solid #37474F;border-bottom:1px solid #1B2631;"></td>`;
-  brands.forEach((b,i) => {
+  visibleBrands.forEach((b,i) => {
     sir += `<td style="background:${b.light};text-align:center;padding:8px 6px;border-right:1px solid ${b.mid};border-bottom:1px solid #1B2631;color:${b.dark};font-weight:700;font-size:13px;">₹10 Lakhs</td>`;
   });
   sir += '</tr>';
@@ -892,9 +895,10 @@ function renderTableHead() {
       <div style="color:#546E7A;font-size:9px;text-align:center;">₹10L SI · 1 year</div>
     </td>
     <td style="background:#263238;border-right:2px solid #37474F;border-bottom:3px solid #1B2631;"></td>`;
-  brands.forEach((b,i) => {
+  visibleBrands.forEach((b,i) => {
+    const brandIdx = brands.findIndex(x => x.id === b.id);
     pr += `<td style="background:${b.grad};text-align:center;padding:10px 6px;border-right:1px solid ${b.mid};border-bottom:3px solid #1B2631;">
-      <input type="text" value="${b.premium}" onchange="brands[${i}].premium=this.value;renderWinner();"
+      <input type="text" value="${b.premium}" onchange="brands[${brandIdx}].premium=this.value;renderWinner();"
         style="width:90%;background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.5);color:#fff;font-weight:900;font-size:18px;border-radius:6px;padding:4px 6px;text-align:center;outline:none;"/>
       <div style="color:rgba(255,255,255,.75);font-size:9px;margin-top:2px;">per year</div>
     </td>`;
@@ -907,9 +911,11 @@ function renderTableHead() {
 // ── TABLE BODY ─────────────────────────────────────────────────────────────
 function renderTableBody() {
   const tb = document.getElementById('tableBody');
+  const visibleBrands = brands.filter(b => selectedProviders.has(b.id));
   let html = '';
+
   sections.forEach(sec => {
-    html += `<tr class="sec-hdr"><td colspan="7" style="background:${SEC_COLORS[sec.id]||'#37474F'};">
+    html += `<tr class="sec-hdr"><td colspan="${visibleBrands.length + 2}" style="background:${SEC_COLORS[sec.id]||'#37474F'};">
       ${SEC_ICONS[sec.id]||''} &nbsp; ${sec.label}
     </td></tr>`;
     sec.features.forEach((feat,fi) => {
@@ -921,18 +927,19 @@ function renderTableBody() {
         <td class="expl-cell">
           <textarea rows="2" onchange="setExplain('${sec.id}','${feat.id}',this.value)" style="width:100%;font-size:10px;border:1px solid #F0C040;border-radius:4px;padding:3px 5px;resize:vertical;background:#fff;color:#333;line-height:1.4;box-sizing:border-box;outline:none;">${feat.explain||''}</textarea>
         </td>`;
-      brands.forEach((b,ci) => {
+      visibleBrands.forEach((b) => {
+        const ci = brands.findIndex(x => x.id === b.id);
         const v = feat.vals[ci];
         const n = feat.notes[ci]||'';
         const isY = v==='Y';
         const tickCls = isY?'tick-y':'tick-n';
-        html += `<td class="cell-td" style="background:${b.light};border-bottom:1px solid ${b.mid}88;border-right:1px solid ${b.mid}44;">
-          <div class="${tickCls} tick-btn" onclick="toggleCell('${sec.id}','${feat.id}',${ci})" title="Click to toggle">
+        html += `<td class="cell-td" style="background:${b.light};border-bottom:1px solid ${b.mid}88;border-right:1px solid ${b.mid}44;padding:6px 4px;display:flex;flex-direction:column;justify-content:space-between;min-height:60px;">
+          <div class="${tickCls} tick-btn" onclick="toggleCell('${sec.id}','${feat.id}',${ci})" title="Click to toggle" style="font-size:18px;font-weight:bold;text-align:left;flex-shrink:0;">
             ${isY?'✔':'✘'}
           </div>
           <input type="text" class="cell-note" value="${n}" placeholder="comment…"
             onchange="setNote('${sec.id}','${feat.id}',${ci},this.value)"
-            style="border:1px solid ${b.dark}33;"/>
+            style="border:1px solid ${b.dark}33;font-size:8px;padding:2px 3px;border-radius:3px;margin-top:auto;text-align:right;width:100%;box-sizing:border-box;"/>
         </td>`;
       });
       html += '</tr>';
@@ -940,7 +947,8 @@ function renderTableBody() {
   });
 
   // Score row
-  const scores = brands.map((_,ci) => {
+  const scores = visibleBrands.map((b) => {
+    const ci = brands.findIndex(x => x.id === b.id);
     let s=0;
     sections.forEach(sec=>sec.features.forEach(f=>{if(f.vals[ci]==='Y')s++;})  );
     return s;
@@ -949,7 +957,7 @@ function renderTableBody() {
   html += `<tr class="score-row">
     <td class="score-label">⭐ Overall Score<div style="font-size:10px;color:#90A4AE;font-weight:400;margin-top:2px;">out of 50 features</div></td>
     <td style="background:#1B2631;border-top:3px solid #0D47A1;border-right:2px solid #263238;"></td>`;
-  brands.forEach((b,i) => {
+  visibleBrands.forEach((b,i) => {
     const sc = scores[i];
     const rank = sc===maxS?'🥇 Best Pick':sc>=maxS-2?'🥈 Recommended':sc>=maxS-4?'🥉 Good Value':'⚠ Review';
     const rankBg = sc===maxS?'#1B5E20':sc>=maxS-2?'#2E7D32':sc>=maxS-4?'#F57F17':'#757575';
@@ -1683,112 +1691,6 @@ function exportDataWithProviders() {
   } catch (e) {
     showSaveStatus('❌ Export failed.', false);
   }
-}
-
-// ── TABLE RENDERING WITH PROVIDER FILTER ────────────────────────────────────
-function renderTableHeadFiltered() {
-  const headRowSelectors = ['.brand-th', '.plan-name-td', '.prem-label-td', '.expl-cell'];
-  const filterSelector = (arr) => arr.filter((_, i) => i === 0 || selectedProviders.has(brands[i-1]?.id));
-
-  renderTableHead(); // Render normally, then filter if needed
-}
-
-function renderTableBodyFiltered() {
-  renderTableBody(); // Render normally with provider filtering applied inside
-}
-
-// Override original renderTable functions to filter by selectedProviders
-const originalRenderTableBody = renderTableBody;
-function renderTableBody() {
-  const tb = document.querySelector('tbody');
-  if (!tb) return;
-
-  let html = '';
-  const visibleBrands = brands.filter(b => selectedProviders.has(b.id));
-
-  sections.forEach(sec => {
-    if (sec.features.length === 0) return;
-
-    const secBg = sec.color || '#455A64';
-    html += `<tr class="sec-hdr" style="background:${secBg};">`;
-    html += `<td colspan="${visibleBrands.length + 2}" style="text-align:left;">${sec.label}</td>`;
-    html += '</tr>';
-
-    sec.features.forEach((feat, fi) => {
-      html += `<tr>
-        <td class="expl-th" style="text-align:left;padding:8px 12px;font-size:11px;font-weight:700;background:#FFF;color:#333;border-right:2px solid #E0E0E0;border-bottom:1px solid #E0E0E0;">
-          ${feat.label}
-        </td>
-        <td class="expl-th" style="text-align:left;padding:8px 12px;font-size:10px;color:#333;background:#FFFDE7;border-right:2px solid #F0C040;border-bottom:1px solid #E0E0E0;min-width:120px;">
-          <textarea rows="2" style="width:100%;font-size:10px;border:1px solid #F0C040;border-radius:4px;padding:3px 5px;resize:vertical;background:#fff;color:#333;line-height:1.4;box-sizing:border-box;outline:none;" placeholder="Explanation…" onchange="setExplain('${sec.id}','${feat.id}',this.value)">${feat.explain || ''}</textarea>
-        </td>`;
-
-      visibleBrands.forEach((b, bi) => {
-        const ci = brands.findIndex(x => x.id === b.id);
-        const v = feat.vals[ci] || 'E';
-        const n = feat.notes[ci] || '';
-        const tickCls = v === 'Y' ? 'tick-y' : (v === 'N' ? 'tick-n' : '');
-
-        html += `<td class="cell-td" style="background:${b.light};border-bottom:1px solid ${b.mid}88;border-right:1px solid ${b.mid}44;text-align:center;padding:8px 4px;">
-          <div class="${tickCls} tick-btn" onclick="toggleCell('${sec.id}','${feat.id}',${ci})" title="Click to toggle" style="font-weight:bold;font-size:16px;margin-bottom:4px;">
-            ${v === 'Y' ? '✓' : (v === 'N' ? '✕' : '=')}
-          </div>
-          <input type="text" class="cell-note" value="${n}" placeholder="comment…" style="width:100%;font-size:8px;border:1px solid ${b.dark}33;padding:2px 3px;border-radius:4px;box-sizing:border-box;" onchange="setNote('${sec.id}','${feat.id}',${ci},this.value)"/>
-        </td>`;
-      });
-
-      html += '</tr>';
-    });
-  });
-
-  // Add score row
-  const scores = visibleBrands.map(b => {
-    const ci = brands.findIndex(x => x.id === b.id);
-    let s = 0;
-    sections.forEach(sec => sec.features.forEach(f => { if (f.vals[ci] === 'Y') s++; }));
-    return s;
-  });
-  const maxS = Math.max(...scores);
-
-  html += '<tr class="score-row">';
-  html += '<td class="score-label">⭐ Score</td>';
-  html += '<td style="background:#1B2631;border-top:3px solid #0D47A1;border-right:2px solid #263238;"></td>';
-  visibleBrands.forEach((b, bi) => {
-    const sc = scores[bi];
-    const rank = sc === maxS ? '🥇 Best' : sc >= maxS - 2 ? '🥈 Recommended' : sc >= maxS - 4 ? '🥉 Good' : '⚠ Review';
-    const rankBg = sc === maxS ? '#1B5E20' : sc >= maxS - 2 ? '#2E7D32' : sc >= maxS - 4 ? '#F57F17' : '#757575';
-    html += `<td class="score-cell" style="background:${b.light};border-top:3px solid ${b.dark};border-right:1px solid ${b.mid};text-align:center;">
-      <div class="score-num" style="color:${b.dark};font-size:18px;font-weight:bold;">${sc}</div>
-      <div style="font-size:9px;color:#607D8B;">/50</div>
-      <div class="rank-badge" style="background:${rankBg};color:#fff;padding:2px 6px;border-radius:3px;font-size:9px;">${rank}</div>
-    </td>`;
-  });
-  html += '</tr>';
-
-  tb.innerHTML = html;
-}
-
-function renderTableHead() {
-  const thead = document.querySelector('thead');
-  if (!thead) return;
-
-  const visibleBrands = brands.filter(b => selectedProviders.has(b.id));
-  let html = '<tr>';
-  html += '<th class="feat-th">📋 FEATURE</th>';
-  html += '<th class="expl-th">📝 Explanation</th>';
-
-  visibleBrands.forEach(b => {
-    const logoUrl = LOGOS[b.id] || '';
-    html += `<th class="brand-th" style="background:#fff;border-right:1px solid #ccc;padding:8px 4px;text-align:center;">
-      ${logoUrl ? `<img src="${logoUrl}" alt="${b.name}" style="width:80px;height:45px;object-fit:contain;display:block;margin:0 auto 6px;"/>` : ''}
-      <div style="text-align:center;font-size:11px;font-weight:700;color:#1A1A1A;margin-bottom:4px;">${b.plan}</div>
-      <div style="font-size:9px;color:#666;margin-bottom:4px;">💰 ${b.premium}</div>
-    </th>`;
-  });
-
-  html += '</tr>';
-
-  thead.innerHTML = html;
 }
 
 </script>
