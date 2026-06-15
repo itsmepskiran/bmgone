@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Comparison Management - BMG Health</title>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: #ECEFF1;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.container { max-width: 1400px; margin: 0 auto; }
+
+.header {
+  background: linear-gradient(135deg, #1B2631, #263238);
+  color: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header h1 { font-size: 24px; font-weight: 900; }
+.header .user-info {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+}
+
+.logout-btn {
+  background: #E65100;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.logout-btn:hover { background: #D84315; }
+
+.tabs {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  border-bottom: 2px solid #BDD7DC;
+}
+
+.tab-btn {
+  padding: 12px 24px;
+  background: transparent;
+  border: none;
+  color: #607D8B;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  transition: all 0.2s;
+}
+
+.tab-btn.active {
+  color: #0D47A1;
+  border-bottom-color: #0D47A1;
+}
+
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+.section {
+  background: white;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #ECEFF1;
+}
+
+.section-title { font-size: 18px; font-weight: 800; color: #1B2631; }
+
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 13px;
+  transition: all 0.2s;
+}
+
+.btn-primary { background: #0D47A1; color: white; }
+.btn-primary:hover { background: #1565C0; }
+
+.btn-success { background: #2E7D32; color: white; }
+.btn-success:hover { background: #388E3C; }
+
+.btn-danger { background: #C62828; color: white; }
+.btn-danger:hover { background: #D32F2F; }
+
+.btn-sm { padding: 6px 12px; font-size: 11px; }
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+th {
+  background: #F5F5F5;
+  padding: 12px;
+  text-align: left;
+  font-weight: 700;
+  font-size: 12px;
+  color: #455A64;
+  border-bottom: 2px solid #ECEFF1;
+}
+
+td {
+  padding: 12px;
+  border-bottom: 1px solid #ECEFF1;
+  font-size: 13px;
+}
+
+tr:hover { background: #FAFAFA; }
+
+.action-btns { display: flex; gap: 8px; }
+
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal.show { display: flex; }
+
+.modal-content {
+  background: white;
+  padding: 32px;
+  border-radius: 12px;
+  max-width: 500px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 2px solid #ECEFF1;
+}
+
+.modal-title { font-size: 18px; font-weight: 800; }
+
+.close-btn {
+  background: transparent;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #607D8B;
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 700;
+  font-size: 12px;
+  color: #455A64;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid #BDD7DC;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  outline: none;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  border-color: #0D47A1;
+  box-shadow: 0 0 0 3px rgba(13, 71, 161, 0.1);
+}
+
+.modal-footer {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  padding-top: 16px;
+  border-top: 2px solid #ECEFF1;
+}
+
+.status {
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  display: none;
+  font-weight: 600;
+  font-size: 13px;
+}
+
+.status.show { display: block; }
+.status.success { background: #E8F5E9; color: #1B5E20; border-left: 4px solid #2E7D32; }
+.status.error { background: #FFEBEE; color: #B71C1C; border-left: 4px solid #C62828; }
+
+.search-box {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.search-box input {
+  flex: 1;
+  padding: 10px 12px;
+  border: 1px solid #BDD7DC;
+  border-radius: 6px;
+  font-size: 13px;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 40px;
+  color: #90A4AE;
+}
+
+.empty-state-icon { font-size: 48px; margin-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Header -->
+  <div class="header">
+    <div>
+      <h1>🔧 Comparison Management</h1>
+      <p style="font-size: 12px; color: rgba(255,255,255,0.6); margin-top: 4px;">Manage questions, brands, and comparison answers</p>
+    </div>
+    <div class="user-info">
+      <span id="userDisplay">Loading...</span>
+      <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('questions')">📝 Questions (47)</button>
+    <button class="tab-btn" onclick="switchTab('brands')">🏢 Brands (5)</button>
+    <button class="tab-btn" onclick="switchTab('answers')">✍️ Answers</button>
+  </div>
+
+  <!-- Questions Tab -->
+  <div id="questions" class="tab-content active">
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">Manage Questions</h2>
+        <button class="btn btn-primary" onclick="openAddQuestionModal()">➕ Add Question</button>
+      </div>
+      <div id="questionsStatus" class="status"></div>
+      <div class="search-box">
+        <input type="text" id="questionsSearch" placeholder="Search questions..." onkeyup="searchQuestions()">
+      </div>
+      <table id="questionsTable">
+        <thead>
+          <tr>
+            <th style="width: 5%">ID</th>
+            <th style="width: 25%">Feature ID</th>
+            <th style="width: 50%">Label</th>
+            <th style="width: 15%">Tier</th>
+            <th style="width: 5%">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="questionsBody">
+          <tr><td colspan="5" style="text-align: center; color: #90A4AE;">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Brands Tab -->
+  <div id="brands" class="tab-content">
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">Manage Brands</h2>
+        <button class="btn btn-primary" onclick="openAddBrandModal()">➕ Add Brand</button>
+      </div>
+      <div id="brandsStatus" class="status"></div>
+      <table id="brandsTable">
+        <thead>
+          <tr>
+            <th style="width: 10%">Brand ID</th>
+            <th style="width: 20%">Name</th>
+            <th style="width: 25%">Plan Name</th>
+            <th style="width: 15%">Premium</th>
+            <th style="width: 20%">Color</th>
+            <th style="width: 10%">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="brandsBody">
+          <tr><td colspan="6" style="text-align: center; color: #90A4AE;">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Answers Tab -->
+  <div id="answers" class="tab-content">
+    <div class="section">
+      <div class="section-header">
+        <h2 class="section-title">Manage Answers</h2>
+      </div>
+      <div id="answersStatus" class="status"></div>
+      <div class="search-box">
+        <input type="text" id="answersSearch" placeholder="Search by client name or comparison ID..." onkeyup="searchAnswers()">
+      </div>
+      <table id="answersTable">
+        <thead>
+          <tr>
+            <th style="width: 10%">Comparison ID</th>
+            <th style="width: 20%">Client</th>
+            <th style="width: 15%">Employee</th>
+            <th style="width: 20%">Date</th>
+            <th style="width: 25%">Selected Brands</th>
+            <th style="width: 10%">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="answersBody">
+          <tr><td colspan="6" style="text-align: center; color: #90A4AE;">Loading...</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Question Modal -->
+<div id="questionModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title" id="questionModalTitle">Add Question</h2>
+      <button class="close-btn" onclick="closeModal('questionModal')">&times;</button>
+    </div>
+    <div class="form-group">
+      <label>Feature ID</label>
+      <input type="text" id="questionFeatureId" placeholder="e.g. inpatient">
+    </div>
+    <div class="form-group">
+      <label>Question Label</label>
+      <input type="text" id="questionLabel" placeholder="e.g. In-patient Treatment">
+    </div>
+    <div class="form-group">
+      <label>Section/Tier</label>
+      <select id="questionSection">
+        <option value="">Select Tier...</option>
+        <option value="tier1">TIER 1 - Deal Breakers</option>
+        <option value="tier2">TIER 2 - Waiting Periods</option>
+        <option value="tier3">TIER 3 - Restoration & Bonus</option>
+        <option value="tier4">TIER 4 - Additional Benefits</option>
+        <option value="tier5">TIER 5 - Maternity</option>
+        <option value="tier6">TIER 6 - Special Features</option>
+      </select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('questionModal')" style="background: #90A4AE; color: white;">Cancel</button>
+      <button class="btn btn-success" onclick="saveQuestion()">Save Question</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add/Edit Brand Modal -->
+<div id="brandModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title" id="brandModalTitle">Add Brand</h2>
+      <button class="close-btn" onclick="closeModal('brandModal')">&times;</button>
+    </div>
+    <div class="form-group">
+      <label>Brand ID</label>
+      <input type="text" id="brandId" placeholder="e.g. ab, ic, star" maxlength="10">
+    </div>
+    <div class="form-group">
+      <label>Brand Name</label>
+      <input type="text" id="brandName" placeholder="e.g. Aditya Birla">
+    </div>
+    <div class="form-group">
+      <label>Plan Name</label>
+      <input type="text" id="brandPlan" placeholder="e.g. Activ One Max">
+    </div>
+    <div class="form-group">
+      <label>Premium</label>
+      <input type="text" id="brandPremium" placeholder="e.g. ₹10,271">
+    </div>
+    <div class="form-group">
+      <label>Primary Color</label>
+      <input type="text" id="brandColor" placeholder="e.g. #B71C1C">
+    </div>
+    <div class="modal-footer">
+      <button class="btn" onclick="closeModal('brandModal')" style="background: #90A4AE; color: white;">Cancel</button>
+      <button class="btn btn-success" onclick="saveBrand()">Save Brand</button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Answer Modal -->
+<div id="answerModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <h2 class="modal-title">Edit Answer</h2>
+      <button class="close-btn" onclick="closeModal('answerModal')">&times;</button>
+    </div>
+    <div class="form-group">
+      <label>Answer Value</label>
+      <select id="answerValue">
+        <option value="Y">✓ Yes (Y)</option>
+        <option value="N">✕ No (N)</option>
+        <option value="E">= Equivalent (E)</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Comment</label>
+      <textarea id="answerComment" rows="3" placeholder="e.g. Any Room, Add-on, etc"></textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-danger btn-sm" onclick="deleteAnswer()">Delete</button>
+      <button class="btn" onclick="closeModal('answerModal')" style="background: #90A4AE; color: white;">Cancel</button>
+      <button class="btn btn-success" onclick="saveAnswer()">Save Answer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let currentUser = null;
+let allQuestions = [];
+let allBrands = [];
+let allAnswers = [];
+let currentEditingId = null;
+
+// Authentication Check
+async function checkAuth() {
+  const token = localStorage.getItem('token');
+  const employee = localStorage.getItem('employee');
+
+  if (!token || !employee) {
+    alert('Not authorized. Please log in first.');
+    window.location.href = 'https://pay.bmgone.com';
+    return false;
+  }
+
+  try {
+    currentUser = JSON.parse(employee);
+
+    // Check if user has permission (manager, admin, master_admin)
+    const allowedRoles = ['manager', 'admin', 'master_admin'];
+    if (!allowedRoles.includes(currentUser.role)) {
+      alert('Access denied. Only managers and admins can access this page.');
+      window.location.href = 'https://pay.bmgone.com/compare.html';
+      return false;
+    }
+
+    document.getElementById('userDisplay').textContent = `${currentUser.first_name} ${currentUser.last_name} (${currentUser.role})`;
+
+    // Load data
+    await loadQuestions();
+    await loadBrands();
+    await loadAnswers();
+
+    return true;
+  } catch (error) {
+    console.error('Auth error:', error);
+    window.location.href = 'https://pay.bmgone.com';
+    return false;
+  }
+}
+
+function logout() {
+  localStorage.removeItem('token');
+  localStorage.removeItem('employee');
+  window.location.href = 'https://pay.bmgone.com';
+}
+
+// Tab Switching
+function switchTab(tabName) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+
+  document.getElementById(tabName).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// Load Questions
+async function loadQuestions() {
+  try {
+    const response = await fetch('https://pay.bmgone.com/api/comparison/questions', {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const data = await response.json();
+    allQuestions = data.questions || [];
+    renderQuestions();
+  } catch (error) {
+    console.error('Load questions error:', error);
+    showStatus('questionsStatus', 'Error loading questions', 'error');
+  }
+}
+
+function renderQuestions() {
+  const tbody = document.getElementById('questionsBody');
+  if (allQuestions.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #90A4AE;">No questions found</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = allQuestions.map((q, i) => `
+    <tr>
+      <td>${i + 1}</td>
+      <td><strong>${q.feature_id}</strong></td>
+      <td>${q.feature_label}</td>
+      <td>${q.section_id}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn btn-sm btn-success" onclick="editQuestion(${i})">Edit</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteQuestion('${q.feature_id}')">Delete</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// Load Brands
+async function loadBrands() {
+  try {
+    const response = await fetch('https://pay.bmgone.com/api/comparison/brands', {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const data = await response.json();
+    allBrands = data.brands || [];
+    renderBrands();
+  } catch (error) {
+    console.error('Load brands error:', error);
+    showStatus('brandsStatus', 'Error loading brands', 'error');
+  }
+}
+
+function renderBrands() {
+  const tbody = document.getElementById('brandsBody');
+  if (allBrands.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #90A4AE;">No brands found</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = allBrands.map(b => `
+    <tr>
+      <td><strong>${b.brand_id}</strong></td>
+      <td>${b.brand_name}</td>
+      <td>${b.plan_name}</td>
+      <td>${b.premium_default}</td>
+      <td><span style="display: inline-block; width: 30px; height: 20px; background: ${b.color_dark}; border-radius: 4px; border: 1px solid #ddd;"></span></td>
+      <td>
+        <div class="action-btns">
+          <button class="btn btn-sm btn-success" onclick="editBrand('${b.brand_id}')">Edit</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteBrand('${b.brand_id}')">Delete</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// Load Answers
+async function loadAnswers() {
+  try {
+    const response = await fetch('https://pay.bmgone.com/api/comparison/comparisons', {
+      headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const data = await response.json();
+    allAnswers = data.comparisons || [];
+    renderAnswers();
+  } catch (error) {
+    console.error('Load answers error:', error);
+    showStatus('answersStatus', 'Error loading comparisons', 'error');
+  }
+}
+
+function renderAnswers() {
+  const tbody = document.getElementById('answersBody');
+  if (allAnswers.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #90A4AE;">No comparisons found</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = allAnswers.map(a => `
+    <tr>
+      <td>${a.id}</td>
+      <td>${a.client_name || 'N/A'}</td>
+      <td>${a.employee_id}</td>
+      <td>${new Date(a.created_at).toLocaleDateString()}</td>
+      <td>${a.selected_brands || 'All'}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn btn-sm btn-success" onclick="viewComparison(${a.id})">View</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// Modal Functions
+function openAddQuestionModal() {
+  currentEditingId = null;
+  document.getElementById('questionModalTitle').textContent = 'Add Question';
+  document.getElementById('questionFeatureId').value = '';
+  document.getElementById('questionLabel').value = '';
+  document.getElementById('questionSection').value = '';
+  openModal('questionModal');
+}
+
+function openAddBrandModal() {
+  currentEditingId = null;
+  document.getElementById('brandModalTitle').textContent = 'Add Brand';
+  document.getElementById('brandId').value = '';
+  document.getElementById('brandName').value = '';
+  document.getElementById('brandPlan').value = '';
+  document.getElementById('brandPremium').value = '';
+  document.getElementById('brandColor').value = '';
+  openModal('brandModal');
+}
+
+function openModal(modalId) {
+  document.getElementById(modalId).classList.add('show');
+}
+
+function closeModal(modalId) {
+  document.getElementById(modalId).classList.remove('show');
+}
+
+function showStatus(elementId, message, type) {
+  const el = document.getElementById(elementId);
+  el.textContent = message;
+  el.className = `status show ${type}`;
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+// Search Functions
+function searchQuestions() {
+  const query = document.getElementById('questionsSearch').value.toLowerCase();
+  const tbody = document.getElementById('questionsBody');
+
+  const filtered = allQuestions.filter(q =>
+    q.feature_id.toLowerCase().includes(query) ||
+    q.feature_label.toLowerCase().includes(query)
+  );
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #90A4AE;">No results found</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map((q, i) => `
+    <tr>
+      <td>${allQuestions.indexOf(q) + 1}</td>
+      <td><strong>${q.feature_id}</strong></td>
+      <td>${q.feature_label}</td>
+      <td>${q.section_id}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn btn-sm btn-success" onclick="editQuestion(${allQuestions.indexOf(q)})">Edit</button>
+          <button class="btn btn-sm btn-danger" onclick="deleteQuestion('${q.feature_id}')">Delete</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function searchAnswers() {
+  const query = document.getElementById('answersSearch').value.toLowerCase();
+  const tbody = document.getElementById('answersBody');
+
+  const filtered = allAnswers.filter(a =>
+    (a.client_name && a.client_name.toLowerCase().includes(query)) ||
+    a.id.toString().includes(query)
+  );
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: #90A4AE;">No results found</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(a => `
+    <tr>
+      <td>${a.id}</td>
+      <td>${a.client_name || 'N/A'}</td>
+      <td>${a.employee_id}</td>
+      <td>${new Date(a.created_at).toLocaleDateString()}</td>
+      <td>${a.selected_brands || 'All'}</td>
+      <td>
+        <div class="action-btns">
+          <button class="btn btn-sm btn-success" onclick="viewComparison(${a.id})">View</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+// CRUD Operations (Placeholder - will implement with API)
+async function saveQuestion() {
+  const featureId = document.getElementById('questionFeatureId').value;
+  const label = document.getElementById('questionLabel').value;
+  const section = document.getElementById('questionSection').value;
+
+  if (!featureId || !label || !section) {
+    showStatus('questionModal', 'Please fill all fields', 'error');
+    return;
+  }
+
+  try {
+    const response = await fetch('https://pay.bmgone.com/api/comparison/questions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({ feature_id: featureId, label, section })
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    showStatus('questionsStatus', '✅ Question saved successfully', 'success');
+    closeModal('questionModal');
+    await loadQuestions();
+  } catch (error) {
+    showStatus('questionsStatus', `Error: ${error.message}`, 'error');
+  }
+}
+
+async function saveBrand() {
+  const id = document.getElementById('brandId').value;
+  const name = document.getElementById('brandName').value;
+  const plan = document.getElementById('brandPlan').value;
+  const premium = document.getElementById('brandPremium').value;
+  const color = document.getElementById('brandColor').value;
+
+  if (!id || !name || !plan || !premium || !color) {
+    showStatus('brandsStatus', 'Please fill all fields', 'error');
+    return;
+  }
+
+  try {
+    const response = await fetch('https://pay.bmgone.com/api/comparison/brands', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${localStorage.getItem('token')}`
+      },
+      body: JSON.stringify({ brand_id: id, brand_name: name, plan_name: plan, premium_default: premium, color_dark: color })
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    showStatus('brandsStatus', '✅ Brand saved successfully', 'success');
+    closeModal('brandModal');
+    await loadBrands();
+  } catch (error) {
+    showStatus('brandsStatus', `Error: ${error.message}`, 'error');
+  }
+}
+
+// Placeholder functions
+async function editQuestion(index) { alert('Edit functionality coming soon'); }
+async function deleteQuestion(id) { alert('Delete functionality coming soon'); }
+async function editBrand(id) { alert('Edit functionality coming soon'); }
+async function deleteBrand(id) { alert('Delete functionality coming soon'); }
+async function saveAnswer() { alert('Save answer functionality coming soon'); }
+async function deleteAnswer() { alert('Delete answer functionality coming soon'); }
+async function viewComparison(id) { alert('View comparison functionality coming soon'); }
+
+// Initialize
+checkAuth();
+</script>
+
+</body>
+</html>
