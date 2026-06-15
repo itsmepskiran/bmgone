@@ -68,6 +68,7 @@ tr:hover{background:#F5F5F5;}
 
 <div class="toolbar">
   <button class="btn btn-add" onclick="openAddModal()">➕ Add New Question</button>
+  <button class="btn" style="background:#9C27B0;" onclick="exportToCode()">💾 Save & Create Code</button>
   <button class="btn btn-back" onclick="goBack()">🔙 Back to Compare</button>
 </div>
 
@@ -167,6 +168,27 @@ tr:hover{background:#F5F5F5;}
     <div class="modal-footer">
       <button class="btn" style="background:#999;" onclick="closeModal()">Cancel</button>
       <button class="btn btn-add" onclick="saveQuestion()">Save Question</button>
+    </div>
+  </div>
+</div>
+
+<!-- EXPORT CODE MODAL -->
+<div id="exportModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">📦 Export Migration Code</div>
+
+    <div style="margin-bottom:16px;padding:12px;background:#F5F5F5;border-radius:6px;">
+      <p style="color:#666;margin-bottom:8px;font-size:13px;">Copy this code to save your current questions data. Use it to migrate data in the future.</p>
+      <textarea id="exportCode" readonly style="width:100%;height:200px;padding:10px;border:1px solid #ddd;border-radius:6px;font-family:monospace;font-size:11px;resize:none;"></textarea>
+    </div>
+
+    <div style="margin-bottom:16px;display:flex;gap:10px;">
+      <button class="btn" style="background:#0D47A1;flex:1;" onclick="copyExportCode()">📋 Copy Code</button>
+      <button class="btn" style="background:#2E7D32;flex:1;" onclick="downloadExportCode()">⬇️ Download Code</button>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn" style="background:#999;" onclick="closeExportModal()">Close</button>
     </div>
   </div>
 </div>
@@ -386,6 +408,74 @@ function showStatus(msg, type) {
 
 function goBack() {
   window.location.href = 'compare.html';
+}
+
+function closeExportModal() {
+  document.getElementById('exportModal').classList.remove('active');
+}
+
+async function exportToCode() {
+  try {
+    showStatus('⏳ Generating migration code...', 'success');
+
+    // Convert current questions to export format
+    const PROVIDER_KEYS = ['ab', 'ic', 'star', 'care', 'tata'];
+    const exportData = {
+      version: '1.0',
+      timestamp: new Date().toISOString(),
+      features: questions.map(q => {
+        const vals = PROVIDER_KEYS.map(p => q.values?.[p] || '');
+        const notes = PROVIDER_KEYS.map(p => q.notes?.[p] || '');
+        return {
+          id: q.feature_id,
+          label: q.feature_label,
+          section_id: q.section_id,
+          vals: vals,
+          notes: notes,
+          is_active: q.is_active
+        };
+      })
+    };
+
+    // Convert to JSON then Base64 (same format as data migration)
+    const jsonString = JSON.stringify(exportData);
+    const base64Code = btoa(jsonString);  // btoa() automatically encodes, eyJ... is the natural Base64 start for {"
+
+    // Display in modal
+    document.getElementById('exportCode').value = base64Code;
+    document.getElementById('exportModal').classList.add('active');
+
+    console.log(`✅ Generated migration code with ${questions.length} questions`);
+    showStatus(`✅ Code generated with ${questions.length} questions! Copy or download it.`, 'success');
+  } catch (error) {
+    console.error('Export error:', error);
+    showStatus(`❌ Error generating code: ${error.message}`, 'error');
+  }
+}
+
+function copyExportCode() {
+  const codeArea = document.getElementById('exportCode');
+  codeArea.select();
+  document.execCommand('copy');
+  showStatus('✅ Code copied to clipboard!', 'success');
+}
+
+function downloadExportCode() {
+  const code = document.getElementById('exportCode').value;
+  const timestamp = new Date().toISOString().split('T')[0];
+  const filename = `comparison-data-${timestamp}.txt`;
+
+  const blob = new Blob([code], { type: 'text/plain' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  showStatus(`✅ Code downloaded as ${filename}`, 'success');
 }
 
 window.onload = function() {
