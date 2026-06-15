@@ -1610,18 +1610,20 @@ router.get('/api/comparison/questions/all', async (request, env) => {
             ORDER BY section_id, sort_order
         `).all();
 
-        // For each feature, get the values for all brands
+        // For each feature, get the values and notes for all brands
         const questions = [];
         for (const feature of features.results || []) {
             const values = await env.DB.prepare(`
-                SELECT brand_id, value_type
+                SELECT brand_id, value_type, notes
                 FROM comparison_values
                 WHERE feature_id = ?
             `).bind(feature.feature_id).all();
 
             const valuesMap = {};
+            const notesMap = {};
             for (const val of values.results || []) {
                 valuesMap[val.brand_id] = val.value_type;
+                notesMap[val.brand_id] = val.notes || '';
             }
 
             questions.push({
@@ -1630,7 +1632,8 @@ router.get('/api/comparison/questions/all', async (request, env) => {
                 section_id: feature.section_id,
                 is_active: feature.is_active,
                 sort_order: feature.sort_order,
-                values: valuesMap
+                values: valuesMap,
+                notes: notesMap
             });
         }
 
@@ -1670,7 +1673,7 @@ router.post('/api/comparison/questions', async (request, env) => {
             ));
         }
 
-        const { feature_id, feature_label, section_id, values } = await request.json();
+        const { feature_id, feature_label, section_id, values, notes } = await request.json();
 
         if (!feature_label || !section_id) {
             return withCors(new Response(
@@ -1701,16 +1704,18 @@ router.post('/api/comparison/questions', async (request, env) => {
         if (values && typeof values === 'object') {
             for (const brand of BRANDS) {
                 const valueType = values[brand];
+                const noteValue = notes && notes[brand] ? notes[brand] : '';
                 const fid = feature_id || feature_label.toLowerCase().replace(/\s+/g, '_').substring(0, 30);
 
                 if (valueType && ['Y', 'N', 'E'].includes(valueType)) {
                     await env.DB.prepare(`
-                        INSERT INTO comparison_values (feature_id, brand_id, value_type)
-                        VALUES (?, ?, ?)
+                        INSERT INTO comparison_values (feature_id, brand_id, value_type, notes)
+                        VALUES (?, ?, ?, ?)
                         ON CONFLICT(feature_id, brand_id) DO UPDATE SET
                             value_type = ?,
+                            notes = ?,
                             updated_at = datetime('now')
-                    `).bind(fid, brand, valueType, valueType).run();
+                    `).bind(fid, brand, valueType, noteValue, valueType, noteValue).run();
                 }
             }
         }

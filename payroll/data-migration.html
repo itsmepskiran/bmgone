@@ -472,13 +472,17 @@
                                 feature_id: feature.id,
                                 feature_label: feature.label,
                                 section_id: section.id,
-                                values: {}
+                                values: {},
+                                notes: {}
                             };
 
-                            // Map brand values
+                            // Map brand values and notes
                             BRANDS.forEach((brand, idx) => {
                                 if (feature.vals && feature.vals[idx]) {
                                     payload.values[brand] = feature.vals[idx];
+                                }
+                                if (feature.notes && feature.notes[idx]) {
+                                    payload.notes[brand] = feature.notes[idx];
                                 }
                             });
 
