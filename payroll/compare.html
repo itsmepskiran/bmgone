@@ -1418,34 +1418,32 @@ async function saveToDatabase() {
       reportData: reportData
     };
 
-    // Get auth token (required for staff-only access)
+    // Get auth token if available (optional)
     const token = window.authToken || localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
 
     console.log('💾 Save to Database:', {
-      token: token ? `${token.substring(0, 20)}...` : 'NOT FOUND',
+      token: token ? `${token.substring(0, 20)}...` : 'ANONYMOUS',
       endpoint: 'https://pay.bmgone.com/api/comparison/save-report',
       clientName: clientName,
       selectedBrands: Array.from(selectedProviders)
     });
 
-    if (!token) {
-      showSaveStatus('❌ No authentication token. Please log in to staff dashboard.', false);
-      console.error('❌ Token not found in localStorage or sessionStorage');
-      return;
-    }
-
-    showSaveStatus('⏳ Saving to secure database...', true);
+    showSaveStatus('⏳ Saving to database...', true);
 
     const apiUrl = 'https://pay.bmgone.com/api/comparison/save-report';
     const requestHeaders = {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`
+      'Content-Type': 'application/json'
     };
+
+    // Add auth header if token available
+    if (token) {
+      requestHeaders['Authorization'] = `Bearer ${token}`;
+    }
 
     console.log('📤 API Request:', {
       url: apiUrl,
       method: 'POST',
-      headers: requestHeaders,
+      authenticated: !!token,
       bodySize: JSON.stringify(payload).length + ' bytes'
     });
 
@@ -1460,22 +1458,6 @@ async function saveToDatabase() {
       statusText: response.statusText,
       contentType: response.headers.get('content-type')
     });
-
-    // Handle 401 Unauthorized
-    if (response.status === 401) {
-      showSaveStatus('❌ Session expired. Please log in again.', false);
-      console.error('❌ Authentication failed: 401 Unauthorized');
-      setTimeout(() => {
-        window.location.href = '/payroll/';
-      }, 2000);
-      return;
-    }
-
-    if (response.status === 403) {
-      showSaveStatus('❌ Access denied. Staff role required.', false);
-      console.error('❌ Permission denied: 403 Forbidden');
-      return;
-    }
 
     if (!response.ok) {
       const errorText = await response.text();
