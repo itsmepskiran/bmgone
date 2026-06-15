@@ -1254,12 +1254,12 @@ async function loadNotesFromAPI() {
       const feature = section.features.find(f => f.id === q.feature_id);
       if (!feature) return;
 
-      // Update notes for each brand
+      // Update notes for each brand (API returns notes keyed by brand_id: ab, ic, star, care, tata)
       if (q.notes) {
-        Object.keys(q.notes).forEach((brandName, idx) => {
-          const brandIndex = brands.findIndex(b => b.name === brandName);
+        Object.keys(q.notes).forEach((brandId) => {
+          const brandIndex = brands.findIndex(b => b.id === brandId);
           if (brandIndex >= 0) {
-            feature.notes[brandIndex] = q.notes[brandName] || '';
+            feature.notes[brandIndex] = q.notes[brandId] || '';
           }
         });
       }
