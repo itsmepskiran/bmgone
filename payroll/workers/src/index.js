@@ -1159,6 +1159,37 @@ router.post('/api/admin/reset-password', async (request, env) => {
     }
 });
 
+// Root endpoint
+router.get('/', () => withCors(new Response(
+    JSON.stringify({
+        service: 'BMGOne Payroll API',
+        version: '1.0.0',
+        status: 'operational',
+        documentation: 'https://bmgone.com/api/docs',
+        endpoints: {
+            health: 'GET /api/health',
+            auth: 'POST /api/auth/login',
+            profile: 'GET /api/profile',
+            attendance: {
+                mark: 'POST /api/attendance/mark',
+                view: 'GET /api/attendance',
+                last7days: 'GET /api/attendance/last7days'
+            },
+            leave: {
+                balances: 'GET /api/leave/balances',
+                apply: 'POST /api/leave/apply',
+                applications: 'GET /api/leave/applications'
+            },
+            holidays: 'GET /api/holidays',
+            admin: {
+                employees: 'GET /api/admin/employees',
+                resetPassword: 'POST /api/admin/reset-password'
+            }
+        }
+    }),
+    { status: 200, headers: { 'Content-Type': 'application/json' } }
+)));
+
 // 404 handler
 router.all('*', () => withCors(new Response(
     JSON.stringify({ error: 'Endpoint not found' }),
