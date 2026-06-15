@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reports - BMGOne Payroll</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            margin-top: 80px;
+        }
+
+        .header-section {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-section h1 {
+            margin: 0;
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background: white;
+            color: var(--primary-blue);
+        }
+
+        .reports-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .report-card {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .report-card:hover {
+            border-color: var(--primary-blue);
+            box-shadow: 0 8px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .report-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .report-card h3 {
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+
+        .report-card p {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 1rem;
+        }
+
+        .report-card button {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.3s ease;
+        }
+
+        .report-card button:hover {
+            opacity: 0.9;
+        }
+
+        .content-box {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        @media (max-width: 768px) {
+            .header-section {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .reports-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="/logos/banner.png" alt="BMGOne" class="logo-img">
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="https://bmgone.com" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="btn btn-staff-login" id="logoutBtn">Logout</a>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Container -->
+    <div class="container">
+        <div class="header-section">
+            <h1>📊 Reports</h1>
+            <button class="btn-back" onclick="goBack()">← Back to Dashboard</button>
+        </div>
+
+        <div class="reports-grid">
+            <!-- Attendance Report -->
+            <div class="report-card">
+                <div class="report-icon">⏰</div>
+                <h3>Attendance Report</h3>
+                <p>View login/logout times and attendance records for all employees</p>
+                <button onclick="openReport('attendance')">View Report</button>
+            </div>
+
+            <!-- Leave Report -->
+            <div class="report-card">
+                <div class="report-icon">📅</div>
+                <h3>Leave Report</h3>
+                <p>Track leave applications and balances across the organization</p>
+                <button onclick="openReport('leave')">View Report</button>
+            </div>
+
+            <!-- Payroll Report -->
+            <div class="report-card">
+                <div class="report-icon">💰</div>
+                <h3>Payroll Report</h3>
+                <p>Generate payroll summaries and salary details</p>
+                <button onclick="openReport('payroll')">View Report</button>
+            </div>
+
+            <!-- Employee Report -->
+            <div class="report-card">
+                <div class="report-icon">👥</div>
+                <h3>Employee Report</h3>
+                <p>Comprehensive employee data and status information</p>
+                <button onclick="openReport('employee')">View Report</button>
+            </div>
+
+            <!-- Comparison Report -->
+            <div class="report-card">
+                <div class="report-icon">📋</div>
+                <h3>Comparison Report</h3>
+                <p>View all saved insurance plan comparisons</p>
+                <button onclick="openReport('comparison')">View Report</button>
+            </div>
+
+            <!-- Performance Report -->
+            <div class="report-card">
+                <div class="report-icon">📈</div>
+                <h3>Performance Report</h3>
+                <p>Track employee performance and attendance metrics</p>
+                <button onclick="openReport('performance')">View Report</button>
+            </div>
+        </div>
+
+        <div class="content-box">
+            <h2 style="color: #1f2937; margin-bottom: 1rem;">📊 Report Center</h2>
+            <p style="color: #6b7280;">Select a report type above to view detailed information. Reports can be filtered by date range and exported to CSV format.</p>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            API_BASE: 'https://pay.bmgone.com/api'
+        };
+
+        let token = localStorage.getItem('token');
+
+        // Check authentication
+        window.addEventListener('load', function() {
+            if (!token) {
+                alert('⚠️ Not authenticated. Please login first.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const employee = localStorage.getItem('employee');
+            if (employee) {
+                try {
+                    const employeeData = JSON.parse(employee);
+                    if (!employeeData.role || !['admin', 'master_admin'].includes(employeeData.role)) {
+                        alert('❌ Access Denied. Only admins can access reports.');
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                } catch (e) {
+                    alert('❌ Invalid authentication data.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+            }
+        });
+
+        // Open specific report
+        function openReport(reportType) {
+            alert(`📊 ${reportType.charAt(0).toUpperCase() + reportType.slice(1)} Report - Coming Soon!\n\nThis report is currently under development.`);
+        }
+
+        // Go back to dashboard
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        // Logout button
+        document.getElementById('logoutBtn')?.addEventListener('click', async function(e) {
+            e.preventDefault();
+            try {
+                await fetch(`${CONFIG.API_BASE}/auth/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+
+            localStorage.removeItem('token');
+            localStorage.removeItem('employee');
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View All Employees - BMGOne Payroll</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .employees-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            margin-top: 80px;
+        }
+
+        .header-section {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-section h1 {
+            margin: 0;
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background: white;
+            color: var(--primary-blue);
+        }
+
+        .employees-table-wrapper {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-header {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 1.5rem;
+            font-weight: 600;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 1rem 1.5rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-badge.active { background: #d1fae5; color: #065f46; }
+        .status-badge.inactive { background: #fed7aa; color: #92400e; }
+        .status-badge.terminated { background: #fee2e2; color: #991b1b; }
+        .status-badge.resigned { background: #ede9fe; color: #5b21b6; }
+        .status-badge.retired { background: #f3f4f6; color: #374151; }
+        .status-badge.on_leave { background: #dbeafe; color: #1e40af; }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #6b7280;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid var(--primary-blue);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 1rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6b7280;
+        }
+
+        .search-box {
+            margin-bottom: 1.5rem;
+            display: flex;
+            gap: 1rem;
+        }
+
+        .search-box input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 5px;
+            font-size: 1rem;
+        }
+
+        .search-box button {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .header-section {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            table {
+                font-size: 0.875rem;
+            }
+
+            th, td {
+                padding: 0.75rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="/logos/banner.png" alt="BMGOne" class="logo-img">
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="https://bmgone.com" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="btn btn-staff-login" id="logoutBtn">Logout</a>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Employees Container -->
+    <div class="employees-container">
+        <div class="header-section">
+            <h1>👥 All Employees</h1>
+            <button class="btn-back" onclick="goBack()">← Back to Dashboard</button>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="searchInput" placeholder="Search by name, employee ID, email..." onkeyup="filterTable()">
+            <button onclick="filterTable()">🔍 Search</button>
+        </div>
+
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+        <div class="employees-table-wrapper">
+            <div class="table-header">
+                Total Employees: <span id="totalCount">0</span>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Employee ID</th>
+                        <th>Name</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th>Department</th>
+                        <th>Position</th>
+                        <th>Status</th>
+                        <th>Join Date</th>
+                        <th>Role</th>
+                    </tr>
+                </thead>
+                <tbody id="employeesTableBody">
+                    <tr>
+                        <td colspan="9" class="loading">
+                            <div class="spinner"></div>
+                            Loading employees...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            API_BASE: 'https://pay.bmgone.com/api'
+        };
+
+        let allEmployees = [];
+        let token = localStorage.getItem('token');
+
+        // Check authentication
+        window.addEventListener('load', function() {
+            if (!token) {
+                alert('⚠️ Not authenticated. Please login first.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const employee = localStorage.getItem('employee');
+            if (employee) {
+                try {
+                    const employeeData = JSON.parse(employee);
+                    if (!employeeData.role || !['admin', 'master_admin'].includes(employeeData.role)) {
+                        alert('❌ Access Denied. Only admins can view this page.');
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                } catch (e) {
+                    alert('❌ Invalid authentication data.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+            }
+
+            loadEmployees();
+        });
+
+        // Load employees from API
+        async function loadEmployees() {
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/admin/employees`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    allEmployees = data.employees || [];
+                    renderTable();
+                    document.getElementById('totalCount').textContent = allEmployees.length;
+                } else {
+                    showError(`Failed to load employees: ${data.error}`);
+                }
+            } catch (error) {
+                console.error('Load employees error:', error);
+                showError('Failed to load employees. Please try again.');
+            }
+        }
+
+        // Render employees table
+        function renderTable() {
+            const tbody = document.getElementById('employeesTableBody');
+
+            if (allEmployees.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9">
+                            <div class="empty-state">
+                                <p>📭 No employees found in the database</p>
+                                <p style="font-size: 0.875rem;">Contact your administrator to add employees</p>
+                            </div>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = allEmployees.map(emp => `
+                <tr>
+                    <td><strong>${emp.employee_id || '-'}</strong></td>
+                    <td>${emp.first_name || '-'} ${emp.last_name || '-'}</td>
+                    <td>${emp.email || '-'}</td>
+                    <td>${emp.phone || '-'}</td>
+                    <td>${emp.department || '-'}</td>
+                    <td>${emp.position || '-'}</td>
+                    <td>
+                        <span class="status-badge ${(emp.employment_status || 'active').toLowerCase()}">
+                            ${emp.employment_status || 'Active'}
+                        </span>
+                    </td>
+                    <td>${emp.join_date ? new Date(emp.join_date).toLocaleDateString() : '-'}</td>
+                    <td><span style="background: #dbeafe; color: #1e40af; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">${emp.role || 'staff'}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        // Filter table by search
+        function filterTable() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+
+            if (!query) {
+                renderTable();
+                return;
+            }
+
+            const filtered = allEmployees.filter(emp =>
+                (emp.employee_id || '').toLowerCase().includes(query) ||
+                (emp.first_name || '').toLowerCase().includes(query) ||
+                (emp.last_name || '').toLowerCase().includes(query) ||
+                (emp.email || '').toLowerCase().includes(query) ||
+                (emp.department || '').toLowerCase().includes(query)
+            );
+
+            const tbody = document.getElementById('employeesTableBody');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 2rem; color: #6b7280;">
+                            No employees match your search
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = filtered.map(emp => `
+                <tr>
+                    <td><strong>${emp.employee_id || '-'}</strong></td>
+                    <td>${emp.first_name || '-'} ${emp.last_name || '-'}</td>
+                    <td>${emp.email || '-'}</td>
+                    <td>${emp.phone || '-'}</td>
+                    <td>${emp.department || '-'}</td>
+                    <td>${emp.position || '-'}</td>
+                    <td>
+                        <span class="status-badge ${(emp.employment_status || 'active').toLowerCase()}">
+                            ${emp.employment_status || 'Active'}
+                        </span>
+                    </td>
+                    <td>${emp.join_date ? new Date(emp.join_date).toLocaleDateString() : '-'}</td>
+                    <td><span style="background: #dbeafe; color: #1e40af; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.875rem; font-weight: 600;">${emp.role || 'staff'}</span></td>
+                </tr>
+            `).join('');
+        }
+
+        // Show error message
+        function showError(message) {
+            const errorDiv = document.getElementById('errorMessage');
+            errorDiv.textContent = '⚠️ ' + message;
+            errorDiv.style.display = 'block';
+            document.getElementById('employeesTableBody').innerHTML = `
+                <tr>
+                    <td colspan="9" style="text-align: center; padding: 2rem;">
+                        <p style="color: #991b1b;">Failed to load employees</p>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Go back to dashboard
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        // Logout button
+        document.getElementById('logoutBtn')?.addEventListener('click', async function(e) {
+            e.preventDefault();
+            try {
+                await fetch(`${CONFIG.API_BASE}/auth/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+
+            localStorage.removeItem('token');
+            localStorage.removeItem('employee');
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>
