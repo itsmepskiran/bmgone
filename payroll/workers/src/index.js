@@ -1272,8 +1272,14 @@ router.post('/api/comparison/save-report', async (request, env) => {
 
     } catch (error) {
         console.error('Save report error:', error);
+        console.error('Error message:', error.message);
+        console.error('Error stack:', error.stack);
         return withCors(new Response(
-            JSON.stringify({ error: 'Internal server error' }),
+            JSON.stringify({
+                error: 'Internal server error',
+                details: error.message,
+                type: error.constructor.name
+            }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }
         ));
     }
