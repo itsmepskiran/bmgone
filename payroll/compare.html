@@ -1476,7 +1476,9 @@ async function saveToDatabase() {
     console.log('✅ API Success:', result);
 
     if (result.success) {
-      showSaveStatus('✅ Report saved to secure database! Your data is backed up.', true);
+      const msg = `✅ Comparison saved! ${result.answersCount || 0} individual answers stored in database.`;
+      showSaveStatus(msg, true);
+      console.log(`✅ Comparison ID: ${result.comparisonId}, Answers: ${result.answersCount}`);
     } else {
       showSaveStatus('⚠️ Save error: ' + (result.error || 'Unknown error'), false);
       console.error('⚠️ API returned error:', result);
