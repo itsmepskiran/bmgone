@@ -870,8 +870,8 @@
         function openComparePlans() {
             // Navigate to the comparison page - token already in localStorage from login
             const comparePath = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
-                ? '/insurance/compare.html'
-                : 'https://pay.bmgone.com/insurance/compare.html';
+                ? '/compare.html'
+                : 'https://pay.bmgone.com/compare.html';
             
             window.location.href = comparePath;
         }
