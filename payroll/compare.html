@@ -625,8 +625,30 @@ const PED_LIST = [
   {key:"chol",    label:"Cholesterol / Hyperlipidemia",icon:"🧪", active:false}
 ];
 
+// ── AUTH CHECK ─────────────────────────────────────────────────────────────
+function checkAuthentication() {
+  // Check for valid JWT token
+  const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+
+  if (!token) {
+    // No token found - redirect to login
+    alert('⚠️ Please log in first. Redirecting to login page...');
+    window.location.href = '/payroll/login.html';
+    return false;
+  }
+
+  // Store token globally for API calls
+  window.authToken = token;
+  return true;
+}
+
 // ── INIT ───────────────────────────────────────────────────────────────────
 window.onload = function() {
+  // Check authentication first
+  if (!checkAuthentication()) {
+    return; // Stop initialization if not authenticated
+  }
+
   document.getElementById('cover-date').textContent =
     'Comprehensive Plan Comparison · ' +
     new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'long',year:'numeric'});
@@ -1388,30 +1410,51 @@ async function saveToDatabase() {
       reportData: reportData
     };
 
-    // Get auth token from session storage (if available)
-    const token = localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+    // Get auth token (required for staff-only access)
+    const token = window.authToken || localStorage.getItem('authToken') || sessionStorage.getItem('authToken');
+
+    if (!token) {
+      showSaveStatus('❌ Authentication required. Please log in to staff dashboard.', false);
+      setTimeout(() => {
+        window.location.href = '/payroll/login.html';
+      }, 2000);
+      return;
+    }
+
+    showSaveStatus('⏳ Saving to secure database...', true);
 
     const response = await fetch('https://pay.bmgone.com/api/comparison/save-report', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : ''
+        'Authorization': `Bearer ${token}`
       },
       body: JSON.stringify(payload)
     });
 
+    // Handle 401 Unauthorized
+    if (response.status === 401) {
+      showSaveStatus('❌ Session expired. Please log in again.', false);
+      setTimeout(() => {
+        window.location.href = '/payroll/login.html';
+      }, 2000);
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
     const result = await response.json();
 
     if (result.success) {
-      showSaveStatus('✅ Report saved to database successfully!', true);
+      showSaveStatus('✅ Report saved to secure database! Your data is backed up.', true);
     } else {
-      showSaveStatus('⚠️ Report saved locally (backend unavailable)', true);
-      exportDataWithProviders(); // Fallback to code export with provider selection
+      showSaveStatus('⚠️ Save error: ' + (result.error || 'Unknown error'), false);
     }
   } catch (error) {
     console.error('Database save error:', error);
-    showSaveStatus('⚠️ Saved locally (check network)', true);
-    exportDataWithProviders(); // Fallback to code export with provider selection
+    showSaveStatus(`⚠️ Network error: ${error.message}. Check your connection.`, false);
   }
 }
 
