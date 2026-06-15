@@ -1321,6 +1321,151 @@ router.post('/api/comparison/save-report', async (request, env) => {
     }
 });
 
+// ═══════════════════════════════════════════════════════════════════════════
+// COMPARISON ADMIN ENDPOINTS (CRUD for Questions, Brands, Answers)
+// ═══════════════════════════════════════════════════════════════════════════
+
+// Get all questions
+router.get('/api/comparison/questions', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) return withCors(new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 }));
+
+        const questions = await env.DB.prepare(`
+            SELECT id, feature_id, feature_label, section_id, sort_order
+            FROM comparison_features
+            WHERE is_active = 1
+            ORDER BY section_id, sort_order
+        `).all();
+
+        return withCors(new Response(JSON.stringify({
+            success: true,
+            questions: questions.results || []
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+    } catch (error) {
+        console.error('Get questions error:', error);
+        return withCors(new Response(JSON.stringify({ error: error.message }), { status: 500 }));
+    }
+});
+
+// Get all brands
+router.get('/api/comparison/brands', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) return withCors(new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 }));
+
+        const brands = await env.DB.prepare(`
+            SELECT id, brand_id, brand_name, plan_name, premium_default, color_dark, color_light, color_mid
+            FROM comparison_brands
+            WHERE is_active = 1
+            ORDER BY sort_order
+        `).all();
+
+        return withCors(new Response(JSON.stringify({
+            success: true,
+            brands: brands.results || []
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+    } catch (error) {
+        console.error('Get brands error:', error);
+        return withCors(new Response(JSON.stringify({ error: error.message }), { status: 500 }));
+    }
+});
+
+// Get all comparisons (with answers)
+router.get('/api/comparison/comparisons', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) return withCors(new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 }));
+
+        const comparisons = await env.DB.prepare(`
+            SELECT id, employee_id, client_name, client_age, members_count, selected_brands, created_at
+            FROM comparison_reports
+            ORDER BY created_at DESC
+            LIMIT 100
+        `).all();
+
+        return withCors(new Response(JSON.stringify({
+            success: true,
+            comparisons: comparisons.results || []
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+    } catch (error) {
+        console.error('Get comparisons error:', error);
+        return withCors(new Response(JSON.stringify({ error: error.message }), { status: 500 }));
+    }
+});
+
+// Get answers for specific comparison
+router.get('/api/comparison/answers/:comparisonId', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) return withCors(new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 }));
+
+        const comparisonId = request.params.comparisonId;
+        const answers = await env.DB.prepare(`
+            SELECT id, comparison_id, feature_id, brand_id, answer_value, comment, updated_at
+            FROM comparison_answers
+            WHERE comparison_id = ?
+            ORDER BY feature_id, brand_id
+        `).bind(comparisonId).all();
+
+        return withCors(new Response(JSON.stringify({
+            success: true,
+            answers: answers.results || []
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+    } catch (error) {
+        console.error('Get answers error:', error);
+        return withCors(new Response(JSON.stringify({ error: error.message }), { status: 500 }));
+    }
+});
+
+// Update answer
+router.put('/api/comparison/answers/:answerId', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) return withCors(new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 }));
+
+        const answerId = request.params.answerId;
+        const { answer_value, comment } = await request.json();
+
+        await env.DB.prepare(`
+            UPDATE comparison_answers
+            SET answer_value = ?, comment = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `).bind(answer_value, comment, answerId).run();
+
+        return withCors(new Response(JSON.stringify({
+            success: true,
+            message: 'Answer updated successfully'
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+    } catch (error) {
+        console.error('Update answer error:', error);
+        return withCors(new Response(JSON.stringify({ error: error.message }), { status: 500 }));
+    }
+});
+
+// Delete answer
+router.delete('/api/comparison/answers/:answerId', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) return withCors(new Response(JSON.stringify({ error: 'Unauthorized' }), { status: 401 }));
+
+        const answerId = request.params.answerId;
+
+        await env.DB.prepare(`
+            DELETE FROM comparison_answers
+            WHERE id = ?
+        `).bind(answerId).run();
+
+        return withCors(new Response(JSON.stringify({
+            success: true,
+            message: 'Answer deleted successfully'
+        }), { status: 200, headers: { 'Content-Type': 'application/json' } }));
+    } catch (error) {
+        console.error('Delete answer error:', error);
+        return withCors(new Response(JSON.stringify({ error: error.message }), { status: 500 }));
+    }
+});
+
 // Save staff brand preferences
 router.post('/api/comparison/save-preferences', async (request, env) => {
     try {
