@@ -786,6 +786,62 @@ router.get('/api/leave/applications', async (request, env) => {
     }
 });
 
+// Get leave approvals for current manager (leaves from their team members)
+router.get('/api/leave/approvals', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        // Only managers and admins can view approvals
+        if (user.role !== 'manager' && user.role !== 'admin' && user.role !== 'master_admin') {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Only managers can view leave approvals' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        let query = `
+            SELECT la.*, e.first_name, e.last_name, e.employee_id as emp_id, e.department
+            FROM leave_applications la
+            JOIN employees e ON la.employee_id = e.employee_id
+        `;
+        const params = [];
+
+        // If user is manager (not admin), only show their team's leaves
+        if (user.role === 'manager') {
+            query += ' WHERE e.reporting_manager_id = ?';
+            params.push(user.employeeId);
+        }
+
+        query += ' ORDER BY la.created_at DESC';
+
+        const applications = await env.DB.prepare(query).bind(...params).all();
+
+        return withCors(new Response(
+            JSON.stringify({
+                success: true,
+                approvals: applications.results || []
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+
+    } catch (error) {
+        console.error('Get leave approvals error:', error);
+        return withCors(new Response(
+            JSON.stringify({
+                error: 'Internal server error',
+                details: error.message
+            }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
 // Approve/Reject leave
 router.put('/api/leave/:id/approve', async (request, env) => {
     try {
@@ -897,20 +953,26 @@ router.get('/api/admin/employees', async (request, env) => {
                 { status: 401, headers: { 'Content-Type': 'application/json' } }
             ));
         }
-        
+
         const employees = await env.DB.prepare(
-            'SELECT employee_id, first_name, last_name, email, phone, department, position, role, join_date, is_active, employment_status, status_reason, status_effective_date FROM employees ORDER BY created_at DESC'
+            'SELECT employee_id, first_name, last_name, email, phone, department, position, role, join_date, is_active, employment_status FROM employees ORDER BY first_name ASC'
         ).all();
-        
+
         return withCors(new Response(
-            JSON.stringify({ employees: employees.results }),
+            JSON.stringify({
+                success: true,
+                employees: employees.results || []
+            }),
             { status: 200, headers: { 'Content-Type': 'application/json' } }
         ));
-        
+
     } catch (error) {
         console.error('Get employees error:', error);
         return withCors(new Response(
-            JSON.stringify({ error: 'Internal server error' }),
+            JSON.stringify({
+                error: 'Internal server error',
+                details: error.message
+            }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }
         ));
     }

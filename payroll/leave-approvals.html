@@ -116,12 +116,150 @@
         </div>
 
         <div class="content-box">
-            <div class="icon">⏳</div>
-            <h2>Leave Approvals - Coming Soon</h2>
-            <p>This feature is currently under development.</p>
-            <p style="font-size: 0.875rem; margin-top: 1rem;">You'll be able to review and approve employee leave requests here.</p>
+            <h2 style="margin-top: 0;">Team Leave Approvals</h2>
+            <p style="color: #6b7280; margin-bottom: 1.5rem;">Review and approve leave requests from your team members</p>
+
+            <div class="filters" style="margin-bottom: 1.5rem;">
+                <div class="filter-group">
+                    <label for="statusFilter">Status</label>
+                    <select id="statusFilter" onchange="filterApprovals()">
+                        <option value="">All Status</option>
+                        <option value="pending">Pending</option>
+                        <option value="approved">Approved</option>
+                        <option value="rejected">Rejected</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Employee</th>
+                            <th>Leave Type</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Days</th>
+                            <th>Reason</th>
+                            <th>Status</th>
+                            <th>Applied On</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="approvalsTableBody">
+                        <tr>
+                            <td colspan="9" style="text-align: center; padding: 2rem; color: #6b7280;">Loading approvals...</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
+
+    <style>
+        .filters {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+        }
+
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .filter-group label {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #374151;
+            font-size: 0.875rem;
+        }
+
+        .filter-group select {
+            padding: 0.75rem;
+            border: 1.5px solid #d1d5db;
+            border-radius: 5px;
+            font-size: 0.875rem;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 0.875rem;
+        }
+
+        th {
+            background: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        tr:hover {
+            background: #f9fafb;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .status-pending {
+            background: #fed7aa;
+            color: #92400e;
+        }
+
+        .status-approved {
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .status-rejected {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-sm {
+            padding: 0.4rem 0.8rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: white;
+        }
+
+        .btn-approve {
+            background: #10b981;
+        }
+
+        .btn-reject {
+            background: #ef4444;
+        }
+
+        .btn-sm:hover {
+            opacity: 0.8;
+        }
+    </style>
 
     <script>
         const CONFIG = {
@@ -129,6 +267,7 @@
         };
 
         let token = localStorage.getItem('token');
+        let allApprovals = [];
 
         // Check authentication
         window.addEventListener('load', function() {
@@ -142,8 +281,9 @@
             if (employee) {
                 try {
                     const employeeData = JSON.parse(employee);
-                    if (!employeeData.role || !['admin', 'master_admin'].includes(employeeData.role)) {
-                        alert('❌ Access Denied. Only admins can access this page.');
+                    // Managers and admins can view approvals
+                    if (!employeeData.role || !['manager', 'admin', 'master_admin'].includes(employeeData.role)) {
+                        alert('❌ Access Denied. Only managers and admins can view leave approvals.');
                         window.location.href = 'index.html';
                         return;
                     }
@@ -153,7 +293,145 @@
                     return;
                 }
             }
+
+            loadApprovals();
         });
+
+        // Load manager leave approvals
+        async function loadApprovals() {
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/leave/approvals`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Failed to load approvals');
+                }
+
+                const data = await response.json();
+                allApprovals = data.approvals || [];
+
+                renderApprovals(allApprovals);
+                console.log('✓ Loaded', allApprovals.length, 'leave approvals');
+            } catch (error) {
+                console.error('Load approvals error:', error);
+                document.getElementById('approvalsTableBody').innerHTML = `
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 2rem; color: #991b1b;">
+                            ❌ ${error.message || 'Failed to load approvals'}
+                        </td>
+                    </tr>
+                `;
+            }
+        }
+
+        // Render approvals table
+        function renderApprovals(approvals) {
+            const tbody = document.getElementById('approvalsTableBody');
+
+            if (approvals.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="9" style="text-align: center; padding: 2rem; color: #6b7280;">
+                            📭 No leave approvals pending
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = approvals.map(approval => {
+                const statusClass = `status-${(approval.status || 'pending').toLowerCase()}`;
+                const statusBadge = `<span class="status-badge ${statusClass}">${approval.status || 'Pending'}</span>`;
+
+                const actions = approval.status === 'pending' ? `
+                    <div class="action-btns">
+                        <button class="btn-sm btn-approve" onclick="approveLeave(${approval.id})">Approve</button>
+                        <button class="btn-sm btn-reject" onclick="rejectLeave(${approval.id})">Reject</button>
+                    </div>
+                ` : '—';
+
+                return `
+                    <tr>
+                        <td><strong>${approval.first_name} ${approval.last_name}</strong><br><span style="color: #6b7280; font-size: 0.75rem;">${approval.emp_id}</span></td>
+                        <td>${approval.leave_type}</td>
+                        <td>${approval.start_date ? new Date(approval.start_date).toLocaleDateString() : '—'}</td>
+                        <td>${approval.end_date ? new Date(approval.end_date).toLocaleDateString() : '—'}</td>
+                        <td><strong>${approval.number_of_days || '—'}</strong></td>
+                        <td>${approval.reason ? approval.reason.substring(0, 30) + '...' : '—'}</td>
+                        <td>${statusBadge}</td>
+                        <td>${approval.created_at ? new Date(approval.created_at).toLocaleDateString() : '—'}</td>
+                        <td>${actions}</td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Filter approvals by status
+        function filterApprovals() {
+            const status = document.getElementById('statusFilter').value;
+
+            if (!status) {
+                renderApprovals(allApprovals);
+                return;
+            }
+
+            const filtered = allApprovals.filter(a => a.status === status);
+            renderApprovals(filtered);
+        }
+
+        // Approve leave
+        async function approveLeave(id) {
+            if (!confirm('Approve this leave request?')) return;
+
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/leave/${id}/approve`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ status: 'approved' })
+                });
+
+                if (!response.ok) throw new Error('Failed to approve');
+
+                alert('✅ Leave approved');
+                loadApprovals();
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
+
+        // Reject leave
+        async function rejectLeave(id) {
+            const reason = prompt('Enter rejection reason:');
+            if (!reason) return;
+
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/leave/${id}/approve`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        status: 'rejected',
+                        rejectionReason: reason
+                    })
+                });
+
+                if (!response.ok) throw new Error('Failed to reject');
+
+                alert('✅ Leave rejected');
+                loadApprovals();
+            } catch (error) {
+                alert('❌ Error: ' + error.message);
+            }
+        }
 
         // Go back to dashboard
         function goBack() {

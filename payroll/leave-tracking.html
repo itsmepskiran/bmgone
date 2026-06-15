@@ -309,17 +309,23 @@
                     }
                 });
 
-                if (!response.ok) throw new Error('Failed to load leave applications');
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || error.details || 'Failed to load leave applications');
+                }
 
                 const data = await response.json();
                 const applications = data.applications || [];
 
                 renderTable(applications);
+                console.log('✓ Loaded', applications.length, 'leave applications');
             } catch (error) {
                 console.error('Load error:', error);
                 document.getElementById('leaveTableBody').innerHTML = `
                     <tr>
-                        <td colspan="9" class="empty-state">Failed to load leave applications</td>
+                        <td colspan="9" class="empty-state">
+                            ❌ ${error.message || 'Failed to load leave applications'}
+                        </td>
                     </tr>
                 `;
             }
