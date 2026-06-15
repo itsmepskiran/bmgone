@@ -933,13 +933,15 @@ function renderTableBody() {
         const n = feat.notes[ci]||'';
         const isY = v==='Y';
         const tickCls = isY?'tick-y':'tick-n';
-        html += `<td class="cell-td" style="background:${b.light};border-bottom:1px solid ${b.mid}88;border-right:1px solid ${b.mid}44;padding:6px 4px;display:flex;flex-direction:column;justify-content:space-between;min-height:60px;">
-          <div class="${tickCls} tick-btn" onclick="toggleCell('${sec.id}','${feat.id}',${ci})" title="Click to toggle" style="font-size:18px;font-weight:bold;text-align:left;flex-shrink:0;">
-            ${isY?'✔':'✘'}
+        html += `<td class="cell-td" style="background:${b.light};border-bottom:1px solid ${b.mid}88;border-right:1px solid ${b.mid}44;padding:4px 3px;">
+          <div style="text-align:left;">
+            <div class="${tickCls} tick-btn" onclick="toggleCell('${sec.id}','${feat.id}',${ci})" title="Click to toggle" style="font-size:16px;font-weight:bold;margin-bottom:2px;">
+              ${isY?'✔':'✘'}
+            </div>
+            <input type="text" class="cell-note" value="${n}" placeholder="note…"
+              onchange="setNote('${sec.id}','${feat.id}',${ci},this.value)"
+              style="border:1px solid ${b.dark}33;font-size:8px;padding:1px 2px;border-radius:3px;width:100%;box-sizing:border-box;"/>
           </div>
-          <input type="text" class="cell-note" value="${n}" placeholder="comment…"
-            onchange="setNote('${sec.id}','${feat.id}',${ci},this.value)"
-            style="border:1px solid ${b.dark}33;font-size:8px;padding:2px 3px;border-radius:3px;margin-top:auto;text-align:right;width:100%;box-sizing:border-box;"/>
         </td>`;
       });
       html += '</tr>';
