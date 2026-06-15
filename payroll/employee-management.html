@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Management - BMGOne Payroll</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .management-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+            margin-top: 80px;
+        }
+
+        .header-section {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-section h1 {
+            margin: 0;
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background: white;
+            color: var(--primary-blue);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .tab-button {
+            padding: 1rem 1.5rem;
+            border: none;
+            background: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #6b7280;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button:hover {
+            color: #374151;
+        }
+
+        .tab-button.active {
+            color: var(--primary-blue);
+            border-bottom-color: var(--primary-blue);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .content-box {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-action {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-action:hover {
+            opacity: 0.9;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .info-card {
+            background: #f9fafb;
+            border-radius: 10px;
+            padding: 1.5rem;
+            border: 1px solid #e5e7eb;
+        }
+
+        .info-label {
+            font-size: 0.875rem;
+            color: #6b7280;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-value {
+            color: #1f2937;
+            font-size: 1rem;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            background: #d1fae5;
+            color: #065f46;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: #6b7280;
+        }
+
+        @media (max-width: 768px) {
+            .header-section {
+                flex-direction: column;
+                gap: 1rem;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .tab-button {
+                padding: 0.75rem 1rem;
+                font-size: 0.875rem;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="/logos/banner.png" alt="BMGOne" class="logo-img">
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="https://bmgone.com" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="btn btn-staff-login" id="logoutBtn">Logout</a>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Management Container -->
+    <div class="management-container">
+        <div class="header-section">
+            <h1>👥 Employee Management</h1>
+            <button class="btn-back" onclick="goBack()">← Back to Dashboard</button>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="switchTab('view-employees')">📋 View Employees</button>
+            <button class="tab-button" onclick="switchTab('add-employee')">➕ Add Employee</button>
+            <button class="tab-button" onclick="switchTab('manage-status')">⚙️ Manage Status</button>
+        </div>
+
+        <!-- View Employees Tab -->
+        <div id="view-employees" class="tab-content active">
+            <div class="content-box">
+                <h2 style="margin-top: 0;">All Employees</h2>
+                <div class="action-buttons">
+                    <input type="text" id="searchEmployees" placeholder="Search by name, ID, or email..." style="flex: 1; padding: 0.75rem; border: 1px solid #d1d5db; border-radius: 5px; font-size: 1rem;">
+                    <button class="btn-action" onclick="searchEmployees()">🔍 Search</button>
+                </div>
+                <div id="employeesContainer">
+                    <div class="empty-state">Loading employees...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Employee Tab -->
+        <div id="add-employee" class="tab-content">
+            <div class="content-box">
+                <h2 style="margin-top: 0;">Add New Employee</h2>
+                <p>👉 For detailed employee onboarding, please visit <a href="onboarding.html" style="color: var(--primary-blue); text-decoration: underline;">Employee Onboarding Page</a></p>
+                <a href="onboarding.html" class="btn-action" style="display: inline-block; text-decoration: none;">Open Onboarding Form</a>
+            </div>
+        </div>
+
+        <!-- Manage Status Tab -->
+        <div id="manage-status" class="tab-content">
+            <div class="content-box">
+                <h2 style="margin-top: 0;">Manage Employee Status</h2>
+                <p>👉 To update employee employment status, please visit <a href="employee-status.html" style="color: var(--primary-blue); text-decoration: underline;">Employee Status Page</a></p>
+                <a href="employee-status.html" class="btn-action" style="display: inline-block; text-decoration: none;">Open Employee Status</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            API_BASE: 'https://pay.bmgone.com/api'
+        };
+
+        let token = localStorage.getItem('token');
+        let allEmployees = [];
+
+        // Check authentication
+        window.addEventListener('load', function() {
+            if (!token) {
+                alert('⚠️ Not authenticated. Please login first.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const employee = localStorage.getItem('employee');
+            if (employee) {
+                try {
+                    const employeeData = JSON.parse(employee);
+                    if (!employeeData.role || !['admin', 'master_admin'].includes(employeeData.role)) {
+                        alert('❌ Access Denied. Only admins can access this page.');
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                } catch (e) {
+                    alert('❌ Invalid authentication data.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+            }
+
+            loadEmployees();
+        });
+
+        // Switch between tabs
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+
+            // Remove active class from all buttons
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+
+            // Add active class to clicked button
+            event.target.classList.add('active');
+        }
+
+        // Load all employees
+        async function loadEmployees() {
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/admin/employees`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load employees');
+
+                const data = await response.json();
+                allEmployees = data.employees || [];
+
+                renderEmployees(allEmployees);
+            } catch (error) {
+                console.error('Load error:', error);
+                document.getElementById('employeesContainer').innerHTML = '<div class="empty-state">Failed to load employees</div>';
+            }
+        }
+
+        // Render employees
+        function renderEmployees(employees) {
+            const container = document.getElementById('employeesContainer');
+
+            if (employees.length === 0) {
+                container.innerHTML = '<div class="empty-state">📭 No employees found</div>';
+                return;
+            }
+
+            container.innerHTML = `
+                <div class="info-grid">
+                    ${employees.map(emp => `
+                        <div class="info-card">
+                            <div class="info-label">Employee ID</div>
+                            <div class="info-value"><strong>${emp.employee_id}</strong></div>
+
+                            <div class="info-label" style="margin-top: 1rem;">Name</div>
+                            <div class="info-value">${emp.first_name} ${emp.last_name}</div>
+
+                            <div class="info-label" style="margin-top: 1rem;">Email</div>
+                            <div class="info-value">${emp.email}</div>
+
+                            <div class="info-label" style="margin-top: 1rem;">Department</div>
+                            <div class="info-value">${emp.department}</div>
+
+                            <div class="info-label" style="margin-top: 1rem;">Position</div>
+                            <div class="info-value">${emp.position}</div>
+
+                            <div class="info-label" style="margin-top: 1rem;">Status</div>
+                            <div class="info-value">
+                                <span class="status-badge">${emp.employment_status || 'Active'}</span>
+                            </div>
+
+                            <div class="info-label" style="margin-top: 1rem;">Join Date</div>
+                            <div class="info-value">${emp.join_date ? new Date(emp.join_date).toLocaleDateString() : '-'}</div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        }
+
+        // Search employees
+        function searchEmployees() {
+            const query = document.getElementById('searchEmployees').value.toLowerCase();
+
+            if (!query) {
+                renderEmployees(allEmployees);
+                return;
+            }
+
+            const filtered = allEmployees.filter(emp =>
+                (emp.employee_id && emp.employee_id.toLowerCase().includes(query)) ||
+                (emp.first_name && emp.first_name.toLowerCase().includes(query)) ||
+                (emp.last_name && emp.last_name.toLowerCase().includes(query)) ||
+                (emp.email && emp.email.toLowerCase().includes(query)) ||
+                (emp.department && emp.department.toLowerCase().includes(query))
+            );
+
+            renderEmployees(filtered);
+        }
+
+        // Go back to dashboard
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        // Logout button
+        document.getElementById('logoutBtn')?.addEventListener('click', async function(e) {
+            e.preventDefault();
+            try {
+                await fetch(`${CONFIG.API_BASE}/auth/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+
+            localStorage.removeItem('token');
+            localStorage.removeItem('employee');
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>

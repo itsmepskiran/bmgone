@@ -1,0 +1,466 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apply for Leave - BMGOne Payroll</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .leave-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            margin-top: 80px;
+        }
+
+        .header-section {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-section h1 {
+            margin: 0;
+        }
+
+        .btn-back {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-back:hover {
+            background: white;
+            color: var(--primary-blue);
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .leave-balances {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+        }
+
+        .leave-balances h2 {
+            color: #1f2937;
+            margin-top: 0;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 1rem;
+        }
+
+        .balance-item {
+            padding: 1rem 0;
+            border-bottom: 1px solid #e5e7eb;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .balance-item:last-child {
+            border-bottom: none;
+        }
+
+        .balance-label {
+            color: #374151;
+            font-weight: 600;
+        }
+
+        .balance-value {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 700;
+        }
+
+        .apply-form {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .apply-form h2 {
+            color: #1f2937;
+            margin-top: 0;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 1rem;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #374151;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1.5px solid #d1d5db;
+            border-radius: 5px;
+            font-size: 1rem;
+            font-family: inherit;
+            box-sizing: border-box;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .btn-submit {
+            flex: 1;
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-submit:hover {
+            opacity: 0.9;
+        }
+
+        .btn-cancel {
+            flex: 1;
+            background: #e5e7eb;
+            color: #374151;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-cancel:hover {
+            background: #d1d5db;
+        }
+
+        .status-message {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #d1fae5;
+            color: #065f46;
+            border: 1px solid #6ee7b7;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fca5a5;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .header-section {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="/logos/banner.png" alt="BMGOne" class="logo-img">
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="https://bmgone.com" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="btn btn-staff-login" id="logoutBtn">Logout</a>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Leave Container -->
+    <div class="leave-container">
+        <div class="header-section">
+            <h1>🏖️ Apply for Leave</h1>
+            <button class="btn-back" onclick="goBack()">← Back to Dashboard</button>
+        </div>
+
+        <div class="content-grid">
+            <!-- Leave Balances -->
+            <div class="leave-balances">
+                <h2>Your Leave Balance</h2>
+                <div id="leaveBalanceContainer">
+                    <p style="color: #6b7280; text-align: center; padding: 2rem 0;">Loading balances...</p>
+                </div>
+            </div>
+
+            <!-- Apply Leave Form -->
+            <div class="apply-form">
+                <h2>Apply for Leave</h2>
+                <div id="statusMessage" class="status-message"></div>
+
+                <form id="leaveApplicationForm">
+                    <div class="form-group">
+                        <label for="leaveType">Leave Type *</label>
+                        <select id="leaveType" required>
+                            <option value="">Select leave type</option>
+                            <option value="Casual Leave">Casual Leave</option>
+                            <option value="Sick Leave">Sick Leave</option>
+                            <option value="Annual Leave">Annual Leave</option>
+                            <option value="Maternity Leave">Maternity Leave</option>
+                            <option value="Paternity Leave">Paternity Leave</option>
+                            <option value="Unpaid Leave">Unpaid Leave</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="startDate">Start Date *</label>
+                            <input type="date" id="startDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="endDate">End Date *</label>
+                            <input type="date" id="endDate" required>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="numberOfDays">Number of Days (Auto-calculated)</label>
+                        <input type="number" id="numberOfDays" readonly style="background: #f9fafb;">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="reason">Reason for Leave *</label>
+                        <textarea id="reason" placeholder="Please provide reason for your leave application" required></textarea>
+                    </div>
+
+                    <div class="button-group">
+                        <button type="submit" class="btn-submit">✅ Submit Application</button>
+                        <button type="button" class="btn-cancel" onclick="goBack()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            API_BASE: 'https://pay.bmgone.com/api'
+        };
+
+        let token = localStorage.getItem('token');
+        let employee = localStorage.getItem('employee');
+
+        // Check authentication
+        window.addEventListener('load', function() {
+            if (!token || !employee) {
+                alert('⚠️ Not authenticated. Please login first.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            loadLeaveBalances();
+            setupDateCalculation();
+        });
+
+        // Load leave balances
+        async function loadLeaveBalances() {
+            try {
+                const response = await fetch(`${CONFIG.API_BASE}/leave/balances`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) throw new Error('Failed to load leave balances');
+
+                const data = await response.json();
+                const balances = data.balances || [];
+
+                const container = document.getElementById('leaveBalanceContainer');
+                if (balances.length === 0) {
+                    container.innerHTML = '<p style="color: #6b7280; text-align: center; padding: 2rem 0;">No leave balances available</p>';
+                    return;
+                }
+
+                container.innerHTML = balances.map(balance => `
+                    <div class="balance-item">
+                        <span class="balance-label">${balance.leave_type}</span>
+                        <span class="balance-value">${balance.balance_days} days</span>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('Load balances error:', error);
+                document.getElementById('leaveBalanceContainer').innerHTML = '<p style="color: #991b1b;">Failed to load leave balances</p>';
+            }
+        }
+
+        // Setup date calculation
+        function setupDateCalculation() {
+            const startDate = document.getElementById('startDate');
+            const endDate = document.getElementById('endDate');
+            const numberOfDays = document.getElementById('numberOfDays');
+
+            function calculateDays() {
+                if (startDate.value && endDate.value) {
+                    const start = new Date(startDate.value);
+                    const end = new Date(endDate.value);
+                    const days = Math.floor((end - start) / (1000 * 60 * 60 * 24)) + 1;
+                    numberOfDays.value = days > 0 ? days : 0;
+                }
+            }
+
+            startDate.addEventListener('change', calculateDays);
+            endDate.addEventListener('change', calculateDays);
+        }
+
+        // Submit leave application
+        document.getElementById('leaveApplicationForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const leaveType = document.getElementById('leaveType').value;
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const numberOfDays = document.getElementById('numberOfDays').value;
+            const reason = document.getElementById('reason').value;
+
+            if (numberOfDays <= 0) {
+                showStatus('❌ Invalid date range. End date must be after start date.', 'error');
+                return;
+            }
+
+            try {
+                showStatus('⏳ Submitting application...', 'info');
+
+                const response = await fetch(`${CONFIG.API_BASE}/leave/apply`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        leave_type: leaveType,
+                        start_date: startDate,
+                        end_date: endDate,
+                        number_of_days: parseInt(numberOfDays),
+                        reason: reason
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showStatus('✅ Leave application submitted successfully!', 'success');
+                    setTimeout(() => {
+                        alert('🎉 Your leave application has been submitted.\nYour manager will review and approve it.');
+                        this.reset();
+                        document.getElementById('numberOfDays').value = '';
+                        loadLeaveBalances();
+                    }, 1500);
+                } else {
+                    showStatus(`❌ ${data.error || 'Failed to submit application'}`, 'error');
+                }
+            } catch (error) {
+                console.error('Submit error:', error);
+                showStatus('❌ Failed to submit application. Please try again.', 'error');
+            }
+        });
+
+        // Show status message
+        function showStatus(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message ${type}`;
+        }
+
+        // Go back to dashboard
+        function goBack() {
+            window.location.href = 'index.html';
+        }
+
+        // Logout button
+        document.getElementById('logoutBtn')?.addEventListener('click', async function(e) {
+            e.preventDefault();
+            try {
+                await fetch(`${CONFIG.API_BASE}/auth/logout`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+
+            localStorage.removeItem('token');
+            localStorage.removeItem('employee');
+            window.location.reload();
+        });
+    </script>
+</body>
+</html>

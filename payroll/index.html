@@ -277,16 +277,72 @@
                 </div>
             </div>
 
+            <!-- Apply Leave Card (All Users) -->
+            <div class="dashboard-card">
+                <div class="card-header">
+                    <h2 class="card-title">Apply Leave</h2>
+                    <span style="font-size: 2rem;">🏖️</span>
+                </div>
+                <div style="text-align: center; padding: 2rem 1rem;">
+                    <p style="color: #6b7280; margin-bottom: 1.5rem;">Apply for leave and track your leave balance.</p>
+                    <button onclick="openApplyLeave()" class="btn-submit" style="width: 100%; padding: 0.75rem;">
+                        Apply for Leave
+                    </button>
+                </div>
+            </div>
+
             <!-- Manage Questions Card (Admin Only) -->
-            <div class="dashboard-card" id="manageQuestionsCard" style="display: none;">
+            <div class="dashboard-card admin-card" id="manageQuestionsCard" style="display: none;">
                 <div class="card-header">
                     <h2 class="card-title">Manage Questions</h2>
                     <span style="font-size: 2rem;">⚙️</span>
                 </div>
                 <div style="text-align: center; padding: 2rem 1rem;">
-                    <p style="color: #6b7280; margin-bottom: 1.5rem;">Manage all 47 questions and their provider responses for the comparison tool.</p>
+                    <p style="color: #6b7280; margin-bottom: 1.5rem;">Manage all questions and their provider responses for the comparison tool.</p>
                     <button onclick="openManageQuestions()" class="btn-submit" style="width: 100%; padding: 0.75rem;">
                         Manage Questions
+                    </button>
+                </div>
+            </div>
+
+            <!-- Data Migration Card (Admin Only) -->
+            <div class="dashboard-card admin-card" id="dataMigrationCard" style="display: none;">
+                <div class="card-header">
+                    <h2 class="card-title">Data Migration</h2>
+                    <span style="font-size: 2rem;">📊</span>
+                </div>
+                <div style="text-align: center; padding: 2rem 1rem;">
+                    <p style="color: #6b7280; margin-bottom: 1.5rem;">Import legacy comparison data into the database.</p>
+                    <button onclick="openDataMigration()" class="btn-submit" style="width: 100%; padding: 0.75rem;">
+                        Data Migration
+                    </button>
+                </div>
+            </div>
+
+            <!-- Leave Tracking Card (Admin Only) -->
+            <div class="dashboard-card admin-card" id="leaveTrackingCard" style="display: none;">
+                <div class="card-header">
+                    <h2 class="card-title">Leave Tracking</h2>
+                    <span style="font-size: 2rem;">📅</span>
+                </div>
+                <div style="text-align: center; padding: 2rem 1rem;">
+                    <p style="color: #6b7280; margin-bottom: 1.5rem;">Track and manage employee leave applications.</p>
+                    <button onclick="openLeaveTracking()" class="btn-submit" style="width: 100%; padding: 0.75rem;">
+                        View Leave Tracking
+                    </button>
+                </div>
+            </div>
+
+            <!-- Employee Management Card (Admin Only) -->
+            <div class="dashboard-card admin-card" id="employeeManagementCard" style="display: none;">
+                <div class="card-header">
+                    <h2 class="card-title">Employee Management</h2>
+                    <span style="font-size: 2rem;">👥</span>
+                </div>
+                <div style="text-align: center; padding: 2rem 1rem;">
+                    <p style="color: #6b7280; margin-bottom: 1.5rem;">Manage employees, status, and onboarding.</p>
+                    <button onclick="openEmployeeManagement()" class="btn-submit" style="width: 100%; padding: 0.75rem;">
+                        Employee Management
                     </button>
                 </div>
             </div>
@@ -578,10 +634,13 @@
             document.getElementById('userEmployeeId').textContent = employee.employee_id;
             document.getElementById('userAvatar').textContent = `${employee.first_name[0]}${employee.last_name[0]}`;
             
-            // Show admin navigation for admins
+            // Show admin navigation and cards for admins
             if (employee.role === 'admin' || employee.role === 'master_admin') {
                 document.getElementById('adminNav').style.display = 'block';
-                document.getElementById('manageQuestionsCard').style.display = 'block';
+                // Show all admin cards
+                document.querySelectorAll('.admin-card').forEach(card => {
+                    card.style.display = 'block';
+                });
             }
             
             // Load data
@@ -892,6 +951,24 @@
             window.location.href = comparePath;
         }
 
+        function openComparePlans() {
+            // Navigate to the comparison page - token already in localStorage from login
+            const comparePath = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                ? '/compare.html'
+                : 'https://pay.bmgone.com/compare.html';
+
+            window.location.href = comparePath;
+        }
+
+        function openApplyLeave() {
+            // Navigate to leave application page
+            const leavePath = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                ? '/apply-leave.html'
+                : 'https://pay.bmgone.com/apply-leave.html';
+
+            window.location.href = leavePath;
+        }
+
         function openManageQuestions() {
             // Navigate to the questions management page - token already in localStorage from login
             // Only accessible to admin and master_admin users
@@ -900,6 +977,33 @@
                 : 'https://pay.bmgone.com/questions-admin.html';
 
             window.location.href = manageQuestionsPath;
+        }
+
+        function openDataMigration() {
+            // Navigate to data migration page - only for admins
+            const dataPath = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                ? '/data-migration.html'
+                : 'https://pay.bmgone.com/data-migration.html';
+
+            window.location.href = dataPath;
+        }
+
+        function openLeaveTracking() {
+            // Navigate to leave tracking page - only for admins
+            const leaveTrackingPath = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                ? '/leave-tracking.html'
+                : 'https://pay.bmgone.com/leave-tracking.html';
+
+            window.location.href = leaveTrackingPath;
+        }
+
+        function openEmployeeManagement() {
+            // Navigate to employee management page - only for admins
+            const employeeManagementPath = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                ? '/employee-management.html'
+                : 'https://pay.bmgone.com/employee-management.html';
+
+            window.location.href = employeeManagementPath;
         }
     </script>
 </body>

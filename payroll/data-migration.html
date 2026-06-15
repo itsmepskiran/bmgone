@@ -458,9 +458,14 @@
 
                 let successCount = 0;
                 let errorCount = 0;
+                let errors = [];
+
+                console.log('Starting import with', decodedData.sections.length, 'sections');
 
                 // Process each section and feature
                 for (const section of decodedData.sections) {
+                    console.log('Processing section:', section.id, 'with', section.features.length, 'features');
+
                     for (const feature of section.features) {
                         try {
                             const payload = {
@@ -472,10 +477,12 @@
 
                             // Map brand values
                             BRANDS.forEach((brand, idx) => {
-                                if (feature.vals[idx]) {
+                                if (feature.vals && feature.vals[idx]) {
                                     payload.values[brand] = feature.vals[idx];
                                 }
                             });
+
+                            console.log('Importing feature:', feature.id, 'with payload:', payload);
 
                             // Call API to save/update question
                             const response = await fetch(`${CONFIG.API_BASE}/comparison/questions`, {
@@ -487,23 +494,38 @@
                                 body: JSON.stringify(payload)
                             });
 
+                            const responseData = await response.json();
+
                             if (response.ok) {
+                                console.log('✓ Successfully imported:', feature.id);
                                 successCount++;
                             } else {
-                                const error = await response.json();
-                                console.error(`Error saving ${feature.id}:`, error);
+                                const errorMsg = responseData.error || 'Unknown error';
+                                console.error(`✗ Error saving ${feature.id}:`, errorMsg);
+                                errors.push(`${feature.id}: ${errorMsg}`);
                                 errorCount++;
                             }
                         } catch (error) {
-                            console.error(`Error processing ${feature.id}:`, error);
+                            console.error(`✗ Error processing ${feature.id}:`, error);
+                            errors.push(`${feature.id}: ${error.message}`);
                             errorCount++;
                         }
                     }
                 }
 
                 // Show final status
-                const message = `✅ Import completed!\n✓ ${successCount} questions imported\n✗ ${errorCount} errors`;
-                showMessage(message, 'success');
+                let message = `✅ Import completed!\n✓ ${successCount} questions imported`;
+                if (errorCount > 0) {
+                    message += `\n✗ ${errorCount} errors`;
+                    if (errors.length > 0) {
+                        message += '\n\nErrors:\n' + errors.slice(0, 5).join('\n');
+                        if (errors.length > 5) {
+                            message += `\n... and ${errors.length - 5} more errors`;
+                        }
+                    }
+                }
+
+                showMessage(message, errorCount === 0 ? 'success' : 'error');
 
                 if (errorCount === 0) {
                     setTimeout(() => {
