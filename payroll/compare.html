@@ -7,9 +7,10 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:'Segoe UI',Arial,sans-serif;background:#ECEFF1;min-height:100vh;padding:14px;}
-/* LOGO HEADER */
-.logo-header{text-align:center;margin-bottom:20px;padding:12px 0;border-bottom:2px solid #E0E0E0;}
-.logo-header img{height:45px;width:auto;object-fit:contain;}
+/* LOGO */
+.nav-logo{display:flex;align-items:center;}
+.logo-img{height:40px;width:auto;object-fit:contain;}
+.ctrl-bar{display:flex;align-items:center;gap:20px;}
 input,textarea,select{font-family:inherit;}
 .ctrl-bar{background:linear-gradient(120deg,#1B2631,#263238);border-radius:12px;padding:12px 20px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:0 4px 16px rgba(0,0,0,.25);}
 .ctrl-title{color:#fff;font-weight:900;font-size:15px;letter-spacing:.3px;}
@@ -209,9 +210,10 @@ th,td{padding:8px 8px;vertical-align:middle;border:1px solid #D0D0D0;}
 }
 @media print{
   *{font-family:'Segoe UI', 'Calibri', Arial, sans-serif!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;color-adjust:exact!important;}
-  .logo-header{display:block!important;text-align:center;margin-bottom:20px;padding:12px 0;border-bottom:2px solid #E0E0E0;page-break-after:avoid;}
-  .logo-header img{height:50px!important;width:auto!important;object-fit:contain!important;}
-  .ctrl-bar,.panel,.legend-wrap,.edit-hint{display:none!important;}
+  .ctrl-bar{display:flex!important;align-items:center!important;gap:20px!important;background:transparent!important;padding:12px 0!important;margin-bottom:20px!important;border-bottom:2px solid #E0E0E0!important;page-break-after:avoid!important;}
+  .nav-logo{display:block!important;}
+  .logo-img{height:45px!important;width:auto!important;object-fit:contain!important;}
+  .panel,.legend-wrap,.edit-hint{display:none!important;}
   body{padding:0;margin:0;background:white;}
   /* Hide all form inputs but show their values */
   input[type="text"],input[type="number"],textarea,select{background:transparent!important;border:none!important;padding:0!important;}
@@ -279,12 +281,10 @@ th,td{padding:8px 8px;vertical-align:middle;border:1px solid #D0D0D0;}
 </head>
 <body>
 
-<!-- LOGO HEADER -->
-<div class="logo-header">
-  <img src="logo.png" alt="BMGOne Logo">
-</div>
-
 <div class="ctrl-bar">
+  <div class="nav-logo">
+    <img src="/logos/logo.png" alt="BMGOne" class="logo-img">
+  </div>
   <div>
     <div class="ctrl-title">🛡️ BMG Health Compare</div>
     <div class="ctrl-sub">Protecting Families – Creating Wealth</div>
