@@ -1862,20 +1862,19 @@ router.post('/api/plans', async (request, env) => {
             ));
         }
 
-        const plan_id = `plan_${Date.now()}`;
         await env.DB.prepare(`
             INSERT INTO insurance_plans
             (plan_id, plan_code, plan_name, plan_product_name, premium, brand_color_dark,
              brand_color_light, brand_color_mid, brand_gradient, logo_url, is_active, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'))
-        `).bind(plan_id, plan_code, plan_name, plan_product_name || '', premium || 0,
+        `).bind(plan_code, plan_code, plan_name, plan_product_name || '', premium || 0,
                 brand_color_dark || '#000000', brand_color_light || '#FFFFFF',
                 brand_color_mid || '#CCCCCC', brand_gradient || '', logo_url || '').run();
 
         return withCors(new Response(
             JSON.stringify({
                 success: true,
-                plan_id: plan_id,
+                plan_id: plan_code,
                 message: 'Plan created successfully'
             }),
             { status: 201, headers: { 'Content-Type': 'application/json' } }
