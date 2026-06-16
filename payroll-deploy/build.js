@@ -12,7 +12,7 @@ const requiredFiles = [
     'styles.css', 
     'script.js',
     'onboarding.html',
-    'banner.png',
+    'logo.png',
     'logo.png',
     '_redirects',
     'package.json'

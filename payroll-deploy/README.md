@@ -74,7 +74,7 @@ e:\BMGOne\payroll-deploy\
 ├── styles.css          # Complete styling
 ├── script.js           # JavaScript functionality
 ├── onboarding.html     # Employee onboarding form
-├── banner.png          # Company banner
+├── logo.png          # Company banner
 ├── logo.png            # Company logo
 ├── _redirects          # Cloudflare routing rules
 ├── package.json        # Project configuration

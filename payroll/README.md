@@ -73,7 +73,7 @@ npm run deploy:prod      # Deploy to production
 - **Payroll Dashboard**: `payroll.html` (staff portal)
 - **Styles**: `../styles.css` (shared styles)
 - **Scripts**: `../script.js` (shared JavaScript)
-- **Assets**: `../logo.png`, `../banner.png` (shared assets)
+- **Assets**: `../logo.png`, `../logo.png` (shared assets)
 
 ### Backend Files
 - **API Server**: `workers/src/index.js` (Cloudflare Workers)

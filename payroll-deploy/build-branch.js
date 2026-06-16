@@ -12,7 +12,7 @@ const filesToCopy = [
     'styles.css',
     'script.js',
     'onboarding.html',
-    'banner.png',
+    'logo.png',
     'logo.png',
     '_redirects'
 ];
