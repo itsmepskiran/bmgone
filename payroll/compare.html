@@ -72,18 +72,18 @@ input[type=text],input[type=number],textarea,select{-webkit-appearance:none;-moz
 .divider-inner{background:linear-gradient(120deg,#1B2631,#263238,#1B2631);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
 /* TABLE */
 .tbl-wrap{overflow-x:auto;border-radius:14px;box-shadow:0 6px 32px rgba(0,0,0,.15);}
-table{border-collapse:collapse;width:100%;background:#fff;table-layout:fixed;min-width:1000px;}
-th,td{padding:8px 8px;vertical-align:middle;}
-.feat-th{background:#1B2631;color:#CFD8DC;font-size:11px;font-weight:700;text-align:center;border-right:2px solid #37474F;}
-.expl-th{background:#263238;color:#80CBC4;font-size:12px;font-weight:700;text-align:center;border-right:2px solid #37474F;line-height:1.5;}
-.brand-th{background:#fff;text-align:center;border-right:1px solid #ccc;position:relative;}
-.plan-name-td{text-align:center;padding:6px 8px;}
+table{border-collapse:collapse;width:100%;background:#fff;table-layout:fixed;min-width:1000px;border:2px solid #1B2631;}
+th,td{padding:8px 8px;vertical-align:middle;border:1px solid #D0D0D0;}
+.feat-th{background:#1B2631;color:#CFD8DC;font-size:11px;font-weight:700;text-align:center;border-right:2px solid #37474F;border-bottom:2px solid #37474F;}
+.expl-th{background:#263238;color:#80CBC4;font-size:12px;font-weight:700;text-align:center;border-right:2px solid #37474F;border-bottom:2px solid #37474F;line-height:1.5;}
+.brand-th{background:#fff;text-align:center;border-right:2px solid #1B2631;border-bottom:2px solid #1B2631;position:relative;}
+.plan-name-td{text-align:center;padding:6px 8px;border-bottom:2px solid #D0D0D0;}
 .plan-name-td input{width:95%;text-align:center;font-size:12px;font-weight:800;color:#1A1A1A;border-radius:6px;padding:5px 6px;outline:none;border:1.5px solid #ccc;}
-.prem-label-td{background:#1E2D3A;padding:9px 10px;border-right:2px solid #455A64;border-bottom:3px solid #1B2631;}
-.expl-cell{background:#FFFDE7;border-bottom:1px solid #F9E79F;border-right:2px solid #F0C040;padding:6px 8px;vertical-align:top;}
+.prem-label-td{background:#1E2D3A;padding:9px 10px;border-right:2px solid #455A64;border-bottom:3px solid #1B2631;color:#fff;font-weight:700;}
+.expl-cell{background:#FFFDE7;border-bottom:1px solid #F0C040;border-right:2px solid #F0C040;padding:6px 8px;vertical-align:top;}
 .expl-cell textarea{width:100%;font-size:10px;border:1px solid #F0C040;border-radius:4px;padding:3px 5px;resize:vertical;background:#fff;color:#333;line-height:1.4;box-sizing:border-box;outline:none;}
-.sec-hdr td{color:#fff;font-weight:800;font-size:11px;padding:9px 14px;letter-spacing:1px;border-top:2px solid #1B2631;border-bottom:1px solid rgba(0,0,0,.15);}
-.cell-td{text-align:left;padding:7px 4px;vertical-align:top;}
+.sec-hdr td{color:#fff;font-weight:800;font-size:11px;padding:9px 14px;letter-spacing:1px;border-top:2px solid #1B2631;border-bottom:2px solid #1B2631;border-right:2px solid #1B2631;}
+.cell-td{text-align:left;padding:7px 4px;vertical-align:top;border:1px solid #D0D0D0;}
 .tick-btn{width:18px;height:18px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;font-weight:900;border:1.5px solid;transition:all .15s;margin-right:6px;flex-shrink:0;vertical-align:top;}
 .tick-y{background:#E8F5E9;border-color:#2E7D32;color:#1B5E20;box-shadow:0 1px 4px rgba(27,94,32,.15);}
 .tick-n{background:#FFEBEE;border-color:#C62828;color:#B71C1C;box-shadow:0 1px 4px rgba(183,28,28,.15);}
@@ -407,8 +407,6 @@ th,td{padding:8px 8px;vertical-align:middle;}
 <div class="legend legend-wrap" style="margin-top:12px;">
   <div class="leg-item" style="background:#E8F5E9;"><span style="font-size:15px;color:#1B5E20;font-weight:800;">✔</span><span style="color:#444;">Available / Covered</span></div>
   <div class="leg-item" style="background:#FFEBEE;"><span style="font-size:15px;color:#B71C1C;font-weight:800;">✘</span><span style="color:#444;">Not Available</span></div>
-  <div class="leg-item" style="background:#FFFDE7;"><span style="font-size:15px;color:#5D4037;font-weight:800;">📝</span><span style="color:#444;">Yellow col = Advisor Notes</span></div>
-  <div class="leg-item" style="background:#E3F2FD;"><span style="font-size:15px;color:#1565C0;font-weight:800;">💬</span><span style="color:#444;">Comment box below each tick</span></div>
 </div>
 
 <!-- WINNER BANNER -->
@@ -933,15 +931,15 @@ function renderTableBody() {
         const n = feat.notes[ci]||'';
         const isY = v==='Y';
         const tickCls = isY?'tick-y':'tick-n';
-        html += `<td class="cell-td" style="background:${b.light};border-bottom:1px solid ${b.mid}88;border-right:1px solid ${b.mid}44;padding:3px 2px;">
-          <div style="display:inline-block;width:18px;vertical-align:top;">
-            <div class="${tickCls} tick-btn" onclick="toggleCell('${sec.id}','${feat.id}',${ci})" title="Click to toggle" style="font-size:16px;font-weight:bold;text-align:center;line-height:1;">
+        html += `<td class="cell-td" style="background:${b.light};border-bottom:1px solid ${b.mid}88;border-right:1px solid ${b.mid}44;padding:3px 3px;position:relative;min-height:28px;">
+          <div style="float:left;width:18px;text-align:center;">
+            <div class="${tickCls} tick-btn" onclick="toggleCell('${sec.id}','${feat.id}',${ci})" title="Click to toggle" style="font-size:16px;font-weight:bold;line-height:1;">
               ${isY?'✔':'✘'}
             </div>
           </div>
           <input type="text" class="cell-note" value="${n}" placeholder="note…"
             onchange="setNote('${sec.id}','${feat.id}',${ci},this.value)"
-            style="border:1px solid ${b.dark}33;font-size:8px;padding:1px 2px;border-radius:3px;width:calc(100% - 24px);box-sizing:border-box;display:inline-block;vertical-align:top;margin-left:2px;"/>
+            style="border:1px solid ${b.dark}44;font-size:8px;padding:1px 3px;border-radius:2px;margin-left:22px;height:18px;width:calc(100% - 26px);box-sizing:border-box;background:rgba(255,255,255,0.7);"/>
         </td>`;
       });
       html += '</tr>';
@@ -991,37 +989,44 @@ function renderWinner() {
   const sc = scores[wi];
   const banner = document.getElementById('winnerBanner');
   banner.innerHTML = `
-    <div style="height:5px;background:linear-gradient(90deg,#F9A825,#FFD54F,#F9A825);"></div>
-    <div class="winner-inner">
-      <div style="text-align:center;margin-bottom:20px;">
-        <div style="color:#FFD54F;font-size:13px;font-weight:700;letter-spacing:2px;margin-bottom:8px;">🏆 OUR RECOMMENDATION — TOP PICK</div>
-        <div style="display:flex;align-items:center;justify-content:center;gap:20px;flex-wrap:wrap;">
-          <div style="background:#fff;border-radius:14px;padding:10px 16px;box-shadow:0 6px 24px ${w.dark}66;border:3px solid ${w.dark};">
-            <img src="${LOGOS[w.id]}" alt="${w.name}" style="width:100px;height:55px;object-fit:contain;display:block;"/>
+    <div style="height:8px;background:linear-gradient(90deg,#F9A825,#FFD54F,#F9A825);"></div>
+    <div class="winner-inner" style="padding:32px 40px;background:linear-gradient(135deg,#0D1B2A 0%,#1B2A3B 50%,#0D1B2A 100%);">
+      <div style="text-align:center;margin-bottom:28px;">
+        <div style="color:#FFD54F;font-size:14px;font-weight:800;letter-spacing:3px;margin-bottom:12px;text-transform:uppercase;">🏆 OUR TOP RECOMMENDATION</div>
+        <div style="display:flex;align-items:center;justify-content:center;gap:28px;flex-wrap:wrap;margin-bottom:8px;">
+          <div style="background:linear-gradient(135deg,${w.light},#fff);border-radius:16px;padding:12px 20px;box-shadow:0 8px 32px ${w.dark}88;border:4px solid ${w.dark};">
+            <img src="${LOGOS[w.id]}" alt="${w.name}" style="width:120px;height:65px;object-fit:contain;display:block;"/>
           </div>
           <div style="text-align:left;">
-            <div style="color:#fff;font-size:26px;font-weight:900;">${w.name}</div>
-            <div style="color:#FFAB91;font-size:15px;font-weight:700;margin-top:4px;">${w.plan}</div>
-            <div style="margin-top:10px;display:flex;align-items:baseline;gap:8px;">
-              <span style="color:#FFD54F;font-size:44px;font-weight:900;line-height:1;">${sc}</span>
-              <span style="color:rgba(255,255,255,.5);font-size:18px;">/ 50</span>
-              <span style="background:#1B5E20;color:#fff;font-size:12px;font-weight:800;border-radius:20px;padding:4px 14px;margin-left:6px;">🥇 BEST PICK</span>
+            <div style="color:${w.dark};font-size:32px;font-weight:900;margin-bottom:4px;">${w.name}</div>
+            <div style="color:#FFD54F;font-size:16px;font-weight:700;margin-bottom:12px;">${w.plan}</div>
+            <div style="display:flex;align-items:baseline;gap:12px;padding:12px;background:rgba(255,255,255,0.08);border-radius:8px;">
+              <div>
+                <div style="color:#FFD54F;font-size:52px;font-weight:900;line-height:1;">
+                  ${sc}
+                </div>
+                <div style="color:rgba(255,255,255,.6);font-size:12px;margin-top:2px;">out of 50</div>
+              </div>
+              <div style="border-left:3px solid ${w.dark};padding-left:12px;">
+                <div style="background:linear-gradient(135deg,#1B5E20,#2E7D32);color:#fff;font-size:13px;font-weight:800;border-radius:8px;padding:6px 14px;display:inline-block;">🥇 BEST PICK</div>
+              </div>
             </div>
           </div>
         </div>
       </div>
-      <div style="height:1px;background:linear-gradient(90deg,transparent,rgba(255,213,79,.4),transparent);margin-bottom:18px;"></div>
+      <div style="height:2px;background:linear-gradient(90deg,transparent,${w.grad},transparent);margin-bottom:24px;"></div>
       <div>
-        <div style="color:#90CAF9;font-size:11px;font-weight:700;letter-spacing:2px;margin-bottom:12px;text-align:center;">WHY THIS PLAN STANDS OUT</div>
-        <div class="winner-reasons">
-          ${WINNER_REASONS.map(r=>`<div class="reason-card"><span style="color:#FFD54F;font-size:16px;margin-top:1px;flex-shrink:0;">★</span><span style="color:rgba(255,255,255,.85);font-size:12px;line-height:1.5;">${r}</span></div>`).join('')}
+        <div style="color:#FFD54F;font-size:12px;font-weight:800;letter-spacing:2px;margin-bottom:14px;text-align:center;text-transform:uppercase;">Why This Plan Stands Out</div>
+        <div class="winner-reasons" style="grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;">
+          ${WINNER_REASONS.map(r=>`<div class="reason-card" style="background:rgba(255,255,255,0.05);border-left:4px solid #FFD54F;padding:12px;border-radius:6px;"><span style="color:#FFD54F;font-size:18px;margin-right:8px;font-weight:bold;">★</span><span style="color:rgba(255,255,255,.9);font-size:13px;line-height:1.6;font-weight:500;">${r}</span></div>`).join('')}
         </div>
       </div>
-      <div style="margin-top:18px;text-align:center;color:rgba(255,255,255,.35);font-size:11px;font-style:italic;">
-        Recommendation by Burugu Mallesh Goud · Health & Life Insurance Advisor · 📞 9808 400 500
+      <div style="margin-top:22px;padding-top:16px;border-top:2px solid rgba(255,255,255,.1);text-align:center;color:rgba(255,255,255,.5);font-size:11px;">
+        <div style="margin-bottom:4px;">Recommended by Burugu Mallesh Goud</div>
+        <div>Health & Life Insurance Advisor | 📞 +91 9808 400 500</div>
       </div>
     </div>
-    <div style="height:4px;background:${w.grad};"></div>`;
+    <div style="height:6px;background:linear-gradient(90deg,${w.dark},${w.grad},${w.dark});"></div>`;
 }
 
 // ── CELL ACTIONS ──────────────────────────────────────────────────────────
