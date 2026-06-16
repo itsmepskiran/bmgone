@@ -6,7 +6,23 @@
 <title>BMG Health Compare</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
-body{font-family:'Segoe UI',Arial,sans-serif;background:#ECEFF1;min-height:100vh;padding:14px;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#ECEFF1;min-height:100vh;padding:14px;padding-top:70px;}
+/* NAVBAR */
+.navbar{background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.1);position:fixed;top:0;width:100%;z-index:1000;padding:0;}
+.nav-container{max-width:1400px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo img{height:40px;width:auto;object-fit:contain;}
+.nav-menu{display:flex;list-style:none;gap:20px;align-items:center;}
+.nav-item a{text-decoration:none;color:#333;font-weight:600;font-size:14px;}
+.nav-item a:hover{color:#0D47A1;}
+.nav-link.btn-staff-login{background:#E65100;color:#fff;padding:8px 16px;border-radius:6px;}
+.hamburger{display:none;flex-direction:column;cursor:pointer;}
+.bar{width:25px;height:3px;background:#333;margin:5px 0;border-radius:2px;}
+@media(max-width:768px){
+  .nav-menu{display:none;}
+  .hamburger{display:flex;}
+  .navbar{padding:10px;}
+  .nav-container{padding:10px 12px;}
+}
 input,textarea,select{font-family:inherit;}
 .ctrl-bar{background:linear-gradient(120deg,#1B2631,#263238);border-radius:12px;padding:12px 20px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;box-shadow:0 4px 16px rgba(0,0,0,.25);}
 .ctrl-title{color:#fff;font-weight:900;font-size:15px;letter-spacing:.3px;}
@@ -273,6 +289,31 @@ th,td{padding:8px 8px;vertical-align:middle;border:1px solid #D0D0D0;}
 </style>
 </head>
 <body>
+
+<!-- NAVBAR -->
+<nav class="navbar">
+  <div class="nav-container">
+    <div class="nav-logo">
+      <img src="/logos/banner.png" alt="BMGOne" class="logo-img">
+    </div>
+    <ul class="nav-menu">
+      <li class="nav-item">
+        <a href="https://bmgone.com" class="nav-link">Home</a>
+      </li>
+      <li class="nav-item">
+        <a href="index.html" class="nav-link">Dashboard</a>
+      </li>
+      <li class="nav-item">
+        <a href="#" class="btn btn-staff-login" id="logoutBtn">Logout</a>
+      </li>
+    </ul>
+    <div class="hamburger">
+      <span class="bar"></span>
+      <span class="bar"></span>
+      <span class="bar"></span>
+    </div>
+  </div>
+</nav>
 
 <div class="ctrl-bar">
   <div>
@@ -757,7 +798,103 @@ window.onload = function() {
 
   // Load notes/comments from database if available
   loadNotesFromAPI();
+
+  // Auto-load last saved comparison if available
+  autoLoadLastComparison();
+
+  // Add logout button event listener
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (logoutBtn) {
+    logoutBtn.addEventListener('click', async function(e) {
+      e.preventDefault();
+      try {
+        const token = localStorage.getItem('token');
+        if (token) {
+          await fetch('https://pay.bmgone.com/api/auth/logout', {
+            method: 'POST',
+            headers: { 'Authorization': `Bearer ${token}` }
+          });
+        }
+      } catch (error) {
+        console.error('Logout error:', error);
+      }
+      localStorage.removeItem('token');
+      localStorage.removeItem('employee');
+      window.location.href = 'index.html';
+    });
+  }
 };
+
+async function autoLoadLastComparison() {
+  try {
+    const token = window.authToken || localStorage.getItem('token');
+    if (!token) return; // Only auto-load if authenticated
+
+    // Load all comparisons first
+    const response = await fetch('https://pay.bmgone.com/api/comparison/comparisons', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (!response.ok) return;
+
+    const data = await response.json();
+    const comparisons = data.comparisons || [];
+
+    if (comparisons.length === 0) return; // No saved comparisons
+
+    // Load the most recent comparison (first one, assuming sorted by date desc)
+    const lastComparison = comparisons[0];
+
+    console.log(`Auto-loading last comparison: ${lastComparison.client_name}`);
+
+    // Load client details
+    document.getElementById('clientName').value = lastComparison.client_name || '';
+    document.getElementById('clientAge').value = lastComparison.client_age || '';
+    document.getElementById('clientMembers').value = lastComparison.members_count || '';
+
+    // Load selected providers
+    if (lastComparison.selected_brands) {
+      const brands = JSON.parse(lastComparison.selected_brands);
+      selectedProviders = new Set(brands);
+      localStorage.setItem('selectedProviders', JSON.stringify(brands));
+    }
+
+    // Load answers from API
+    const answersResponse = await fetch(`https://pay.bmgone.com/api/comparison/answers/${lastComparison.id}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (!answersResponse.ok) return;
+
+    const answersData = await answersResponse.json();
+    const answers = answersData.answers || [];
+
+    // Apply answers to current comparison
+    const brandsList = JSON.parse(lastComparison.selected_brands);
+    answers.forEach(ans => {
+      const section = sections.find(s => s.features.some(f => f.id === ans.feature_id));
+      if (section) {
+        const feature = section.features.find(f => f.id === ans.feature_id);
+        if (feature) {
+          const brandIndex = brandsList.indexOf(ans.brand_id);
+          if (brandIndex >= 0) {
+            feature.vals[brandIndex] = ans.answer_value;
+            feature.explain[brandIndex] = ans.comment || '';
+          }
+        }
+      }
+    });
+
+    // Render updated table
+    renderTableHead();
+    renderTableBody();
+    renderWinner();
+
+    console.log(`✅ Auto-loaded comparison data for ${lastComparison.client_name}`);
+  } catch (error) {
+    console.log('ℹ️ Could not auto-load comparison (normal if none saved):', error.message);
+  }
+}
 
 function renderCoverLogos() {
   const c = document.getElementById('cover-logos');
