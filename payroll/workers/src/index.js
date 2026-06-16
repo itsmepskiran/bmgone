@@ -1786,6 +1786,187 @@ router.post('/api/comparison/questions/toggle', async (request, env) => {
     }
 });
 
+// Plan Management Endpoints
+router.get('/api/plans', async (request, env) => {
+    try {
+        const result = await env.DB.prepare(`
+            SELECT plan_id, plan_code, plan_name, plan_product_name, premium,
+                   brand_color_dark, brand_color_light, brand_color_mid, brand_gradient,
+                   logo_url, is_active
+            FROM insurance_plans
+            WHERE is_active = 1
+            ORDER BY plan_name
+        `).all();
+
+        return withCors(new Response(
+            JSON.stringify(result.results || []),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+    } catch (error) {
+        console.error('Get plans error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
+router.get('/api/plans/all', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user || !['admin', 'master_admin'].includes(user.role)) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        const result = await env.DB.prepare(`
+            SELECT plan_id, plan_code, plan_name, plan_product_name, premium,
+                   brand_color_dark, brand_color_light, brand_color_mid, brand_gradient,
+                   logo_url, is_active
+            FROM insurance_plans
+            ORDER BY plan_name
+        `).all();
+
+        return withCors(new Response(
+            JSON.stringify(result.results || []),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+    } catch (error) {
+        console.error('Get all plans error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
+router.post('/api/plans', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user || !['admin', 'master_admin'].includes(user.role)) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        const { plan_code, plan_name, plan_product_name, premium, brand_color_dark,
+                brand_color_light, brand_color_mid, brand_gradient, logo_url } = await request.json();
+
+        if (!plan_code || !plan_name) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'plan_code and plan_name are required' }),
+                { status: 400, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        const plan_id = `plan_${Date.now()}`;
+        await env.DB.prepare(`
+            INSERT INTO insurance_plans
+            (plan_id, plan_code, plan_name, plan_product_name, premium, brand_color_dark,
+             brand_color_light, brand_color_mid, brand_gradient, logo_url, is_active, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'))
+        `).bind(plan_id, plan_code, plan_name, plan_product_name || '', premium || 0,
+                brand_color_dark || '#000000', brand_color_light || '#FFFFFF',
+                brand_color_mid || '#CCCCCC', brand_gradient || '', logo_url || '').run();
+
+        return withCors(new Response(
+            JSON.stringify({
+                success: true,
+                plan_id: plan_id,
+                message: 'Plan created successfully'
+            }),
+            { status: 201, headers: { 'Content-Type': 'application/json' } }
+        ));
+    } catch (error) {
+        console.error('Create plan error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
+router.put('/api/plans/:plan_id', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user || !['admin', 'master_admin'].includes(user.role)) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        const { plan_id } = request.params;
+        const { plan_code, plan_name, plan_product_name, premium, brand_color_dark,
+                brand_color_light, brand_color_mid, brand_gradient, logo_url } = await request.json();
+
+        await env.DB.prepare(`
+            UPDATE insurance_plans
+            SET plan_code = ?, plan_name = ?, plan_product_name = ?, premium = ?,
+                brand_color_dark = ?, brand_color_light = ?, brand_color_mid = ?,
+                brand_gradient = ?, logo_url = ?, updated_at = datetime('now')
+            WHERE plan_id = ?
+        `).bind(plan_code, plan_name, plan_product_name, premium,
+                brand_color_dark, brand_color_light, brand_color_mid,
+                brand_gradient, logo_url, plan_id).run();
+
+        return withCors(new Response(
+            JSON.stringify({
+                success: true,
+                plan_id: plan_id,
+                message: 'Plan updated successfully'
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+    } catch (error) {
+        console.error('Update plan error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
+router.post('/api/plans/:plan_id/toggle', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user || !['admin', 'master_admin'].includes(user.role)) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        const { plan_id } = request.params;
+        const { is_active } = await request.json();
+
+        await env.DB.prepare(`
+            UPDATE insurance_plans
+            SET is_active = ?, updated_at = datetime('now')
+            WHERE plan_id = ?
+        `).bind(is_active ? 1 : 0, plan_id).run();
+
+        return withCors(new Response(
+            JSON.stringify({
+                success: true,
+                plan_id: plan_id,
+                is_active: is_active,
+                message: is_active ? 'Plan activated' : 'Plan deactivated'
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+    } catch (error) {
+        console.error('Toggle plan error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
 // Root endpoint
 router.get('/', () => withCors(new Response(
     JSON.stringify({

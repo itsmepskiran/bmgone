@@ -62,33 +62,66 @@ tr:hover{background:#F5F5F5;}
 <body>
 
 <div class="header">
-  <h1>📋 Questions Manager</h1>
+  <h1>📋 Questions & Plans Manager</h1>
   <!--<p>Manage all 47 questions and their responses for each provider</p>-->
 </div>
 
 <div class="toolbar">
-  <button class="btn btn-add" onclick="openAddModal()">➕ Add New Question</button>
+  <button class="btn" id="tabQuestions" style="background:#0D47A1;" onclick="switchTab('questions')">📝 Questions</button>
+  <button class="btn" id="tabPlans" style="background:#666;" onclick="switchTab('plans')">💼 Manage Plans</button>
+  <div style="flex:1;"></div>
   <button class="btn" style="background:#9C27B0;" onclick="exportToCode()">💾 Save & Create Code</button>
   <button class="btn btn-back" onclick="goBack()">🔙 Back to Compare</button>
 </div>
 
 <div class="status-msg" id="statusMsg"></div>
 
-<div class="table-wrap">
-  <table>
-    <thead>
-      <tr>
-        <th style="width:300px;">Question</th>
-        <th style="width:100px;">Section</th>
-        <th style="width:350px;">Provider Responses (AB / ICICI / Star / Care / Tata)</th>
-        <th style="width:80px;">Status</th>
-        <th style="width:150px;">Actions</th>
-      </tr>
-    </thead>
-    <tbody id="questionsTable">
-      <tr><td colspan="5" style="text-align:center;padding:40px;color:#999;">Loading questions...</td></tr>
-    </tbody>
-  </table>
+<!-- QUESTIONS SECTION -->
+<div id="questionsSection" style="display:block;">
+  <div style="margin-bottom:10px;">
+    <button class="btn btn-add" onclick="openAddQuestionModal()">➕ Add New Question</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:300px;">Question</th>
+          <th style="width:100px;">Section</th>
+          <th style="width:350px;">Provider Responses (AB / ICICI / Star / Care / Tata)</th>
+          <th style="width:80px;">Status</th>
+          <th style="width:150px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="questionsTable">
+        <tr><td colspan="5" style="text-align:center;padding:40px;color:#999;">Loading questions...</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- PLANS SECTION -->
+<div id="plansSection" style="display:none;">
+  <div style="margin-bottom:10px;">
+    <button class="btn btn-add" onclick="openAddPlanModal()">➕ Add New Plan</button>
+  </div>
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:120px;">Code</th>
+          <th style="width:200px;">Plan Name</th>
+          <th style="width:150px;">Product</th>
+          <th style="width:100px;">Premium</th>
+          <th style="width:100px;">Colors</th>
+          <th style="width:80px;">Status</th>
+          <th style="width:150px;">Actions</th>
+        </tr>
+      </thead>
+      <tbody id="plansTable">
+        <tr><td colspan="7" style="text-align:center;padding:40px;color:#999;">Loading plans...</td></tr>
+      </tbody>
+    </table>
+  </div>
 </div>
 
 <!-- ADD/EDIT MODAL -->
@@ -198,9 +231,69 @@ tr:hover{background:#F5F5F5;}
   </div>
 </div>
 
+<!-- PLAN MANAGEMENT MODAL -->
+<div id="planModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-header" id="planModalTitle">Add New Plan</div>
+
+    <div class="form-group">
+      <label>Plan Code (ID)</label>
+      <input type="text" id="planCode" placeholder="e.g., ab, ic, star, care, tata" maxlength="10"/>
+    </div>
+
+    <div class="form-group">
+      <label>Plan Name</label>
+      <input type="text" id="planName" placeholder="e.g., Aditya Birla, ICICI Lombard"/>
+    </div>
+
+    <div class="form-group">
+      <label>Product Name (Optional)</label>
+      <input type="text" id="planProduct" placeholder="e.g., Activ One Max, Elevate"/>
+    </div>
+
+    <div class="form-group">
+      <label>Premium Amount (Optional)</label>
+      <input type="number" id="planPremium" placeholder="e.g., 10271" step="0.01"/>
+    </div>
+
+    <div class="form-group">
+      <label style="display:inline-block;margin-right:20px;">
+        <span>Primary Color (Dark)</span>
+        <input type="color" id="planColorDark" value="#0D47A1" style="width:50px;height:40px;border:none;cursor:pointer;"/>
+      </label>
+      <label style="display:inline-block;margin-right:20px;">
+        <span style="display:block;">Light Color</span>
+        <input type="color" id="planColorLight" value="#E3F2FD" style="width:50px;height:40px;border:none;cursor:pointer;"/>
+      </label>
+      <label style="display:inline-block;">
+        <span style="display:block;">Medium Color</span>
+        <input type="color" id="planColorMid" value="#64B5F6" style="width:50px;height:40px;border:none;cursor:pointer;"/>
+      </label>
+    </div>
+
+    <div class="form-group">
+      <label>CSS Gradient (Optional)</label>
+      <input type="text" id="planGradient" placeholder="e.g., linear-gradient(135deg,#B71C1C,#E53935)"/>
+    </div>
+
+    <div class="form-group">
+      <label>Logo URL (Optional)</label>
+      <input type="text" id="planLogoUrl" placeholder="e.g., /logos/logo.png"/>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn" style="background:#999;" onclick="closePlanModal()">Cancel</button>
+      <button class="btn btn-add" onclick="savePlan()">Save Plan</button>
+    </div>
+  </div>
+</div>
+
 <script>
 let questions = [];
+let plans = [];
 let currentEditId = null;
+let currentEditPlanId = null;
+let currentTab = 'questions';
 const PROVIDERS = ['ab', 'ic', 'star', 'care', 'tata'];
 const PROVIDER_LABELS = {ab:'AB', ic:'ICICI', star:'Star', care:'Care', tata:'Tata'};
 
@@ -293,7 +386,19 @@ function renderTable() {
   }).join('');
 }
 
-function openAddModal() {
+function switchTab(tab) {
+  currentTab = tab;
+  document.getElementById('questionsSection').style.display = tab === 'questions' ? 'block' : 'none';
+  document.getElementById('plansSection').style.display = tab === 'plans' ? 'block' : 'none';
+  document.getElementById('tabQuestions').style.background = tab === 'questions' ? '#0D47A1' : '#666';
+  document.getElementById('tabPlans').style.background = tab === 'plans' ? '#2E7D32' : '#666';
+
+  if (tab === 'plans' && plans.length === 0) {
+    loadPlans();
+  }
+}
+
+function openAddQuestionModal() {
   currentEditId = null;
   document.getElementById('modalTitle').textContent = 'Add New Question';
   document.getElementById('questionLabel').value = '';
@@ -491,6 +596,181 @@ function downloadExportCode() {
   URL.revokeObjectURL(url);
 
   showStatus(`✅ Code downloaded as ${filename}`, 'success');
+}
+
+// ===== PLAN MANAGEMENT FUNCTIONS =====
+async function loadPlans() {
+  try {
+    const token = getAuthToken();
+    const response = await fetch('https://pay.bmgone.com/api/plans/all', {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    plans = await response.json();
+    renderPlansTable();
+    console.log(`✅ Loaded ${plans.length} plans`);
+  } catch (error) {
+    console.error('Load plans error:', error);
+    showStatus('❌ Error loading plans', 'error');
+  }
+}
+
+function renderPlansTable() {
+  const tbody = document.getElementById('plansTable');
+
+  if (plans.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:40px;color:#999;">No plans yet. Click "Add New Plan" to get started.</td></tr>';
+    return;
+  }
+
+  tbody.innerHTML = plans.map(p => `
+    <tr>
+      <td><strong>${p.plan_code}</strong></td>
+      <td>${p.plan_name}</td>
+      <td>${p.plan_product_name || '-'}</td>
+      <td>₹${p.premium || '-'}</td>
+      <td style="text-align:center;">
+        <div style="display:flex;gap:4px;justify-content:center;">
+          <div style="width:20px;height:20px;background:${p.brand_color_dark};border-radius:3px;border:1px solid #ccc;" title="${p.brand_color_dark}"></div>
+          <div style="width:20px;height:20px;background:${p.brand_color_light};border-radius:3px;border:1px solid #ccc;" title="${p.brand_color_light}"></div>
+          <div style="width:20px;height:20px;background:${p.brand_color_mid};border-radius:3px;border:1px solid #ccc;" title="${p.brand_color_mid}"></div>
+        </div>
+      </td>
+      <td>
+        <span class="status-badge ${!p.is_active ? 'status-hidden' : ''}">
+          ${p.is_active ? '✓ Active' : '✗ Hidden'}
+        </span>
+      </td>
+      <td>
+        <div class="action-btns">
+          <button class="btn-sm btn-edit" onclick="openEditPlanModal('${p.plan_id}')">Edit</button>
+          <button class="btn-sm btn-toggle" onclick="togglePlan('${p.plan_id}', ${p.is_active ? 'true' : 'false'})">${p.is_active ? 'Hide' : 'Show'}</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function openAddPlanModal() {
+  currentEditPlanId = null;
+  document.getElementById('planModalTitle').textContent = 'Add New Plan';
+  document.getElementById('planCode').value = '';
+  document.getElementById('planName').value = '';
+  document.getElementById('planProduct').value = '';
+  document.getElementById('planPremium').value = '';
+  document.getElementById('planColorDark').value = '#0D47A1';
+  document.getElementById('planColorLight').value = '#E3F2FD';
+  document.getElementById('planColorMid').value = '#64B5F6';
+  document.getElementById('planGradient').value = '';
+  document.getElementById('planLogoUrl').value = '/logos/logo.png';
+  document.getElementById('planModal').classList.add('active');
+}
+
+function openEditPlanModal(planId) {
+  const plan = plans.find(p => p.plan_id === planId);
+  if (!plan) return;
+
+  currentEditPlanId = planId;
+  document.getElementById('planModalTitle').textContent = 'Edit Plan';
+  document.getElementById('planCode').value = plan.plan_code;
+  document.getElementById('planName').value = plan.plan_name;
+  document.getElementById('planProduct').value = plan.plan_product_name || '';
+  document.getElementById('planPremium').value = plan.premium || '';
+  document.getElementById('planColorDark').value = plan.brand_color_dark || '#0D47A1';
+  document.getElementById('planColorLight').value = plan.brand_color_light || '#E3F2FD';
+  document.getElementById('planColorMid').value = plan.brand_color_mid || '#64B5F6';
+  document.getElementById('planGradient').value = plan.brand_gradient || '';
+  document.getElementById('planLogoUrl').value = plan.logo_url || '/logos/logo.png';
+  document.getElementById('planModal').classList.add('active');
+}
+
+function closePlanModal() {
+  document.getElementById('planModal').classList.remove('active');
+}
+
+async function savePlan() {
+  const code = document.getElementById('planCode').value.trim();
+  const name = document.getElementById('planName').value.trim();
+
+  if (!code) {
+    showStatus('❌ Please enter a plan code', 'error');
+    return;
+  }
+
+  if (!name) {
+    showStatus('❌ Please enter a plan name', 'error');
+    return;
+  }
+
+  try {
+    const token = getAuthToken();
+    const payload = {
+      plan_code: code,
+      plan_name: name,
+      plan_product_name: document.getElementById('planProduct').value.trim(),
+      premium: parseFloat(document.getElementById('planPremium').value) || 0,
+      brand_color_dark: document.getElementById('planColorDark').value,
+      brand_color_light: document.getElementById('planColorLight').value,
+      brand_color_mid: document.getElementById('planColorMid').value,
+      brand_gradient: document.getElementById('planGradient').value.trim(),
+      logo_url: document.getElementById('planLogoUrl').value.trim()
+    };
+
+    let url = 'https://pay.bmgone.com/api/plans';
+    let method = 'POST';
+
+    if (currentEditPlanId) {
+      url = `https://pay.bmgone.com/api/plans/${currentEditPlanId}`;
+      method = 'PUT';
+    }
+
+    const response = await fetch(url, {
+      method: method,
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error || `HTTP ${response.status}`);
+    }
+
+    showStatus(`✅ Plan ${currentEditPlanId ? 'updated' : 'added'} successfully!`, 'success');
+    closePlanModal();
+    loadPlans();
+  } catch (error) {
+    console.error('Save plan error:', error);
+    showStatus(`❌ Error: ${error.message}`, 'error');
+  }
+}
+
+async function togglePlan(planId, isCurrentlyActive) {
+  try {
+    const token = getAuthToken();
+    const response = await fetch(`https://pay.bmgone.com/api/plans/${planId}/toggle`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        is_active: !isCurrentlyActive
+      })
+    });
+
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    showStatus(`✅ Plan ${!isCurrentlyActive ? 'activated' : 'deactivated'} successfully!`, 'success');
+    loadPlans();
+  } catch (error) {
+    console.error('Toggle plan error:', error);
+    showStatus('❌ Error toggling plan', 'error');
+  }
 }
 
 window.onload = function() {
