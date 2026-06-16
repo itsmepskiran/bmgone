@@ -576,10 +576,16 @@ async function loadPlansFromAPI() {
     // Convert API response to BRANDS format
     BRANDS.length = 0;
     plans.forEach(p => {
+      // Format Sum Insured in Lakhs if >= 1,000,000
+      const sumInsuredDisplay = p.sum_insured >= 1000000
+        ? `₹${(p.sum_insured / 100000).toFixed(0)}L`
+        : `₹${p.sum_insured || 0}`;
+
       BRANDS.push({
         id: p.plan_code,
         name: p.plan_name,
         plan: p.plan_product_name,
+        si: sumInsuredDisplay,        // Sum Insured
         premium: `₹${p.premium}`,
         dark: p.brand_color_dark,
         light: p.brand_color_light,

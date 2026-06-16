@@ -3,9 +3,10 @@
 
 CREATE TABLE IF NOT EXISTS insurance_plans (
     plan_id TEXT PRIMARY KEY NOT NULL,       -- Unique: 'plan_1234567890_abc123def'
-    plan_code TEXT UNIQUE NOT NULL,          -- Auto-generated unique code: 'ab', 'ic', 'ad' (first 2 chars of name)
+    plan_code TEXT UNIQUE NOT NULL,          -- Auto-generated unique code: 'ab', 'ic', 'ad'
     plan_name TEXT NOT NULL,                 -- 'Aditya Birla', 'ICICI Lombard', etc.
     plan_product_name TEXT,                  -- 'Activ One Max', 'Elevate', etc.
+    sum_insured REAL DEFAULT 0,              -- Sum Insured coverage (10 Lakh = 1000000)
     premium REAL DEFAULT 0,                  -- Premium amount
     brand_color_dark TEXT DEFAULT '#000000', -- Primary color '#B71C1C'
     brand_color_light TEXT DEFAULT '#FFFFFF',-- Light background '#FFF5F5'
@@ -21,11 +22,11 @@ CREATE TABLE IF NOT EXISTS insurance_plans (
 CREATE INDEX IF NOT EXISTS idx_insurance_plans_code ON insurance_plans(plan_code);
 CREATE INDEX IF NOT EXISTS idx_insurance_plans_active ON insurance_plans(is_active);
 
--- Insert default insurance plans (from the original BRANDS array)
--- plan_id is unique per product, plan_code can be repeated for multiple products from same company
-INSERT OR IGNORE INTO insurance_plans (plan_id, plan_code, plan_name, plan_product_name, premium, brand_color_dark, brand_color_light, brand_color_mid, brand_gradient, logo_url) VALUES
-('plan_1704067200_ab001', 'ab', 'Aditya Birla', 'Activ One Max', 10271, '#B71C1C', '#FFF5F5', '#FFCDD2', 'linear-gradient(135deg,#B71C1C,#E53935)', '/logos/logo.png'),
-('plan_1704067200_ic001', 'ic', 'ICICI Lombard', 'Elevate', 12213, '#BF360C', '#FFF3EE', '#FFCCBC', 'linear-gradient(135deg,#BF360C,#FF5722)', '/logos/logo.png'),
-('plan_1704067200_star001', 'star', 'Star Health', 'Super Star', 11500, '#0D47A1', '#EEF3FF', '#BBDEFB', 'linear-gradient(135deg,#0D47A1,#1976D2)', '/logos/logo.png'),
-('plan_1704067200_care001', 'care', 'Care Health', 'Care Supreme', 9800, '#E65100', '#FFFDE7', '#FFE082', 'linear-gradient(135deg,#E65100,#F9A825)', '/logos/logo.png'),
-('plan_1704067200_tata001', 'tata', 'Tata AIG', 'Medicare Select', 13200, '#1A237E', '#F0F0FF', '#9FA8DA', 'linear-gradient(135deg,#1A237E,#3949AB)', '/logos/logo.png');
+-- Insert default insurance plans
+-- plan_id is unique per product, plan_code is auto-generated from plan_name
+INSERT OR IGNORE INTO insurance_plans (plan_id, plan_code, plan_name, plan_product_name, sum_insured, premium, brand_color_dark, brand_color_light, brand_color_mid, brand_gradient, logo_url) VALUES
+('plan_1704067200_ab001', 'ab', 'Aditya Birla', 'Activ One Max', 1000000, 10271, '#B71C1C', '#FFF5F5', '#FFCDD2', 'linear-gradient(135deg,#B71C1C,#E53935)', '/logos/logo.png'),
+('plan_1704067200_ic001', 'ic', 'ICICI Lombard', 'Elevate', 1000000, 12213, '#BF360C', '#FFF3EE', '#FFCCBC', 'linear-gradient(135deg,#BF360C,#FF5722)', '/logos/logo.png'),
+('plan_1704067200_st001', 'st', 'Star Health', 'Super Star', 1000000, 11500, '#0D47A1', '#EEF3FF', '#BBDEFB', 'linear-gradient(135deg,#0D47A1,#1976D2)', '/logos/logo.png'),
+('plan_1704067200_ca001', 'ca', 'Care Health', 'Care Supreme', 1000000, 9800, '#E65100', '#FFFDE7', '#FFE082', 'linear-gradient(135deg,#E65100,#F9A825)', '/logos/logo.png'),
+('plan_1704067200_ta001', 'ta', 'Tata AIG', 'Medicare Select', 1000000, 13200, '#1A237E', '#F0F0FF', '#9FA8DA', 'linear-gradient(135deg,#1A237E,#3949AB)', '/logos/logo.png');

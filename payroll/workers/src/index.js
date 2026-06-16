@@ -1831,7 +1831,7 @@ router.post('/api/upload-logo', async (request, env) => {
 router.get('/api/plans', async (request, env) => {
     try {
         const result = await env.DB.prepare(`
-            SELECT plan_id, plan_code, plan_name, plan_product_name, premium,
+            SELECT plan_id, plan_code, plan_name, plan_product_name, sum_insured, premium,
                    brand_color_dark, brand_color_light, brand_color_mid, brand_gradient,
                    logo_url, is_active
             FROM insurance_plans
@@ -1863,7 +1863,7 @@ router.get('/api/plans/all', async (request, env) => {
         }
 
         const result = await env.DB.prepare(`
-            SELECT plan_id, plan_code, plan_name, plan_product_name, premium,
+            SELECT plan_id, plan_code, plan_name, plan_product_name, sum_insured, premium,
                    brand_color_dark, brand_color_light, brand_color_mid, brand_gradient,
                    logo_url, is_active
             FROM insurance_plans
@@ -1893,7 +1893,7 @@ router.post('/api/plans', async (request, env) => {
             ));
         }
 
-        const { plan_name, plan_product_name, premium, brand_color_dark,
+        const { plan_name, plan_product_name, sum_insured, premium, brand_color_dark,
                 brand_color_light, brand_color_mid, brand_gradient, logo_url } = await request.json();
 
         if (!plan_name) {
@@ -1926,10 +1926,10 @@ router.post('/api/plans', async (request, env) => {
 
         await env.DB.prepare(`
             INSERT INTO insurance_plans
-            (plan_id, plan_code, plan_name, plan_product_name, premium, brand_color_dark,
+            (plan_id, plan_code, plan_name, plan_product_name, sum_insured, premium, brand_color_dark,
              brand_color_light, brand_color_mid, brand_gradient, logo_url, is_active, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'))
-        `).bind(plan_id, plan_code, plan_name, plan_product_name || '', premium || 0,
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, datetime('now'))
+        `).bind(plan_id, plan_code, plan_name, plan_product_name || '', sum_insured || 0, premium || 0,
                 brand_color_dark || '#000000', brand_color_light || '#FFFFFF',
                 brand_color_mid || '#CCCCCC', brand_gradient || '', logo_url || '').run();
 
@@ -1962,16 +1962,16 @@ router.put('/api/plans/:plan_id', async (request, env) => {
         }
 
         const { plan_id } = request.params;
-        const { plan_code, plan_name, plan_product_name, premium, brand_color_dark,
+        const { plan_name, plan_product_name, sum_insured, premium, brand_color_dark,
                 brand_color_light, brand_color_mid, brand_gradient, logo_url } = await request.json();
 
         await env.DB.prepare(`
             UPDATE insurance_plans
-            SET plan_code = ?, plan_name = ?, plan_product_name = ?, premium = ?,
+            SET plan_name = ?, plan_product_name = ?, sum_insured = ?, premium = ?,
                 brand_color_dark = ?, brand_color_light = ?, brand_color_mid = ?,
                 brand_gradient = ?, logo_url = ?, updated_at = datetime('now')
             WHERE plan_id = ?
-        `).bind(plan_code, plan_name, plan_product_name, premium,
+        `).bind(plan_name, plan_product_name, sum_insured || 0, premium || 0,
                 brand_color_dark, brand_color_light, brand_color_mid,
                 brand_gradient, logo_url, plan_id).run();
 

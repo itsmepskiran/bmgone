@@ -108,13 +108,14 @@ tr:hover{background:#F5F5F5;}
     <table>
       <thead>
         <tr>
-          <th style="width:120px;">Code</th>
-          <th style="width:200px;">Plan Name</th>
-          <th style="width:150px;">Product</th>
-          <th style="width:100px;">Premium</th>
-          <th style="width:100px;">Colors</th>
-          <th style="width:80px;">Status</th>
-          <th style="width:150px;">Actions</th>
+          <th style="width:80px;">Code</th>
+          <th style="width:180px;">Plan Name</th>
+          <th style="width:140px;">Product</th>
+          <th style="width:100px;">Sum Insured</th>
+          <th style="width:80px;">Premium</th>
+          <th style="width:80px;">Colors</th>
+          <th style="width:70px;">Status</th>
+          <th style="width:130px;">Actions</th>
         </tr>
       </thead>
       <tbody id="plansTable">
@@ -250,9 +251,17 @@ tr:hover{background:#F5F5F5;}
       <input type="text" id="planProduct" placeholder="e.g., Activ One Max, Elevate"/>
     </div>
 
-    <div class="form-group">
-      <label>Premium Amount (Optional)</label>
-      <input type="number" id="planPremium" placeholder="e.g., 10271" step="0.01"/>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="form-group">
+        <label>Sum Insured (SI) <span style="color:red;">*</span></label>
+        <input type="number" id="planSumInsured" placeholder="e.g., 1000000" step="100000"/>
+        <div style="font-size:11px;color:#999;margin-top:4px;">Coverage amount (e.g., 10 Lakhs = 1000000)</div>
+      </div>
+
+      <div class="form-group">
+        <label>Premium Amount (Optional)</label>
+        <input type="number" id="planPremium" placeholder="e.g., 10271" step="0.01"/>
+      </div>
     </div>
 
     <div class="form-group">
@@ -699,12 +708,19 @@ function renderPlansTable() {
     return;
   }
 
-  tbody.innerHTML = plans.map(p => `
+  tbody.innerHTML = plans.map(p => {
+    // Format Sum Insured in Lakhs if >= 1,000,000
+    const sumInsuredDisplay = p.sum_insured >= 1000000
+      ? `₹${(p.sum_insured / 100000).toFixed(1)}L`
+      : `₹${p.sum_insured || '-'}`;
+
+    return `
     <tr>
       <td><strong>${p.plan_code}</strong></td>
       <td>${p.plan_name}</td>
       <td>${p.plan_product_name || '-'}</td>
-      <td>₹${p.premium || '-'}</td>
+      <td style="text-align:right;font-weight:600;color:#0D47A1;">${sumInsuredDisplay}</td>
+      <td style="text-align:right;">₹${p.premium ? p.premium.toLocaleString() : '-'}</td>
       <td style="text-align:center;">
         <div style="display:flex;gap:4px;justify-content:center;">
           <div style="width:20px;height:20px;background:${p.brand_color_dark};border-radius:3px;border:1px solid #ccc;" title="${p.brand_color_dark}"></div>
@@ -724,7 +740,8 @@ function renderPlansTable() {
         </div>
       </td>
     </tr>
-  `).join('');
+  `;
+  }).join('');
 }
 
 function openAddPlanModal() {
@@ -732,6 +749,7 @@ function openAddPlanModal() {
   document.getElementById('planModalTitle').textContent = 'Add New Plan';
   document.getElementById('planName').value = '';
   document.getElementById('planProduct').value = '';
+  document.getElementById('planSumInsured').value = '';
   document.getElementById('planPremium').value = '';
   document.getElementById('planColorDark').value = '#0D47A1';
   document.getElementById('planColorLight').value = '#E3F2FD';
@@ -751,6 +769,7 @@ function openEditPlanModal(planId) {
   document.getElementById('planModalTitle').textContent = `Edit Plan (Code: ${plan.plan_code})`;
   document.getElementById('planName').value = plan.plan_name;
   document.getElementById('planProduct').value = plan.plan_product_name || '';
+  document.getElementById('planSumInsured').value = plan.sum_insured || '';
   document.getElementById('planPremium').value = plan.premium || '';
   document.getElementById('planColorDark').value = plan.brand_color_dark || '#0D47A1';
   document.getElementById('planColorLight').value = plan.brand_color_light || '#E3F2FD';
@@ -857,9 +876,16 @@ async function savePlan() {
       });
     }
 
+    const sumInsured = parseFloat(document.getElementById('planSumInsured').value);
+    if (!sumInsured || sumInsured <= 0) {
+      showStatus('❌ Please enter a valid Sum Insured amount', 'error');
+      return;
+    }
+
     const payload = {
       plan_name: name,
       plan_product_name: document.getElementById('planProduct').value.trim(),
+      sum_insured: sumInsured,
       premium: parseFloat(document.getElementById('planPremium').value) || 0,
       brand_color_dark: document.getElementById('planColorDark').value,
       brand_color_light: document.getElementById('planColorLight').value,
