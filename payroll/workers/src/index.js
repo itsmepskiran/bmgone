@@ -1852,14 +1852,32 @@ router.post('/api/plans', async (request, env) => {
             ));
         }
 
-        const { plan_code, plan_name, plan_product_name, premium, brand_color_dark,
+        const { plan_name, plan_product_name, premium, brand_color_dark,
                 brand_color_light, brand_color_mid, brand_gradient, logo_url } = await request.json();
 
-        if (!plan_code || !plan_name) {
+        if (!plan_name) {
             return withCors(new Response(
-                JSON.stringify({ error: 'plan_code and plan_name are required' }),
+                JSON.stringify({ error: 'plan_name is required' }),
                 { status: 400, headers: { 'Content-Type': 'application/json' } }
             ));
+        }
+
+        // Auto-generate plan_code from plan_name (first 2 letters + counter if needed)
+        let baseCode = plan_name.substring(0, 2).toLowerCase();
+        let plan_code = baseCode;
+        let counter = 2;
+
+        // Check if this code already exists, if so append a number
+        while (true) {
+            const existing = await env.DB.prepare(`
+                SELECT plan_code FROM insurance_plans WHERE plan_code = ? LIMIT 1
+            `).bind(plan_code).first();
+
+            if (!existing) {
+                break; // Code is unique, use it
+            }
+            plan_code = baseCode + counter;
+            counter++;
         }
 
         // Generate unique plan_id
@@ -1878,7 +1896,8 @@ router.post('/api/plans', async (request, env) => {
             JSON.stringify({
                 success: true,
                 plan_id: plan_id,
-                message: 'Plan created successfully'
+                plan_code: plan_code,
+                message: 'Plan created successfully with auto-generated code'
             }),
             { status: 201, headers: { 'Content-Type': 'application/json' } }
         ));

@@ -236,14 +236,13 @@ tr:hover{background:#F5F5F5;}
   <div class="modal-content">
     <div class="modal-header" id="planModalTitle">Add New Plan</div>
 
-    <div class="form-group">
-      <label>Plan Code (ID)</label>
-      <input type="text" id="planCode" placeholder="e.g., ab, ic, star, care, tata" maxlength="10"/>
+    <div style="background:#E3F2FD;border:1px solid #90CAF9;border-radius:6px;padding:10px;margin-bottom:16px;font-size:12px;color:#1565C0;">
+      ℹ️ Plan Code will be auto-generated from the plan name (e.g., "Aditya Birla" → "ad")
     </div>
 
     <div class="form-group">
-      <label>Plan Name</label>
-      <input type="text" id="planName" placeholder="e.g., Aditya Birla, ICICI Lombard"/>
+      <label>Plan Name <span style="color:red;">*</span></label>
+      <input type="text" id="planName" placeholder="e.g., Aditya Birla, ICICI Lombard, Bajaj Allianz"/>
     </div>
 
     <div class="form-group">
@@ -718,7 +717,6 @@ function renderPlansTable() {
 function openAddPlanModal() {
   currentEditPlanId = null;
   document.getElementById('planModalTitle').textContent = 'Add New Plan';
-  document.getElementById('planCode').value = '';
   document.getElementById('planName').value = '';
   document.getElementById('planProduct').value = '';
   document.getElementById('planPremium').value = '';
@@ -735,8 +733,7 @@ function openEditPlanModal(planId) {
   if (!plan) return;
 
   currentEditPlanId = planId;
-  document.getElementById('planModalTitle').textContent = 'Edit Plan';
-  document.getElementById('planCode').value = plan.plan_code;
+  document.getElementById('planModalTitle').textContent = `Edit Plan (Code: ${plan.plan_code})`;
   document.getElementById('planName').value = plan.plan_name;
   document.getElementById('planProduct').value = plan.plan_product_name || '';
   document.getElementById('planPremium').value = plan.premium || '';
@@ -753,13 +750,7 @@ function closePlanModal() {
 }
 
 async function savePlan() {
-  const code = document.getElementById('planCode').value.trim();
   const name = document.getElementById('planName').value.trim();
-
-  if (!code) {
-    showStatus('❌ Please enter a plan code', 'error');
-    return;
-  }
 
   if (!name) {
     showStatus('❌ Please enter a plan name', 'error');
@@ -769,7 +760,6 @@ async function savePlan() {
   try {
     const token = getAuthToken();
     const payload = {
-      plan_code: code,
       plan_name: name,
       plan_product_name: document.getElementById('planProduct').value.trim(),
       premium: parseFloat(document.getElementById('planPremium').value) || 0,

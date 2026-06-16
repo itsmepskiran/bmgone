@@ -3,7 +3,7 @@
 
 CREATE TABLE IF NOT EXISTS insurance_plans (
     plan_id TEXT PRIMARY KEY NOT NULL,       -- Unique: 'plan_1234567890_abc123def'
-    plan_code TEXT NOT NULL,                 -- 'ab', 'ic', 'star', 'care', 'tata' (can be duplicated for multiple products)
+    plan_code TEXT UNIQUE NOT NULL,          -- Auto-generated unique code: 'ab', 'ic', 'ad' (first 2 chars of name)
     plan_name TEXT NOT NULL,                 -- 'Aditya Birla', 'ICICI Lombard', etc.
     plan_product_name TEXT,                  -- 'Activ One Max', 'Elevate', etc.
     premium REAL DEFAULT 0,                  -- Premium amount
