@@ -51,6 +51,8 @@ input[type=text],input[type=number],textarea,select{-webkit-appearance:none;-moz
 .cover{min-height:96vh;background:linear-gradient(145deg,#0D1B2A 0%,#1B2A3B 40%,#1B3A5C 100%);border-radius:16px;padding:0 0 40px;margin-bottom:20px;overflow:hidden;box-shadow:0 12px 48px rgba(0,0,0,.4);position:relative;}
 .cover-accent{height:6px;background:linear-gradient(90deg,#B71C1C,#E65100,#0D47A1,#1A237E,#E65100);}
 .cover-header{text-align:center;padding:44px 40px 28px;}
+.cover-logo{margin-bottom:24px;}
+.cover-logo img{height:60px;width:auto;object-fit:contain;}
 .cover-badge{display:inline-block;background:rgba(255,255,255,.07);border-radius:50px;padding:8px 24px;margin-bottom:20px;border:1px solid rgba(255,255,255,.12);color:#90CAF9;font-size:13px;letter-spacing:2px;font-weight:600;}
 .cover-title{color:#fff;font-size:42px;font-weight:900;line-height:1.15;letter-spacing:-.5px;}
 .cover-title span{background:linear-gradient(90deg,#64B5F6,#42A5F5,#90CAF9);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
@@ -276,6 +278,8 @@ th,td{padding:8px 8px;vertical-align:middle;border:1px solid #D0D0D0;}
   /* Preserve original backgrounds and colors */
   .cover-title span{-webkit-text-fill-color:unset!important;}
   .adv-name-card{border:1px solid rgba(255,255,255,.2)!important;}
+  .cover-logo{display:block!important;margin-bottom:20px!important;}
+  .cover-logo img{height:55px!important;width:auto!important;object-fit:contain!important;}
 }
 </style>
 </head>
@@ -283,7 +287,7 @@ th,td{padding:8px 8px;vertical-align:middle;border:1px solid #D0D0D0;}
 
 <div class="ctrl-bar">
   <div class="nav-logo">
-    <img src="/logos/logo.png" alt="BMGOne" class="logo-img">
+    <img src="../logos/logo.png" alt="BMGOne" class="logo-img">
   </div>
   <div>
     <div class="ctrl-title">🛡️ BMG Health Compare</div>
@@ -358,6 +362,9 @@ th,td{padding:8px 8px;vertical-align:middle;border:1px solid #D0D0D0;}
 <div class="cover">
   <div class="cover-accent"></div>
   <div class="cover-header">
+    <div class="cover-logo">
+      <img src="../logos/logo.png" alt="BMGOne" />
+    </div>
     <div class="cover-badge">PERSONALISED HEALTH INSURANCE REPORT</div>
     <div class="cover-title">Your Health.<br/><span>Your Protection.</span></div>
     <div class="cover-date" id="cover-date"></div>
