@@ -1786,6 +1786,47 @@ router.post('/api/comparison/questions/toggle', async (request, env) => {
     }
 });
 
+// Logo Upload Endpoint
+router.post('/api/upload-logo', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user || !['admin', 'master_admin'].includes(user.role)) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        const { filename, base64, type } = await request.json();
+
+        if (!base64 || !type) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'base64 and type are required' }),
+                { status: 400, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        // Return data URL for the logo (self-contained)
+        // This allows logos to work without additional file storage
+        const dataUrl = `data:${type};base64,${base64}`;
+
+        return withCors(new Response(
+            JSON.stringify({
+                success: true,
+                logo_url: dataUrl,
+                message: 'Logo uploaded successfully'
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+    } catch (error) {
+        console.error('Logo upload error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
 // Plan Management Endpoints
 router.get('/api/plans', async (request, env) => {
     try {

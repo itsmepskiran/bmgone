@@ -276,8 +276,21 @@ tr:hover{background:#F5F5F5;}
     </div>
 
     <div class="form-group">
-      <label>Logo URL (Optional)</label>
-      <input type="text" id="planLogoUrl" placeholder="e.g., /logos/logo.png"/>
+      <label>Logo (Optional)</label>
+      <div style="display:flex;gap:10px;align-items:flex-start;">
+        <div style="flex:1;">
+          <label style="display:block;margin-bottom:6px;font-size:12px;color:#666;">Upload Image File</label>
+          <input type="file" id="planLogoFile" accept="image/*" style="padding:8px;border:1px solid #ddd;border-radius:4px;width:100%;font-size:12px;"/>
+          <div style="margin-top:4px;font-size:11px;color:#999;">Accepted: JPG, PNG, SVG (Max 500KB)</div>
+        </div>
+        <div style="flex:1;">
+          <label style="display:block;margin-bottom:6px;font-size:12px;color:#666;">Or Logo URL</label>
+          <input type="text" id="planLogoUrl" placeholder="e.g., /logos/logo.png" style="width:100%;"/>
+        </div>
+      </div>
+      <div id="logoPreview" style="margin-top:12px;text-align:center;">
+        <img id="logoPreviewImg" style="max-height:60px;max-width:150px;border-radius:4px;display:none;border:1px solid #ddd;padding:4px;"/>
+      </div>
     </div>
 
     <div class="modal-footer">
@@ -724,7 +737,9 @@ function openAddPlanModal() {
   document.getElementById('planColorLight').value = '#E3F2FD';
   document.getElementById('planColorMid').value = '#64B5F6';
   document.getElementById('planGradient').value = '';
+  document.getElementById('planLogoFile').value = '';
   document.getElementById('planLogoUrl').value = '/logos/logo.png';
+  clearLogoPreview();
   document.getElementById('planModal').classList.add('active');
 }
 
@@ -747,6 +762,48 @@ function openEditPlanModal(planId) {
 
 function closePlanModal() {
   document.getElementById('planModal').classList.remove('active');
+  clearLogoPreview();
+}
+
+function clearLogoPreview() {
+  const previewImg = document.getElementById('logoPreviewImg');
+  if (previewImg) {
+    previewImg.style.display = 'none';
+    previewImg.src = '';
+  }
+}
+
+function handleLogoFileSelect(event) {
+  const file = event.target.files[0];
+  if (!file) {
+    clearLogoPreview();
+    return;
+  }
+
+  // Validate file size (max 500KB)
+  if (file.size > 500 * 1024) {
+    showStatus('❌ Logo file must be less than 500KB', 'error');
+    event.target.value = '';
+    clearLogoPreview();
+    return;
+  }
+
+  // Validate file type
+  if (!file.type.startsWith('image/')) {
+    showStatus('❌ Please select a valid image file', 'error');
+    event.target.value = '';
+    clearLogoPreview();
+    return;
+  }
+
+  // Show preview
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const previewImg = document.getElementById('logoPreviewImg');
+    previewImg.src = e.target.result;
+    previewImg.style.display = 'block';
+  };
+  reader.readAsDataURL(file);
 }
 
 async function savePlan() {
@@ -759,6 +816,47 @@ async function savePlan() {
 
   try {
     const token = getAuthToken();
+    let logoUrl = document.getElementById('planLogoUrl').value.trim();
+
+    // Handle file upload if a logo file is selected
+    const logoFile = document.getElementById('planLogoFile').files[0];
+    if (logoFile) {
+      showStatus('⏳ Uploading logo...', 'success');
+
+      // Read file as base64 and send to API for upload
+      const reader = new FileReader();
+      logoUrl = await new Promise((resolve, reject) => {
+        reader.onload = async () => {
+          try {
+            const base64Data = reader.result.split(',')[1]; // Remove data:image/... prefix
+            const uploadResponse = await fetch('https://pay.bmgone.com/api/upload-logo', {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                filename: logoFile.name,
+                base64: base64Data,
+                type: logoFile.type
+              })
+            });
+
+            if (!uploadResponse.ok) {
+              throw new Error('Logo upload failed');
+            }
+
+            const uploadResult = await uploadResponse.json();
+            resolve(uploadResult.logo_url);
+          } catch (error) {
+            reject(error);
+          }
+        };
+        reader.onerror = () => reject(new Error('File read failed'));
+        reader.readAsDataURL(logoFile);
+      });
+    }
+
     const payload = {
       plan_name: name,
       plan_product_name: document.getElementById('planProduct').value.trim(),
@@ -767,7 +865,7 @@ async function savePlan() {
       brand_color_light: document.getElementById('planColorLight').value,
       brand_color_mid: document.getElementById('planColorMid').value,
       brand_gradient: document.getElementById('planGradient').value.trim(),
-      logo_url: document.getElementById('planLogoUrl').value.trim()
+      logo_url: logoUrl
     };
 
     let url = 'https://pay.bmgone.com/api/plans';
@@ -824,6 +922,14 @@ async function togglePlan(planId, isCurrentlyActive) {
     showStatus('❌ Error toggling plan', 'error');
   }
 }
+
+// Setup logo file input handler
+document.addEventListener('DOMContentLoaded', function() {
+  const logoFileInput = document.getElementById('planLogoFile');
+  if (logoFileInput) {
+    logoFileInput.addEventListener('change', handleLogoFileSelect);
+  }
+});
 
 window.onload = async function() {
   const token = localStorage.getItem('token');

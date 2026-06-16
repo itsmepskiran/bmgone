@@ -1689,7 +1689,9 @@ function initializeProviderSelection() {
     checkbox.onchange = updateAllProviderCheckbox;
 
     label.appendChild(checkbox);
-    label.appendChild(document.createTextNode(b.name));
+    // Display: "Plan Name - Product Name" (e.g., "Aditya Birla - Activ One Max")
+    const displayName = b.plan ? `${b.name} - ${b.plan}` : b.name;
+    label.appendChild(document.createTextNode(displayName));
     container.appendChild(label);
   });
 
