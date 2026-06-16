@@ -272,8 +272,8 @@ function renderTable() {
               const val = vals[p] || '';
               const note = notes[p] || '';
               const cls = val === 'Y' ? 'prov-y' : val === 'N' ? 'prov-n' : val === 'E' ? 'prov-e' : '';
-              const noteText = note ? `<div style="font-size:10px;color:#666;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:60px;">${note}</div>` : '';
-              return `<div class="provider-cell ${cls}" title="${note}" style="position:relative;">${val || '-'}${noteText}</div>`;
+              const noteText = note ? `<div style="font-size:9px;color:#555;margin-top:4px;padding:2px;background:#f5f5f5;border-radius:2px;border-left:2px solid #0D47A1;padding-left:4px;text-align:left;word-break:break-word;">${note}</div>` : '';
+              return `<div class="provider-cell ${cls}" title="${note}" style="position:relative;min-height:50px;">${val || '-'}${noteText}</div>`;
             }).join('')}
           </div>
         </td>
@@ -284,8 +284,8 @@ function renderTable() {
         </td>
         <td>
           <div class="action-btns">
-            <button class="btn-sm btn-edit" onclick="openEditModal(${q.feature_id})">Edit</button>
-            <button class="btn-sm btn-toggle" onclick="toggleQuestion(${q.feature_id}, ${q.is_active})">${q.is_active ? 'Hide' : 'Show'}</button>
+            <button class="btn-sm btn-edit" onclick="openEditModal('${q.feature_id}')">Edit</button>
+            <button class="btn-sm btn-toggle" onclick="toggleQuestion('${q.feature_id}', ${q.is_active ? 'true' : 'false'})">${q.is_active ? 'Hide' : 'Show'}</button>
           </div>
         </td>
       </tr>
