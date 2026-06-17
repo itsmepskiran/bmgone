@@ -71,7 +71,7 @@ tr:hover{background:#F5F5F5;}
   <button class="btn" id="tabPlans" style="background:#666;" onclick="switchTab('plans')">💼 Manage Plans</button>
   <div style="flex:1;"></div>
   <button class="btn" style="background:#9C27B0;" onclick="exportToCode()">💾 Save & Create Code</button>
-  <button class="btn btn-back" onclick="goBack()">🔙 Back to Compare</button>
+  <button class="btn btn-back" onclick="goBack()">🔙 Back to Dashboard</button>
 </div>
 
 <div class="status-msg" id="statusMsg"></div>
@@ -670,7 +670,7 @@ function showStatus(msg, type) {
 }
 
 function goBack() {
-  window.location.href = 'compare.html';
+  window.location.href = 'dashboard.html';
 }
 
 function closeExportModal() {
