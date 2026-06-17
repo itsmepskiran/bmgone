@@ -570,8 +570,22 @@ let brands = [];
 async function loadPlansFromAPI() {
   try {
     const response = await fetch('https://pay.bmgone.com/api/plans');
+
+    if (response.status === 400 || response.status === 500) {
+      const errorData = await response.json();
+      console.error('❌ API Error:', errorData.error);
+      throw new Error(errorData.error || `HTTP ${response.status}`);
+    }
+
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
     const plans = await response.json();
+
+    if (!Array.isArray(plans) || plans.length === 0) {
+      console.warn('⚠️ No plans found in database. Create plans in Manage Plans section.');
+      showApiError('No insurance plans found. Please create plans in Manage Plans section.');
+      return false;
+    }
 
     // Convert API response to BRANDS format
     BRANDS.length = 0;
@@ -587,6 +601,7 @@ async function loadPlansFromAPI() {
         plan: p.plan_product_name,
         si: sumInsuredDisplay,        // Sum Insured
         premium: `₹${p.premium}`,
+        logo: p.logo_url,             // Logo URL
         dark: p.brand_color_dark,
         light: p.brand_color_light,
         mid: p.brand_color_mid,
@@ -598,10 +613,44 @@ async function loadPlansFromAPI() {
     console.log(`✅ Loaded ${BRANDS.length} plans from API`);
     return true;
   } catch (error) {
-    console.error('Error loading plans from API:', error);
-    // Fallback to empty array - admin should manage plans via UI
+    console.error('❌ Error loading plans from API:', error);
+    showApiError(`Failed to load plans: ${error.message}`);
     return false;
   }
+}
+
+function showApiError(message) {
+  const errorDiv = document.createElement('div');
+  errorDiv.style.cssText = `
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #B71C1C;
+    color: #fff;
+    padding: 16px 24px;
+    border-radius: 8px;
+    font-weight: 700;
+    z-index: 10000;
+    max-width: 500px;
+    text-align: center;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  `;
+  errorDiv.textContent = message;
+  document.body.appendChild(errorDiv);
+
+  setTimeout(() => {
+    errorDiv.remove();
+  }, 6000);
+}
+
+// Get logo from brand - try dynamic logo first, then fallback to LOGOS object
+function getBrandLogo(brandId) {
+  const brand = brands.find(b => b.id === brandId);
+  if (brand && brand.logo) {
+    return brand.logo;
+  }
+  return LOGOS[brandId] || '/logos/logo.png';
 }
 
 const SEC_COLORS = {
@@ -782,7 +831,7 @@ window.onload = async function() {
       div.style.flex = '1';
       div.style.minWidth = '130px';
       div.innerHTML = `<div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
-        <img src="${LOGOS[b.id]}" alt="${b.name}" style="width:36px;height:20px;object-fit:contain;background:#fff;border-radius:4px;padding:2px 4px;"/>
+        <img src="${b.logo || getBrandLogo(b.id)}" alt="${b.name}" style="width:36px;height:20px;object-fit:contain;background:#fff;border-radius:4px;padding:2px 4px;"/>
         <span style="color:${b.id=='ab'?'#EF9A9A':b.id=='ic'?'#FFAB91':b.id=='star'?'#90CAF9':b.id=='care'?'#FFD54F':'#9FA8DA'};font-size:10px;font-weight:700;">${b.name}</span>
       </div>
       <input type="text" id="qf-p${i}" placeholder="${b.premium}" style="width:100%;font-size:14px;font-weight:800;padding:9px 10px;border-radius:8px;border:1.5px solid ${b.dark}88;background:rgba(255,255,255,.07);color:#fff;outline:none;box-sizing:border-box;text-align:center;"/>`;
@@ -889,13 +938,13 @@ function renderCoverLogos() {
   c.innerHTML = '';
   d.innerHTML = '';
   brands.forEach(b => {
-    if (!LOGOS[b.id]) return;
+    if (!b.logo && !LOGOS[b.id]) return;
     c.innerHTML += `<div class="logo-card" style="box-shadow:0 4px 20px ${b.dark}44;border:2px solid ${b.dark}33;">
-      <img src="${LOGOS[b.id]}" alt="${b.name}"/>
+      <img src="${b.logo || getBrandLogo(b.id)}" alt="${b.name}"/>
       <div class="logo-card-name" style="color:${b.dark};">${b.name}</div>
     </div>`;
     d.innerHTML += `<div style="background:#fff;border-radius:8px;padding:5px 8px;box-shadow:0 2px 8px ${b.dark}44;border:1.5px solid ${b.mid};">
-      <img src="${LOGOS[b.id]}" alt="${b.name}" style="width:48px;height:26px;object-fit:contain;display:block;"/>
+      <img src="${b.logo || getBrandLogo(b.id)}" alt="${b.name}" style="width:48px;height:26px;object-fit:contain;display:block;"/>
     </div>`;
   });
 }
@@ -932,7 +981,7 @@ function renderQFPrems() {
   brands.forEach((b,i) => {
     c.innerHTML += `<div style="flex:1;min-width:130px;">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:5px;">
-        <img src="${LOGOS[b.id]}" alt="${b.name}" style="width:36px;height:20px;object-fit:contain;background:#fff;border-radius:4px;padding:2px 4px;"/>
+        <img src="${b.logo || getBrandLogo(b.id)}" alt="${b.name}" style="width:36px;height:20px;object-fit:contain;background:#fff;border-radius:4px;padding:2px 4px;"/>
         <span style="color:${b.id=='ab'?'#EF9A9A':b.id=='ic'?'#FFAB91':b.id=='star'?'#90CAF9':b.id=='care'?'#FFD54F':'#9FA8DA'};font-size:10px;font-weight:700;">${b.name}</span>
       </div>
       <input type="text" id="qf-p${i}" placeholder="${b.premium}" style="width:100%;font-size:14px;font-weight:800;padding:9px 10px;border-radius:8px;border:1.5px solid ${b.dark}88;background:rgba(255,255,255,.07);color:#fff;outline:none;box-sizing:border-box;text-align:center;"/>
@@ -1054,7 +1103,7 @@ function renderTableHead() {
     <th class="feat-th">FEATURE / BENEFIT</th>
     <th class="expl-th">📝<br/>Detailed Explanation</th>`;
   visibleBrands.forEach((b,idx) => {
-    const logoHtml = LOGOS[b.id] ? `<img src="${LOGOS[b.id]}" alt="${b.name}" style="width:90px;height:50px;object-fit:contain;border-radius:4px;"/>` : `<div style="width:90px;height:50px;background:${b.light};border:2px solid ${b.mid};border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${b.dark};">${b.name}</div>`;
+    const logoHtml = (b.logo || LOGOS[b.id]) ? `<img src="${b.logo || LOGOS[b.id]}" alt="${b.name}" style="width:90px;height:50px;object-fit:contain;border-radius:4px;"/>` : `<div style="width:90px;height:50px;background:${b.light};border:2px solid ${b.mid};border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${b.dark};">${b.name}</div>`;
     lr += `<th class="brand-th" style="border-right:1px solid ${b.mid};border-top:6px solid ${b.dark};padding:10px 8px;background:${b.light};">
       <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
         ${logoHtml}
@@ -1199,7 +1248,7 @@ function renderWinner() {
         <div style="color:#FFD54F;font-size:14px;font-weight:800;letter-spacing:3px;margin-bottom:12px;text-transform:uppercase;">🏆 OUR TOP RECOMMENDATION</div>
         <div style="display:flex;align-items:center;justify-content:center;gap:28px;flex-wrap:wrap;margin-bottom:8px;">
           <div style="background:linear-gradient(135deg,${w.light},#fff);border-radius:16px;padding:12px 20px;box-shadow:0 8px 32px ${w.dark}88;border:4px solid ${w.dark};">
-            <img src="${LOGOS[w.id]}" alt="${w.name}" style="width:120px;height:65px;object-fit:contain;display:block;"/>
+            <img src="${w.logo || getBrandLogo(w.id)}" alt="${w.name}" style="width:120px;height:65px;object-fit:contain;display:block;"/>
           </div>
           <div style="text-align:left;">
             <div style="color:${w.dark};font-size:32px;font-weight:900;margin-bottom:4px;">${w.name}</div>
@@ -1290,7 +1339,7 @@ function renderFillPanel() {
     c.innerHTML += `<div class="fill-company-row" style="border:1px solid ${b.dark}44;">
       <div style="display:flex;align-items:center;gap:8px;min-width:150px;">
         <div style="background:#fff;border-radius:6px;padding:3px 6px;box-shadow:0 2px 8px ${b.dark}44;">
-          <img src="${LOGOS[b.id]}" alt="${b.name}" style="width:52px;height:28px;object-fit:contain;display:block;"/>
+          <img src="${b.logo || getBrandLogo(b.id)}" alt="${b.name}" style="width:52px;height:28px;object-fit:contain;display:block;"/>
         </div>
         <div>
           <div style="color:#fff;font-weight:800;font-size:11px;">${b.name}</div>
