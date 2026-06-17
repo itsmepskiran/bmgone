@@ -704,9 +704,12 @@ async function exportToCode() {
       })
     };
 
-    // Convert to JSON then Base64 (same format as data migration)
+    // Convert to JSON then Base64 with UTF-8 support
     const jsonString = JSON.stringify(exportData);
-    const base64Code = btoa(jsonString);  // btoa() automatically encodes, eyJ... is the natural Base64 start for {"
+
+    // Encode to UTF-8 compatible format before base64
+    const utf8String = unescape(encodeURIComponent(jsonString));
+    const base64Code = btoa(utf8String);
 
     // Display in modal
     document.getElementById('exportCode').value = base64Code;
