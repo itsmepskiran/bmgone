@@ -377,16 +377,20 @@ async function loadQuestions() {
       headers: { 'Authorization': `Bearer ${token}` }
     });
 
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error || `HTTP ${response.status}`);
+    }
 
     const data = await response.json();
     questions = data.questions || [];
 
+    console.log(`📥 Loaded ${questions.length} questions:`, questions);
     renderTable();
     console.log(`✅ Loaded ${questions.length} questions`);
   } catch (error) {
-    console.error('Load questions error:', error);
-    showStatus('❌ Error loading questions', 'error');
+    console.error('❌ Load questions error:', error);
+    showStatus(`❌ Error loading questions: ${error.message}`, 'error');
   }
 }
 
@@ -530,14 +534,35 @@ async function saveQuestion() {
     return;
   }
 
+  if (PROVIDERS.length === 0) {
+    showStatus('❌ No providers available. Please wait for providers to load.', 'error');
+    return;
+  }
+
   const values = {};
   const notes = {};
-  PROVIDERS.forEach(p => {
-    const val = document.getElementById(`prov-${p}`).value;
-    const note = document.getElementById(`note-${p}`).value.trim();
-    if (val) values[p] = val;
-    if (note) notes[p] = note;
-  });
+
+  // Collect provider values and notes with error checking
+  try {
+    PROVIDERS.forEach(p => {
+      const selectEl = document.getElementById(`prov-${p}`);
+      const noteEl = document.getElementById(`note-${p}`);
+
+      if (!selectEl || !noteEl) {
+        console.warn(`⚠️ Provider input not found for: ${p}. This provider may not have input fields.`);
+        return;
+      }
+
+      const val = selectEl.value;
+      const note = noteEl.value.trim();
+      if (val) values[p] = val;
+      if (note) notes[p] = note;
+    });
+  } catch (error) {
+    console.error('Error collecting provider values:', error);
+    showStatus(`❌ Error reading provider fields: ${error.message}`, 'error');
+    return;
+  }
 
   try {
     const token = getAuthToken();
@@ -552,6 +577,8 @@ async function saveQuestion() {
       payload.feature_id = currentEditId;
     }
 
+    console.log('📤 Saving question payload:', payload);
+
     const response = await fetch('https://pay.bmgone.com/api/comparison/questions', {
       method: 'POST',
       headers: {
@@ -563,8 +590,12 @@ async function saveQuestion() {
 
     if (!response.ok) {
       const err = await response.json();
+      console.error('❌ API Error:', err);
       throw new Error(err.error || `HTTP ${response.status}`);
     }
+
+    const result = await response.json();
+    console.log('✅ API Response:', result);
 
     showStatus(`✅ Question ${currentEditId ? 'updated' : 'added'} successfully!`, 'success');
     closeModal();
@@ -621,14 +652,18 @@ async function exportToCode() {
   try {
     showStatus('⏳ Generating migration code...', 'success');
 
-    // Convert current questions to export format
-    const PROVIDER_KEYS = ['ab', 'ic', 'star', 'care', 'tata'];
+    if (PROVIDERS.length === 0) {
+      throw new Error('No providers available. Please load providers first.');
+    }
+
+    // Convert current questions to export format using dynamic PROVIDERS
     const exportData = {
       version: '1.0',
       timestamp: new Date().toISOString(),
+      providers: PROVIDERS,  // Include provider codes in export
       features: questions.map(q => {
-        const vals = PROVIDER_KEYS.map(p => q.values?.[p] || '');
-        const notes = PROVIDER_KEYS.map(p => q.notes?.[p] || '');
+        const vals = PROVIDERS.map(p => q.values?.[p] || '');
+        const notes = PROVIDERS.map(p => q.notes?.[p] || '');
         return {
           id: q.feature_id,
           label: q.feature_label,
