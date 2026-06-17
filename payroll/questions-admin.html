@@ -432,9 +432,10 @@ function renderTable() {
           </span>
         </td>
         <td>
-          <div class="action-btns">
+          <div class="action-btns" style="display:flex;gap:6px;flex-wrap:wrap;">
             <button class="btn-sm btn-edit" onclick="openEditModal('${q.feature_id}')">Edit</button>
             <button class="btn-sm btn-toggle" onclick="toggleQuestion('${q.feature_id}', ${q.is_active ? 'true' : 'false'})">${q.is_active ? 'Hide' : 'Show'}</button>
+            <button class="btn-sm" style="background:#EF5350;color:#fff;" onclick="deleteQuestion('${q.feature_id}')">Delete</button>
           </div>
         </td>
       </tr>
@@ -631,6 +632,34 @@ async function toggleQuestion(featureId, isCurrentlyActive) {
   }
 }
 
+async function deleteQuestion(featureId) {
+  if (!confirm('⚠️ Are you sure you want to delete this question? This action cannot be undone.')) {
+    return;
+  }
+
+  try {
+    const token = getAuthToken();
+    const response = await fetch(`https://pay.bmgone.com/api/comparison/questions/${featureId}/delete`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error || `HTTP ${response.status}`);
+    }
+
+    showStatus('✅ Question deleted successfully!', 'success');
+    loadQuestions();
+  } catch (error) {
+    console.error('Delete question error:', error);
+    showStatus(`❌ Error: ${error.message}`, 'error');
+  }
+}
+
 function showStatus(msg, type) {
   const el = document.getElementById('statusMsg');
   el.textContent = msg;
@@ -769,9 +798,10 @@ function renderPlansTable() {
         </span>
       </td>
       <td>
-        <div class="action-btns">
+        <div class="action-btns" style="display:flex;gap:6px;flex-wrap:wrap;">
           <button class="btn-sm btn-edit" onclick="openEditPlanModal('${p.plan_id}')">Edit</button>
           <button class="btn-sm btn-toggle" onclick="togglePlan('${p.plan_id}', ${p.is_active ? 'true' : 'false'})">${p.is_active ? 'Hide' : 'Show'}</button>
+          <button class="btn-sm" style="background:#EF5350;color:#fff;" onclick="deletePlan('${p.plan_id}')">Delete</button>
         </div>
       </td>
     </tr>
@@ -981,6 +1011,37 @@ async function togglePlan(planId, isCurrentlyActive) {
   } catch (error) {
     console.error('Toggle plan error:', error);
     showStatus('❌ Error toggling plan', 'error');
+  }
+}
+
+async function deletePlan(planId) {
+  const plan = plans.find(p => p.plan_id === planId);
+  const planName = plan ? `${plan.plan_name} - ${plan.plan_product_name}` : 'this plan';
+
+  if (!confirm(`⚠️ Are you sure you want to delete "${planName}"? This action cannot be undone.`)) {
+    return;
+  }
+
+  try {
+    const token = getAuthToken();
+    const response = await fetch(`https://pay.bmgone.com/api/plans/${planId}/delete`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error || `HTTP ${response.status}`);
+    }
+
+    showStatus('✅ Plan deleted successfully!', 'success');
+    loadPlans();
+  } catch (error) {
+    console.error('Delete plan error:', error);
+    showStatus(`❌ Error: ${error.message}`, 'error');
   }
 }
 

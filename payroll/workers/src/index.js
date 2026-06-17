@@ -1786,6 +1786,58 @@ router.post('/api/comparison/questions/toggle', async (request, env) => {
     }
 });
 
+router.post('/api/comparison/questions/:feature_id/delete', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        // Check if user is manager+
+        if (!['manager', 'admin', 'master_admin'].includes(user.role)) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Only managers can manage questions' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        const { feature_id } = request.params;
+
+        if (!feature_id) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'feature_id is required' }),
+                { status: 400, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        // Soft delete: set is_active = 0
+        await env.DB.prepare(`
+            UPDATE comparison_features
+            SET is_active = 0, updated_at = datetime('now')
+            WHERE feature_id = ?
+        `).bind(feature_id).run();
+
+        return withCors(new Response(
+            JSON.stringify({
+                success: true,
+                message: 'Question deleted successfully',
+                feature_id: feature_id
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+
+    } catch (error) {
+        console.error('Delete question error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
 // Logo Upload Endpoint
 router.post('/api/upload-logo', async (request, env) => {
     try {
@@ -2022,6 +2074,49 @@ router.post('/api/plans/:plan_id/toggle', async (request, env) => {
         ));
     } catch (error) {
         console.error('Toggle plan error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
+router.post('/api/plans/:plan_id/delete', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user || !['admin', 'master_admin'].includes(user.role)) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        const { plan_id } = request.params;
+
+        if (!plan_id) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'plan_id is required' }),
+                { status: 400, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        // Soft delete: set is_active = 0
+        await env.DB.prepare(`
+            UPDATE insurance_plans
+            SET is_active = 0, updated_at = datetime('now')
+            WHERE plan_id = ?
+        `).bind(plan_id).run();
+
+        return withCors(new Response(
+            JSON.stringify({
+                success: true,
+                plan_id: plan_id,
+                message: 'Plan deleted successfully'
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+    } catch (error) {
+        console.error('Delete plan error:', error);
         return withCors(new Response(
             JSON.stringify({ error: error.message }),
             { status: 500, headers: { 'Content-Type': 'application/json' } }
