@@ -305,6 +305,20 @@
                 </div>
             </div>
 
+            <!-- Export Questions Card (Manager+) -->
+            <div class="dashboard-card admin-card" id="exportQuestionsCard" style="display: none;">
+                <div class="card-header">
+                    <h2 class="card-title">Export Questions</h2>
+                    <span style="font-size: 2rem;">📥</span>
+                </div>
+                <div style="text-align: center; padding: 2rem 1rem;">
+                    <p style="color: #6b7280; margin-bottom: 1.5rem;">Export all questions and provider responses to Excel.</p>
+                    <button onclick="openExportQuestions()" class="btn-submit" style="width: 100%; padding: 0.75rem;">
+                        Export to Excel
+                    </button>
+                </div>
+            </div>
+
             <!-- Data Migration Card (Admin Only) -->
             <div class="dashboard-card admin-card" id="dataMigrationCard" style="display: none;">
                 <div class="card-header">
@@ -635,7 +649,8 @@
             document.getElementById('userAvatar').textContent = `${employee.first_name[0]}${employee.last_name[0]}`;
             
             // Show admin navigation and cards for admins
-            if (employee.role === 'admin' || employee.role === 'master_admin') {
+            // Show admin/manager cards for non-staff roles
+            if (['manager', 'admin', 'master_admin'].includes(employee.role)) {
                 document.getElementById('adminNav').style.display = 'block';
                 // Show all admin cards
                 document.querySelectorAll('.admin-card').forEach(card => {
@@ -977,6 +992,15 @@
                 : 'https://pay.bmgone.com/questions-admin.html';
 
             window.location.href = manageQuestionsPath;
+        }
+
+        function openExportQuestions() {
+            // Navigate to export questions page - only for manager+
+            const exportPath = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                ? '/export-questions.html'
+                : 'https://pay.bmgone.com/export-questions.html';
+
+            window.location.href = exportPath;
         }
 
         function openDataMigration() {
