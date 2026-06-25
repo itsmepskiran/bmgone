@@ -1812,11 +1812,45 @@ router.post('/api/comparison/questions/bulk-replace', async (request, env) => {
             ));
         }
 
+        // Ensure comparison_sections are seeded (FK dependency for features)
+        const sectionSeeds = [
+            ['tier1', 1, 'TIER 1 — THE FOUNDATION | Deal Breakers', '#263238', 1],
+            ['tier2', 2, 'TIER 2 — WAITING PERIODS | Hidden Traps', '#37474F', 2],
+            ['tier3', 3, 'TIER 3 — RESTORATION & BONUS | Long Term Value', '#455A64', 3],
+            ['tier4', 4, 'TIER 4 — ADDITIONAL BENEFITS | What Makes a Plan Stand Out', '#546E7A', 4],
+            ['tier5', 5, 'TIER 5 — MATERNITY & NEW BORN BENEFITS', '#607D8B', 5],
+            ['tier6', 6, 'TIER 6 — SPECIAL / UNIQUE FEATURES', '#78909C', 6],
+        ];
+        for (const [sid, tn, sl, sc, so] of sectionSeeds) {
+            await env.DB.prepare(`
+                INSERT OR IGNORE INTO comparison_sections (section_id, tier_number, section_label, section_color, sort_order)
+                VALUES (?, ?, ?, ?, ?)
+            `).bind(sid, tn, sl, sc, so).run();
+        }
+
+        // Ensure comparison_brands are seeded (FK dependency for values)
+        const brandSeeds = [
+            ['ab', 'Aditya Birla', 'Activ One Max', '₹10,271', '#B71C1C', '#FFF5F5', '#FFCDD2', 'linear-gradient(135deg,#B71C1C,#E53935)', 1],
+            ['ic', 'ICICI Lombard', 'Elevate', '₹12,213', '#BF360C', '#FFF3EE', '#FFCCBC', 'linear-gradient(135deg,#BF360C,#FF5722)', 2],
+            ['star', 'Star Health', 'Super Star', '₹11,500', '#0D47A1', '#EEF3FF', '#BBDEFB', 'linear-gradient(135deg,#0D47A1,#1976D2)', 3],
+            ['care', 'Care Health', 'Care Supreme', '₹9,800', '#E65100', '#FFFDE7', '#FFE082', 'linear-gradient(135deg,#E65100,#F9A825)', 4],
+            ['tata', 'Tata AIG', 'Medicare Select', '₹13,200', '#1A237E', '#F0F0FF', '#9FA8DA', 'linear-gradient(135deg,#1A237E,#3949AB)', 5],
+        ];
+        for (const [bid, bn, pn, pd, cd, cl, cm, gr, so] of brandSeeds) {
+            await env.DB.prepare(`
+                INSERT OR IGNORE INTO comparison_brands (brand_id, brand_name, plan_name, premium_default, color_dark, color_light, color_mid, gradient, sort_order)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `).bind(bid, bn, pn, pd, cd, cl, cm, gr, so).run();
+        }
+
+        // Fetch the valid brand_ids actually in comparison_brands
+        const brandsResult = await env.DB.prepare(`SELECT brand_id FROM comparison_brands`).all();
+        const validBrands = brandsResult.results.map(b => b.brand_id);
+
         // Clear all existing features and their values
         await env.DB.prepare('DELETE FROM comparison_values').run();
         await env.DB.prepare('DELETE FROM comparison_features').run();
 
-        const BRANDS = ['ab', 'ic', 'star', 'care', 'tata'];
         let inserted = 0;
 
         for (const q of questions) {
@@ -1831,7 +1865,7 @@ router.post('/api/comparison/questions/bulk-replace', async (request, env) => {
             `).bind(feature_id, feature_label, section_id, activeVal).run();
 
             if (values && typeof values === 'object') {
-                for (const brand of BRANDS) {
+                for (const brand of validBrands) {
                     const valueType = values[brand];
                     const noteValue = (notes && notes[brand]) ? notes[brand] : '';
                     if (valueType && ['Y', 'N', 'E'].includes(valueType)) {
