@@ -1828,22 +1828,51 @@ router.post('/api/comparison/questions/bulk-replace', async (request, env) => {
             `).bind(sid, tn, sl, sc, so).run();
         }
 
-        // Ensure comparison_brands are seeded (FK dependency for values)
-        const brandSeeds = [
-            ['ab', 'Aditya Birla', 'Activ One Max', '₹10,271', '#B71C1C', '#FFF5F5', '#FFCDD2', 'linear-gradient(135deg,#B71C1C,#E53935)', 1],
-            ['ic', 'ICICI Lombard', 'Elevate', '₹12,213', '#BF360C', '#FFF3EE', '#FFCCBC', 'linear-gradient(135deg,#BF360C,#FF5722)', 2],
-            ['star', 'Star Health', 'Super Star', '₹11,500', '#0D47A1', '#EEF3FF', '#BBDEFB', 'linear-gradient(135deg,#0D47A1,#1976D2)', 3],
-            ['care', 'Care Health', 'Care Supreme', '₹9,800', '#E65100', '#FFFDE7', '#FFE082', 'linear-gradient(135deg,#E65100,#F9A825)', 4],
-            ['tata', 'Tata AIG', 'Medicare Select', '₹13,200', '#1A237E', '#F0F0FF', '#9FA8DA', 'linear-gradient(135deg,#1A237E,#3949AB)', 5],
-        ];
-        for (const [bid, bn, pn, pd, cd, cl, cm, gr, so] of brandSeeds) {
+        // Ensure comparison_brands table exists and is synced from insurance_plans
+        await env.DB.prepare(`
+            CREATE TABLE IF NOT EXISTS comparison_brands (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                brand_id TEXT UNIQUE NOT NULL,
+                brand_name TEXT NOT NULL,
+                plan_name TEXT,
+                premium_default TEXT,
+                color_dark TEXT DEFAULT '#000000',
+                color_light TEXT DEFAULT '#FFFFFF',
+                color_mid TEXT DEFAULT '#CCCCCC',
+                gradient TEXT DEFAULT '',
+                logo_url TEXT,
+                is_active BOOLEAN DEFAULT 1,
+                sort_order INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `).run();
+
+        const plansForBrands = await env.DB.prepare(`
+            SELECT plan_code, plan_name, plan_product_name, premium,
+                   brand_color_dark, brand_color_light, brand_color_mid, brand_gradient, logo_url
+            FROM insurance_plans ORDER BY plan_name
+        `).all();
+        let brandSortOrder = 1;
+        for (const plan of plansForBrands.results || []) {
             await env.DB.prepare(`
-                INSERT OR IGNORE INTO comparison_brands (brand_id, brand_name, plan_name, premium_default, color_dark, color_light, color_mid, gradient, sort_order)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-            `).bind(bid, bn, pn, pd, cd, cl, cm, gr, so).run();
+                INSERT OR IGNORE INTO comparison_brands (brand_id, brand_name, plan_name, premium_default, color_dark, color_light, color_mid, gradient, logo_url, sort_order)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `).bind(
+                plan.plan_code,
+                plan.plan_name,
+                plan.plan_product_name || '',
+                plan.premium ? `₹${Math.round(Number(plan.premium)).toLocaleString()}` : '',
+                plan.brand_color_dark || '#000000',
+                plan.brand_color_light || '#FFFFFF',
+                plan.brand_color_mid || '#CCCCCC',
+                plan.brand_gradient || '',
+                plan.logo_url || '',
+                brandSortOrder++
+            ).run();
         }
 
-        // Fetch the valid brand_ids actually in comparison_brands
+        // Fetch the valid brand_ids from comparison_brands (now synced with insurance_plans)
         const brandsResult = await env.DB.prepare(`SELECT brand_id FROM comparison_brands`).all();
         const validBrands = brandsResult.results.map(b => b.brand_id);
 
