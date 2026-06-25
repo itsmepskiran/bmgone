@@ -6,7 +6,8 @@
   "scripts": {
     "start": "python -m http.server 8080",
     "dev": "python -m http.server 8080",
-    "build": "exit 0",
+    "build": "cd payroll && npm install",
+    "deploy": "cd payroll && npx wrangler deploy --env production",
     "serve": "python -m http.server 8080"
   },
   "keywords": [
