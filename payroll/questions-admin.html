@@ -86,6 +86,7 @@ tr:hover{background:#F5F5F5;}
     <table>
       <thead>
         <tr>
+          <th style="width:50px;text-align:center;">S.No</th>
           <th style="width:300px;">Question</th>
           <th style="width:100px;">Section</th>
           <th id="providerResponsesHeader" style="width:350px;">Provider Responses</th>
@@ -94,7 +95,7 @@ tr:hover{background:#F5F5F5;}
         </tr>
       </thead>
       <tbody id="questionsTable">
-        <tr><td colspan="5" style="text-align:center;padding:40px;color:#999;">Loading questions...</td></tr>
+        <tr><td colspan="6" style="text-align:center;padding:40px;color:#999;">Loading questions...</td></tr>
       </tbody>
     </table>
   </div>
@@ -320,9 +321,10 @@ tr:hover{background:#F5F5F5;}
     </div>
 
     <div class="form-group">
-      <label>Select Excel File (.xlsx)</label>
+      <label>Select Excel / CSV File</label>
       <input type="file" id="importFileInput" accept=".xlsx,.xls,.csv" style="padding:10px;border:1.5px solid #E0E0E0;border-radius:6px;width:100%;font-size:13px;"/>
       <div id="importColumnsHint" style="font-size:11px;color:#999;margin-top:4px;">Expected columns: Feature ID, Question, Section, {provider} (Response), {provider} (Notes), ..., Active</div>
+      <button type="button" onclick="downloadSampleCSV()" style="margin-top:8px;padding:6px 14px;background:#0D47A1;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:700;cursor:pointer;">📥 Download Sample CSV</button>
     </div>
 
     <div id="importPreview" style="display:none;">
@@ -331,16 +333,11 @@ tr:hover{background:#F5F5F5;}
       </div>
       <div style="max-height:240px;overflow-y:auto;border:1px solid #E0E0E0;border-radius:6px;">
         <table style="width:100%;border-collapse:collapse;font-size:12px;">
-          <thead>
+          <thead id="importPreviewHead">
             <tr style="background:#1B2631;color:#CFD8DC;">
               <th style="padding:8px;text-align:left;">Feature ID</th>
               <th style="padding:8px;text-align:left;">Question</th>
               <th style="padding:8px;text-align:left;">Section</th>
-              <th style="padding:8px;text-align:center;">AB</th>
-              <th style="padding:8px;text-align:center;">Care</th>
-              <th style="padding:8px;text-align:center;">IC</th>
-              <th style="padding:8px;text-align:center;">Star</th>
-              <th style="padding:8px;text-align:center;">Tata</th>
             </tr>
           </thead>
           <tbody id="importPreviewTable"></tbody>
@@ -380,9 +377,10 @@ async function initializeProviders() {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const allPlans = await response.json();
-    PROVIDERS = allPlans.map(p => p.plan_code);
+    const activePlans = allPlans.filter(p => p.is_active);
+    PROVIDERS = activePlans.map(p => p.plan_code);
     PROVIDER_LABELS = {};
-    allPlans.forEach(p => {
+    activePlans.forEach(p => {
       PROVIDER_LABELS[p.plan_code] = p.plan_name;
     });
 
@@ -458,15 +456,16 @@ function renderTable() {
   }
 
   if (questions.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:#999;">No questions yet. Click "Add New Question" to get started.</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:40px;color:#999;">No questions yet. Click "Add New Question" to get started.</td></tr>';
     return;
   }
 
-  tbody.innerHTML = questions.map(q => {
+  tbody.innerHTML = questions.map((q, idx) => {
     const vals = q.values || {};
     const notes = q.notes || {};
     return `
       <tr>
+        <td style="text-align:center;font-weight:700;color:#666;font-size:13px;">${idx + 1}</td>
         <td class="question-cell">${q.feature_label}</td>
         <td><span class="section-badge">${q.section_id}</span></td>
         <td>
@@ -1227,6 +1226,16 @@ function handleImportFileSelect(file) {
         `✅ Found ${parsedImportData.length} valid questions to import${errors.length ? ` (${errors.length} rows skipped)` : ''}.`;
 
       const discoveredProviders = Object.keys(providerCols);
+
+      // Update preview table header dynamically
+      const previewHead = document.querySelector('#importPreviewHead tr');
+      previewHead.innerHTML = `
+        <th style="padding:8px;text-align:left;">Feature ID</th>
+        <th style="padding:8px;text-align:left;">Question</th>
+        <th style="padding:8px;text-align:left;">Section</th>
+        ${discoveredProviders.map(bid => `<th style="padding:8px;text-align:center;">${bid.toUpperCase()}</th>`).join('')}
+      `;
+
       const tbody = document.getElementById('importPreviewTable');
       tbody.innerHTML = parsedImportData.map(q => {
         const pv = (code) => {
@@ -1303,6 +1312,26 @@ async function confirmImport() {
     btn.disabled = false;
     btn.textContent = '✅ Replace All Questions';
   }
+}
+
+function downloadSampleCSV() {
+  const providers = PROVIDERS.length > 0 ? PROVIDERS : ['ab', 'ic', 'ca', 'st', 'ta'];
+  const provCols = providers.flatMap(p => [`${p} (Response)`, `${p} (Notes)`]).join(',');
+  const sampleValues = providers.flatMap(() => ['Y', '']).join(',');
+  const csv = [
+    `Feature ID,Question,Section,${provCols},Active`,
+    `inpatient,"In-patient Treatment",tier1,${sampleValues},Yes`,
+    `daycare,"Day Care Procedures",tier1,${providers.flatMap(() => ['N', '']).join(',')},Yes`,
+  ].join('\n');
+
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'sample-questions-import.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(link.href);
 }
 
 // Setup logo file input handler

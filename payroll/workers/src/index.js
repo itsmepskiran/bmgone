@@ -2255,12 +2255,27 @@ router.post('/api/plans/:plan_id/delete', async (request, env) => {
             ));
         }
 
+        // Get plan_code before soft-deleting so we can clean up comparison data
+        const planRow = await env.DB.prepare(`SELECT plan_code FROM insurance_plans WHERE plan_id = ?`).bind(plan_id).first();
+        const planCode = planRow?.plan_code;
+
         // Soft delete: set is_active = 0
         await env.DB.prepare(`
             UPDATE insurance_plans
             SET is_active = 0, updated_at = datetime('now')
             WHERE plan_id = ?
         `).bind(plan_id).run();
+
+        // Clean up comparison data for this brand so no ghost columns appear
+        if (planCode) {
+            for (const sql of [
+                `DELETE FROM comparison_answers WHERE brand_id = ?`,
+                `DELETE FROM comparison_values WHERE brand_id = ?`,
+                `DELETE FROM comparison_brands WHERE brand_id = ?`,
+            ]) {
+                try { await env.DB.prepare(sql).bind(planCode).run(); } catch (e) { /* table may not exist */ }
+            }
+        }
 
         return withCors(new Response(
             JSON.stringify({
