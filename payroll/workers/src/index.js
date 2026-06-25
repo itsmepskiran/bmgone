@@ -1876,11 +1876,21 @@ router.post('/api/comparison/questions/bulk-replace', async (request, env) => {
         const brandsResult = await env.DB.prepare(`SELECT brand_id FROM comparison_brands`).all();
         const validBrands = brandsResult.results.map(b => b.brand_id);
 
-        // Clear all existing features and their values
-        // comparison_answers must be deleted first — it has FK to both comparison_features and comparison_brands
-        await env.DB.prepare('DELETE FROM comparison_answers').run();
-        await env.DB.prepare('DELETE FROM comparison_values').run();
-        await env.DB.prepare('DELETE FROM comparison_features').run();
+        // Backward-compatibility alias map: old export brand IDs → current brand IDs
+        const brandAliases = { 'care': 'ca', 'star': 'st', 'tata': 'ta' };
+
+        // Clear all existing features and their values.
+        // Delete in FK dependency order — comparison_answers references both
+        // comparison_features and comparison_brands, so it must go first.
+        const tablesToClear = ['comparison_answers', 'comparison_values', 'comparison_features'];
+        for (const tbl of tablesToClear) {
+            try {
+                await env.DB.prepare(`DELETE FROM ${tbl}`).run();
+            } catch (e) {
+                // Table may not exist in all environments — safe to ignore
+                console.warn(`Could not clear ${tbl}: ${e.message}`);
+            }
+        }
 
         let inserted = 0;
 
@@ -1897,8 +1907,10 @@ router.post('/api/comparison/questions/bulk-replace', async (request, env) => {
 
             if (values && typeof values === 'object') {
                 for (const brand of validBrands) {
-                    const valueType = values[brand];
-                    const noteValue = (notes && notes[brand]) ? notes[brand] : '';
+                    // Check direct match first, then fall back to alias (e.g. 'care' → 'ca')
+                    const oldBrand = Object.keys(brandAliases).find(k => brandAliases[k] === brand);
+                    const valueType = values[brand] ?? (oldBrand ? values[oldBrand] : undefined);
+                    const noteValue = (notes && (notes[brand] ?? (oldBrand ? notes[oldBrand] : undefined))) || '';
                     if (valueType && ['Y', 'N', 'E'].includes(valueType)) {
                         await env.DB.prepare(`
                             INSERT INTO comparison_values (feature_id, brand_id, value_type, notes)
