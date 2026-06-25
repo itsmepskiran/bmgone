@@ -1877,6 +1877,8 @@ router.post('/api/comparison/questions/bulk-replace', async (request, env) => {
         const validBrands = brandsResult.results.map(b => b.brand_id);
 
         // Clear all existing features and their values
+        // comparison_answers must be deleted first — it has FK to both comparison_features and comparison_brands
+        await env.DB.prepare('DELETE FROM comparison_answers').run();
         await env.DB.prepare('DELETE FROM comparison_values').run();
         await env.DB.prepare('DELETE FROM comparison_features').run();
 

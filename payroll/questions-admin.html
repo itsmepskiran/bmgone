@@ -321,8 +321,8 @@ tr:hover{background:#F5F5F5;}
 
     <div class="form-group">
       <label>Select Excel File (.xlsx)</label>
-      <input type="file" id="importFileInput" accept=".xlsx,.xls" style="padding:10px;border:1.5px solid #E0E0E0;border-radius:6px;width:100%;font-size:13px;"/>
-      <div style="font-size:11px;color:#999;margin-top:4px;">Expected columns: Feature ID, Question, Section, ab (Response), ab (Notes), care (Response), care (Notes), ic (Response), ic (Notes), star (Response), star (Notes), tata (Response), tata (Notes), Active</div>
+      <input type="file" id="importFileInput" accept=".xlsx,.xls,.csv" style="padding:10px;border:1.5px solid #E0E0E0;border-radius:6px;width:100%;font-size:13px;"/>
+      <div id="importColumnsHint" style="font-size:11px;color:#999;margin-top:4px;">Expected columns: Feature ID, Question, Section, {provider} (Response), {provider} (Notes), ..., Active</div>
     </div>
 
     <div id="importPreview" style="display:none;">
@@ -387,6 +387,11 @@ async function initializeProviders() {
     });
 
     console.log(`✅ Loaded ${PROVIDERS.length} providers: ${PROVIDERS.join(', ')}`);
+    const hint = document.getElementById('importColumnsHint');
+    if (hint && PROVIDERS.length > 0) {
+      const provCols = PROVIDERS.flatMap(p => [`${p} (Response)`, `${p} (Notes)`]).join(', ');
+      hint.textContent = `Expected columns: Feature ID, Question, Section, ${provCols}, Active`;
+    }
   } catch (error) {
     console.error('Error loading providers:', error);
   }
