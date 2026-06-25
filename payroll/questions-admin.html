@@ -78,8 +78,9 @@ tr:hover{background:#F5F5F5;}
 
 <!-- QUESTIONS SECTION -->
 <div id="questionsSection" style="display:block;">
-  <div style="margin-bottom:10px;">
+  <div style="margin-bottom:10px;display:flex;gap:10px;flex-wrap:wrap;">
     <button class="btn btn-add" onclick="openAddQuestionModal()">➕ Add New Question</button>
+    <button class="btn" style="background:#6A1B9A;" onclick="openImportModal()">📤 Import Excel</button>
   </div>
   <div class="table-wrap">
     <table>
@@ -309,6 +310,54 @@ tr:hover{background:#F5F5F5;}
   </div>
 </div>
 
+<!-- EXCEL IMPORT MODAL -->
+<div id="importModal" class="modal">
+  <div class="modal-content" style="max-width:700px;">
+    <div class="modal-header">📤 Import Questions from Excel</div>
+
+    <div style="background:#FFF3E0;border:1px solid #FFB74D;border-radius:6px;padding:12px;margin-bottom:16px;font-size:13px;color:#E65100;">
+      ⚠️ <strong>This will REPLACE all existing questions</strong> with data from the Excel file. This action cannot be undone.
+    </div>
+
+    <div class="form-group">
+      <label>Select Excel File (.xlsx)</label>
+      <input type="file" id="importFileInput" accept=".xlsx,.xls" style="padding:10px;border:1.5px solid #E0E0E0;border-radius:6px;width:100%;font-size:13px;"/>
+      <div style="font-size:11px;color:#999;margin-top:4px;">Expected columns: Feature ID, Question, Section, ab (Response), ab (Notes), care (Response), care (Notes), ic (Response), ic (Notes), star (Response), star (Notes), tata (Response), tata (Notes), Active</div>
+    </div>
+
+    <div id="importPreview" style="display:none;">
+      <div style="background:#E8F5E9;border:1px solid #4CAF50;border-radius:6px;padding:12px;margin-bottom:12px;font-size:13px;color:#1B5E20;">
+        <strong id="importPreviewCount"></strong>
+      </div>
+      <div style="max-height:240px;overflow-y:auto;border:1px solid #E0E0E0;border-radius:6px;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+          <thead>
+            <tr style="background:#1B2631;color:#CFD8DC;">
+              <th style="padding:8px;text-align:left;">Feature ID</th>
+              <th style="padding:8px;text-align:left;">Question</th>
+              <th style="padding:8px;text-align:left;">Section</th>
+              <th style="padding:8px;text-align:center;">AB</th>
+              <th style="padding:8px;text-align:center;">Care</th>
+              <th style="padding:8px;text-align:center;">IC</th>
+              <th style="padding:8px;text-align:center;">Star</th>
+              <th style="padding:8px;text-align:center;">Tata</th>
+            </tr>
+          </thead>
+          <tbody id="importPreviewTable"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="importError" style="display:none;background:#FFEBEE;border:1px solid #EF5350;border-radius:6px;padding:12px;margin-top:12px;font-size:13px;color:#B71C1C;"></div>
+
+    <div class="modal-footer">
+      <button class="btn" style="background:#999;" onclick="closeImportModal()">Cancel</button>
+      <button class="btn" id="importConfirmBtn" style="background:#6A1B9A;display:none;" onclick="confirmImport()">✅ Replace All Questions</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 let questions = [];
 let plans = [];
@@ -1045,6 +1094,201 @@ async function deletePlan(planId) {
   } catch (error) {
     console.error('Delete plan error:', error);
     showStatus(`❌ Error: ${error.message}`, 'error');
+  }
+}
+
+// ===== EXCEL IMPORT FUNCTIONS =====
+let parsedImportData = [];
+
+function openImportModal() {
+  parsedImportData = [];
+  document.getElementById('importFileInput').value = '';
+  document.getElementById('importPreview').style.display = 'none';
+  document.getElementById('importError').style.display = 'none';
+  document.getElementById('importConfirmBtn').style.display = 'none';
+  document.getElementById('importModal').classList.add('active');
+}
+
+function closeImportModal() {
+  document.getElementById('importModal').classList.remove('active');
+}
+
+document.addEventListener('change', function(e) {
+  if (e.target.id === 'importFileInput') {
+    handleImportFileSelect(e.target.files[0]);
+  }
+});
+
+function handleImportFileSelect(file) {
+  if (!file) return;
+
+  const errorEl = document.getElementById('importError');
+  const previewEl = document.getElementById('importPreview');
+  errorEl.style.display = 'none';
+  previewEl.style.display = 'none';
+  document.getElementById('importConfirmBtn').style.display = 'none';
+
+  if (!file.name.match(/\.(xlsx|xls)$/i)) {
+    errorEl.textContent = '❌ Please select a valid Excel file (.xlsx or .xls)';
+    errorEl.style.display = 'block';
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = new Uint8Array(e.target.result);
+      const workbook = XLSX.read(data, { type: 'array' });
+      const sheet = workbook.Sheets[workbook.SheetNames[0]];
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+
+      if (rows.length < 2) {
+        errorEl.textContent = '❌ Excel file has no data rows.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      // Column mapping based on expected header:
+      // 0: Feature ID, 1: Question, 2: Section,
+      // 3: ab Response, 4: ab Notes,
+      // 5: care Response, 6: care Notes,
+      // 7: ic Response, 8: ic Notes,
+      // 9: star Response, 10: star Notes,
+      // 11: tata Response, 12: tata Notes,
+      // 13: Active
+      parsedImportData = [];
+      const errors = [];
+
+      for (let i = 1; i < rows.length; i++) {
+        const row = rows[i];
+        const featureId = String(row[0] || '').trim();
+        const featureLabel = String(row[1] || '').trim();
+        const sectionId = String(row[2] || '').trim();
+
+        if (!featureId || !featureLabel || !sectionId) {
+          if (featureId || featureLabel) {
+            errors.push(`Row ${i + 1}: Missing Feature ID, Question, or Section`);
+          }
+          continue;
+        }
+
+        const validSections = ['tier1','tier2','tier3','tier4','tier5','tier6'];
+        if (!validSections.includes(sectionId)) {
+          errors.push(`Row ${i + 1} (${featureId}): Invalid section "${sectionId}"`);
+          continue;
+        }
+
+        const abResp = String(row[3] || '').trim().toUpperCase();
+        const abNote = String(row[4] || '').trim();
+        const careResp = String(row[5] || '').trim().toUpperCase();
+        const careNote = String(row[6] || '').trim();
+        const icResp = String(row[7] || '').trim().toUpperCase();
+        const icNote = String(row[8] || '').trim();
+        const starResp = String(row[9] || '').trim().toUpperCase();
+        const starNote = String(row[10] || '').trim();
+        const tataResp = String(row[11] || '').trim().toUpperCase();
+        const tataNote = String(row[12] || '').trim();
+        const activeRaw = String(row[13] || 'Yes').trim().toLowerCase();
+        const isActive = activeRaw !== 'no' && activeRaw !== '0' && activeRaw !== 'false';
+
+        const values = {};
+        const notes = {};
+        const validValues = ['Y', 'N', 'E'];
+
+        if (validValues.includes(abResp)) { values['ab'] = abResp; notes['ab'] = abNote; }
+        if (validValues.includes(careResp)) { values['care'] = careResp; notes['care'] = careNote; }
+        if (validValues.includes(icResp)) { values['ic'] = icResp; notes['ic'] = icNote; }
+        if (validValues.includes(starResp)) { values['star'] = starResp; notes['star'] = starNote; }
+        if (validValues.includes(tataResp)) { values['tata'] = tataResp; notes['tata'] = tataNote; }
+
+        parsedImportData.push({ feature_id: featureId, feature_label: featureLabel, section_id: sectionId, values, notes, is_active: isActive });
+      }
+
+      if (parsedImportData.length === 0) {
+        errorEl.textContent = '❌ No valid questions found in the file. Check column format.';
+        errorEl.style.display = 'block';
+        return;
+      }
+
+      // Show preview
+      document.getElementById('importPreviewCount').textContent =
+        `✅ Found ${parsedImportData.length} valid questions to import${errors.length ? ` (${errors.length} rows skipped)` : ''}.`;
+
+      const tbody = document.getElementById('importPreviewTable');
+      tbody.innerHTML = parsedImportData.map(q => {
+        const pv = (code) => {
+          const v = q.values[code] || '';
+          const cls = v === 'Y' ? 'prov-y' : v === 'N' ? 'prov-n' : v === 'E' ? 'prov-e' : '';
+          return `<td style="text-align:center;padding:6px;"><span class="provider-cell ${cls}" style="display:inline-block;min-width:24px;padding:2px 6px;font-size:11px;">${v || '-'}</span></td>`;
+        };
+        return `<tr>
+          <td style="padding:6px;font-size:11px;color:#666;">${q.feature_id}</td>
+          <td style="padding:6px;">${q.feature_label}</td>
+          <td style="padding:6px;"><span class="section-badge">${q.section_id}</span></td>
+          ${pv('ab')}${pv('care')}${pv('ic')}${pv('star')}${pv('tata')}
+        </tr>`;
+      }).join('');
+
+      previewEl.style.display = 'block';
+      document.getElementById('importConfirmBtn').style.display = 'inline-block';
+
+      if (errors.length > 0) {
+        errorEl.innerHTML = '⚠️ Skipped rows:<br>' + errors.map(e => `• ${e}`).join('<br>');
+        errorEl.style.background = '#FFF8E1';
+        errorEl.style.borderColor = '#FFB74D';
+        errorEl.style.color = '#E65100';
+        errorEl.style.display = 'block';
+      }
+
+    } catch (err) {
+      errorEl.textContent = `❌ Error parsing file: ${err.message}`;
+      errorEl.style.display = 'block';
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+async function confirmImport() {
+  if (parsedImportData.length === 0) return;
+
+  if (!confirm(`⚠️ This will DELETE all ${questions.length} existing questions and replace them with ${parsedImportData.length} questions from the Excel file.\n\nAre you sure?`)) {
+    return;
+  }
+
+  const btn = document.getElementById('importConfirmBtn');
+  btn.disabled = true;
+  btn.textContent = '⏳ Importing...';
+
+  try {
+    const token = getAuthToken();
+    const response = await fetch('https://pay.bmgone.com/api/comparison/questions/bulk-replace', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ questions: parsedImportData })
+    });
+
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error || `HTTP ${response.status}`);
+    }
+
+    const result = await response.json();
+    closeImportModal();
+    showStatus(`✅ Import successful! ${result.count} questions loaded.`, 'success');
+    await loadQuestions();
+  } catch (error) {
+    const errorEl = document.getElementById('importError');
+    errorEl.textContent = `❌ Import failed: ${error.message}`;
+    errorEl.style.background = '#FFEBEE';
+    errorEl.style.borderColor = '#EF5350';
+    errorEl.style.color = '#B71C1C';
+    errorEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✅ Replace All Questions';
   }
 }
 
