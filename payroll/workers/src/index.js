@@ -1786,6 +1786,84 @@ router.post('/api/comparison/questions/toggle', async (request, env) => {
     }
 });
 
+router.post('/api/comparison/questions/bulk-replace', async (request, env) => {
+    try {
+        const user = await authenticate(request, env);
+        if (!user) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Unauthorized' }),
+                { status: 401, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        if (!['admin', 'master_admin'].includes(user.role)) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'Only admins can bulk replace questions' }),
+                { status: 403, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        const { questions } = await request.json();
+
+        if (!questions || !Array.isArray(questions) || questions.length === 0) {
+            return withCors(new Response(
+                JSON.stringify({ error: 'questions array is required' }),
+                { status: 400, headers: { 'Content-Type': 'application/json' } }
+            ));
+        }
+
+        // Clear all existing features and their values
+        await env.DB.prepare('DELETE FROM comparison_values').run();
+        await env.DB.prepare('DELETE FROM comparison_features').run();
+
+        const BRANDS = ['ab', 'ic', 'star', 'care', 'tata'];
+        let inserted = 0;
+
+        for (const q of questions) {
+            const { feature_id, feature_label, section_id, values, notes, is_active } = q;
+            if (!feature_id || !feature_label || !section_id) continue;
+
+            const activeVal = (is_active === false || is_active === 0) ? 0 : 1;
+
+            await env.DB.prepare(`
+                INSERT INTO comparison_features (feature_id, feature_label, section_id, is_active)
+                VALUES (?, ?, ?, ?)
+            `).bind(feature_id, feature_label, section_id, activeVal).run();
+
+            if (values && typeof values === 'object') {
+                for (const brand of BRANDS) {
+                    const valueType = values[brand];
+                    const noteValue = (notes && notes[brand]) ? notes[brand] : '';
+                    if (valueType && ['Y', 'N', 'E'].includes(valueType)) {
+                        await env.DB.prepare(`
+                            INSERT INTO comparison_values (feature_id, brand_id, value_type, notes)
+                            VALUES (?, ?, ?, ?)
+                        `).bind(feature_id, brand, valueType, noteValue).run();
+                    }
+                }
+            }
+
+            inserted++;
+        }
+
+        return withCors(new Response(
+            JSON.stringify({
+                success: true,
+                message: `Replaced all questions. Imported ${inserted} questions.`,
+                count: inserted
+            }),
+            { status: 200, headers: { 'Content-Type': 'application/json' } }
+        ));
+
+    } catch (error) {
+        console.error('Bulk replace error:', error);
+        return withCors(new Response(
+            JSON.stringify({ error: error.message }),
+            { status: 500, headers: { 'Content-Type': 'application/json' } }
+        ));
+    }
+});
+
 router.post('/api/comparison/questions/:feature_id/delete', async (request, env) => {
     try {
         const user = await authenticate(request, env);
