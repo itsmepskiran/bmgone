@@ -1142,9 +1142,10 @@ function handleImportFileSelect(file) {
   reader.onload = function(e) {
     try {
       const data = new Uint8Array(e.target.result);
-      const workbook = XLSX.read(data, { type: 'array' });
+      const workbook = XLSX.read(data, { type: 'array', cellText: true, cellDates: false });
       const sheet = workbook.Sheets[workbook.SheetNames[0]];
-      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '' });
+      // raw: false → use Excel's displayed text so "10%" stays "10%", not 0.1
+      const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, defval: '', raw: false });
 
       if (rows.length < 2) {
         errorEl.textContent = '❌ Excel file has no data rows.';
@@ -1325,10 +1326,19 @@ function downloadSampleCSV() {
 
   const ws = XLSX.utils.aoa_to_sheet([headerRow, row1, row2, row3]);
 
-  // Style header row width hints
+  // Force ALL cells to Text format so Excel never auto-converts % or numbers
+  Object.keys(ws).forEach(ref => {
+    if (ref[0] === '!') return;
+    const cell = ws[ref];
+    cell.t = 's';       // string type
+    cell.z = '@';       // number format: Text
+    cell.v = cell.v !== undefined ? String(cell.v) : '';
+    delete cell.w;      // clear cached formatted value
+  });
+
   ws['!cols'] = [
     { wch: 14 }, { wch: 40 }, { wch: 8 },
-    ...provCols.map((h, i) => ({ wch: i % 2 === 0 ? 14 : 22 })),
+    ...provCols.map((_, i) => ({ wch: i % 2 === 0 ? 14 : 24 })),
     { wch: 8 }
   ];
 
