@@ -1812,11 +1812,74 @@ router.post('/api/comparison/questions/bulk-replace', async (request, env) => {
             ));
         }
 
+        // Ensure comparison_sections are seeded (FK dependency for features)
+        const sectionSeeds = [
+            ['tier1', 1, 'TIER 1 — THE FOUNDATION | Deal Breakers', '#263238', 1],
+            ['tier2', 2, 'TIER 2 — WAITING PERIODS | Hidden Traps', '#37474F', 2],
+            ['tier3', 3, 'TIER 3 — RESTORATION & BONUS | Long Term Value', '#455A64', 3],
+            ['tier4', 4, 'TIER 4 — ADDITIONAL BENEFITS | What Makes a Plan Stand Out', '#546E7A', 4],
+            ['tier5', 5, 'TIER 5 — MATERNITY & NEW BORN BENEFITS', '#607D8B', 5],
+            ['tier6', 6, 'TIER 6 — SPECIAL / UNIQUE FEATURES', '#78909C', 6],
+        ];
+        for (const [sid, tn, sl, sc, so] of sectionSeeds) {
+            await env.DB.prepare(`
+                INSERT OR IGNORE INTO comparison_sections (section_id, tier_number, section_label, section_color, sort_order)
+                VALUES (?, ?, ?, ?, ?)
+            `).bind(sid, tn, sl, sc, so).run();
+        }
+
+        // Ensure comparison_brands table exists and is synced from insurance_plans
+        await env.DB.prepare(`
+            CREATE TABLE IF NOT EXISTS comparison_brands (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                brand_id TEXT UNIQUE NOT NULL,
+                brand_name TEXT NOT NULL,
+                plan_name TEXT,
+                premium_default TEXT,
+                color_dark TEXT DEFAULT '#000000',
+                color_light TEXT DEFAULT '#FFFFFF',
+                color_mid TEXT DEFAULT '#CCCCCC',
+                gradient TEXT DEFAULT '',
+                logo_url TEXT,
+                is_active BOOLEAN DEFAULT 1,
+                sort_order INTEGER DEFAULT 0,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            )
+        `).run();
+
+        const plansForBrands = await env.DB.prepare(`
+            SELECT plan_code, plan_name, plan_product_name, premium,
+                   brand_color_dark, brand_color_light, brand_color_mid, brand_gradient, logo_url
+            FROM insurance_plans ORDER BY plan_name
+        `).all();
+        let brandSortOrder = 1;
+        for (const plan of plansForBrands.results || []) {
+            await env.DB.prepare(`
+                INSERT OR IGNORE INTO comparison_brands (brand_id, brand_name, plan_name, premium_default, color_dark, color_light, color_mid, gradient, logo_url, sort_order)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            `).bind(
+                plan.plan_code,
+                plan.plan_name,
+                plan.plan_product_name || '',
+                plan.premium ? `₹${Math.round(Number(plan.premium)).toLocaleString()}` : '',
+                plan.brand_color_dark || '#000000',
+                plan.brand_color_light || '#FFFFFF',
+                plan.brand_color_mid || '#CCCCCC',
+                plan.brand_gradient || '',
+                plan.logo_url || '',
+                brandSortOrder++
+            ).run();
+        }
+
+        // Fetch the valid brand_ids from comparison_brands (now synced with insurance_plans)
+        const brandsResult = await env.DB.prepare(`SELECT brand_id FROM comparison_brands`).all();
+        const validBrands = brandsResult.results.map(b => b.brand_id);
+
         // Clear all existing features and their values
         await env.DB.prepare('DELETE FROM comparison_values').run();
         await env.DB.prepare('DELETE FROM comparison_features').run();
 
-        const BRANDS = ['ab', 'ic', 'star', 'care', 'tata'];
         let inserted = 0;
 
         for (const q of questions) {
@@ -1831,7 +1894,7 @@ router.post('/api/comparison/questions/bulk-replace', async (request, env) => {
             `).bind(feature_id, feature_label, section_id, activeVal).run();
 
             if (values && typeof values === 'object') {
-                for (const brand of BRANDS) {
+                for (const brand of validBrands) {
                     const valueType = values[brand];
                     const noteValue = (notes && notes[brand]) ? notes[brand] : '';
                     if (valueType && ['Y', 'N', 'E'].includes(valueType)) {

@@ -1128,8 +1128,8 @@ function handleImportFileSelect(file) {
   previewEl.style.display = 'none';
   document.getElementById('importConfirmBtn').style.display = 'none';
 
-  if (!file.name.match(/\.(xlsx|xls)$/i)) {
-    errorEl.textContent = '❌ Please select a valid Excel file (.xlsx or .xls)';
+  if (!file.name.match(/\.(xlsx|xls|csv)$/i)) {
+    errorEl.textContent = '❌ Please select a valid Excel (.xlsx, .xls) or CSV file';
     errorEl.style.display = 'block';
     return;
   }
@@ -1148,14 +1148,28 @@ function handleImportFileSelect(file) {
         return;
       }
 
-      // Column mapping based on expected header:
-      // 0: Feature ID, 1: Question, 2: Section,
-      // 3: ab Response, 4: ab Notes,
-      // 5: care Response, 6: care Notes,
-      // 7: ic Response, 8: ic Notes,
-      // 9: star Response, 10: star Notes,
-      // 11: tata Response, 12: tata Notes,
-      // 13: Active
+      // Dynamically discover provider columns from header row
+      // Expected headers: "Feature ID", "Question", "Section", "{provider} (Response)", "{provider} (Notes)", ..., "Active"
+      const headerRow = rows[0].map(h => String(h || '').trim());
+      const providerCols = {}; // { brandId: { resp: colIndex, notes: colIndex } }
+      let activeColIndex = -1;
+      for (let c = 0; c < headerRow.length; c++) {
+        const h = headerRow[c];
+        const respMatch = h.match(/^(.+)\s+\(Response\)$/i);
+        const notesMatch = h.match(/^(.+)\s+\(Notes\)$/i);
+        if (respMatch) {
+          const bid = respMatch[1].trim();
+          if (!providerCols[bid]) providerCols[bid] = {};
+          providerCols[bid].resp = c;
+        } else if (notesMatch) {
+          const bid = notesMatch[1].trim();
+          if (!providerCols[bid]) providerCols[bid] = {};
+          providerCols[bid].notes = c;
+        } else if (h.toLowerCase() === 'active') {
+          activeColIndex = c;
+        }
+      }
+
       parsedImportData = [];
       const errors = [];
 
@@ -1178,28 +1192,21 @@ function handleImportFileSelect(file) {
           continue;
         }
 
-        const abResp = String(row[3] || '').trim().toUpperCase();
-        const abNote = String(row[4] || '').trim();
-        const careResp = String(row[5] || '').trim().toUpperCase();
-        const careNote = String(row[6] || '').trim();
-        const icResp = String(row[7] || '').trim().toUpperCase();
-        const icNote = String(row[8] || '').trim();
-        const starResp = String(row[9] || '').trim().toUpperCase();
-        const starNote = String(row[10] || '').trim();
-        const tataResp = String(row[11] || '').trim().toUpperCase();
-        const tataNote = String(row[12] || '').trim();
-        const activeRaw = String(row[13] || 'Yes').trim().toLowerCase();
+        const activeRaw = activeColIndex >= 0 ? String(row[activeColIndex] || 'Yes').trim().toLowerCase() : 'yes';
         const isActive = activeRaw !== 'no' && activeRaw !== '0' && activeRaw !== 'false';
 
         const values = {};
         const notes = {};
         const validValues = ['Y', 'N', 'E'];
 
-        if (validValues.includes(abResp)) { values['ab'] = abResp; notes['ab'] = abNote; }
-        if (validValues.includes(careResp)) { values['care'] = careResp; notes['care'] = careNote; }
-        if (validValues.includes(icResp)) { values['ic'] = icResp; notes['ic'] = icNote; }
-        if (validValues.includes(starResp)) { values['star'] = starResp; notes['star'] = starNote; }
-        if (validValues.includes(tataResp)) { values['tata'] = tataResp; notes['tata'] = tataNote; }
+        for (const [bid, cols] of Object.entries(providerCols)) {
+          const resp = cols.resp !== undefined ? String(row[cols.resp] || '').trim().toUpperCase() : '';
+          const note = cols.notes !== undefined ? String(row[cols.notes] || '').trim() : '';
+          if (validValues.includes(resp)) {
+            values[bid] = resp;
+            notes[bid] = note;
+          }
+        }
 
         parsedImportData.push({ feature_id: featureId, feature_label: featureLabel, section_id: sectionId, values, notes, is_active: isActive });
       }
@@ -1214,6 +1221,7 @@ function handleImportFileSelect(file) {
       document.getElementById('importPreviewCount').textContent =
         `✅ Found ${parsedImportData.length} valid questions to import${errors.length ? ` (${errors.length} rows skipped)` : ''}.`;
 
+      const discoveredProviders = Object.keys(providerCols);
       const tbody = document.getElementById('importPreviewTable');
       tbody.innerHTML = parsedImportData.map(q => {
         const pv = (code) => {
@@ -1225,7 +1233,7 @@ function handleImportFileSelect(file) {
           <td style="padding:6px;font-size:11px;color:#666;">${q.feature_id}</td>
           <td style="padding:6px;">${q.feature_label}</td>
           <td style="padding:6px;"><span class="section-badge">${q.section_id}</span></td>
-          ${pv('ab')}${pv('care')}${pv('ic')}${pv('star')}${pv('tata')}
+          ${discoveredProviders.map(bid => pv(bid)).join('')}
         </tr>`;
       }).join('');
 
