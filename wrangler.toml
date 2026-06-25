@@ -1,6 +1,6 @@
 # Cloudflare Workers Configuration for Payroll API
 # This config is for Workers deployment
-name = "bmgone-payroll-api-new-production"
+name = "bmgone-payroll-production"
 main = "payroll/workers/src/index.js"
 compatibility_date = "2024-09-23"
 compatibility_flags = ["nodejs_compat"]
