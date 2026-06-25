@@ -1490,12 +1490,12 @@ function showSaveStatus(msg,ok) {
   el.textContent=msg;
 }
 
-// ── LOAD NOTES FROM DATABASE ───────────────────────────────────────────────────
+// ── LOAD QUESTIONS & REBUILD SECTIONS FROM DATABASE ──────────────────────────
 async function loadNotesFromAPI() {
   try {
     const token = window.authToken || localStorage.getItem('token');
     if (!token) {
-      console.log('⚠️ No auth token - skipping notes load');
+      console.log('⚠️ No auth token - skipping questions load');
       return;
     }
 
@@ -1504,39 +1504,63 @@ async function loadNotesFromAPI() {
     });
 
     if (!response.ok) {
-      console.warn(`⚠️ Failed to load notes: HTTP ${response.status}`);
+      console.warn(`⚠️ Failed to load questions: HTTP ${response.status}`);
       return;
     }
 
     const data = await response.json();
-    if (!data.questions) {
+    if (!data.questions || data.questions.length === 0) {
       console.log('⚠️ No questions found in API response');
       return;
     }
 
-    // Update sections with notes from database
+    const SECTION_LABELS = {
+      tier1: 'TIER 1 — THE FOUNDATION  |  Deal Breakers',
+      tier2: 'TIER 2 — WAITING PERIODS  |  Hidden Traps',
+      tier3: 'TIER 3 — RESTORATION & BONUS  |  Long Term Value',
+      tier4: 'TIER 4 — ADDITIONAL BENEFITS  |  What Makes a Plan Stand Out',
+      tier5: 'TIER 5 — MATERNITY & NEW BORN BENEFITS',
+      tier6: 'TIER 6 — SPECIAL / UNIQUE FEATURES'
+    };
+
+    // Preserve any explain text the user may have typed
+    const existingExplain = {};
+    sections.forEach(s => s.features.forEach(f => {
+      if (f.explain) existingExplain[f.id] = f.explain;
+    }));
+
+    const sectionMap = {};
     data.questions.forEach(q => {
-      const section = sections.find(s => s.id === q.section_id);
-      if (!section) return;
-
-      const feature = section.features.find(f => f.id === q.feature_id);
-      if (!feature) return;
-
-      // Update notes for each brand (API returns notes keyed by brand_id: ab, ic, star, care, tata)
-      if (q.notes) {
-        Object.keys(q.notes).forEach((brandId) => {
-          const brandIndex = brands.findIndex(b => b.id === brandId);
-          if (brandIndex >= 0) {
-            feature.notes[brandIndex] = q.notes[brandId] || '';
-          }
-        });
+      if (!q.is_active) return;
+      if (!sectionMap[q.section_id]) {
+        sectionMap[q.section_id] = {
+          id: q.section_id,
+          label: SECTION_LABELS[q.section_id] || q.section_id.toUpperCase(),
+          features: []
+        };
       }
+      // Map values and notes by brand index so renderTableBody() works correctly
+      const vals  = brands.map(b => q.values?.[b.id] || '');
+      const notes = brands.map(b => q.notes?.[b.id]  || '');
+      sectionMap[q.section_id].features.push({
+        id:      q.feature_id,
+        label:   q.feature_label,
+        vals,
+        notes,
+        explain: existingExplain[q.feature_id] || ''
+      });
     });
 
+    // Rebuild sections in fixed tier order
+    const tierOrder = ['tier1','tier2','tier3','tier4','tier5','tier6'];
+    sections = tierOrder.filter(id => sectionMap[id]).map(id => sectionMap[id]);
+
+    renderTableHead();
     renderTableBody();
-    console.log('✅ Loaded and updated notes from database');
+    renderWinner();
+    console.log(`✅ Rebuilt ${sections.length} sections with ${data.questions.length} questions from database`);
   } catch (error) {
-    console.error('Error loading notes from API:', error);
+    console.error('Error loading questions from API:', error);
   }
 }
 

@@ -315,13 +315,8 @@
                     <h4>Questions & Answers</h4>
                     <table>
                         <thead>
-                            <tr>
+                            <tr id="previewTableHead">
                                 <th style="width: 30%;">Question</th>
-                                <th>AB</th>
-                                <th>ICICI</th>
-                                <th>Star</th>
-                                <th>Care</th>
-                                <th>Tata</th>
                             </tr>
                         </thead>
                         <tbody id="previewTable">
@@ -391,19 +386,30 @@
             }
 
             try {
-                // Decode base64
                 const decoded = atob(encodedData);
-                // Decode URI component
                 const jsonString = decodeURIComponent(escape(decoded));
-                // Parse JSON
-                decodedData = JSON.parse(jsonString);
+                const parsed = JSON.parse(jsonString);
 
-                // Validate structure
-                if (!decodedData.sections || !decodedData.brands) {
-                    throw new Error('Invalid data structure');
+                // New format from questions-admin.html: { version, providers, features }
+                if (parsed.providers && parsed.features) {
+                    const tierOrder = ['tier1','tier2','tier3','tier4','tier5','tier6'];
+                    const sectionMap = {};
+                    parsed.features.forEach(f => {
+                        const sid = f.section_id;
+                        if (!sectionMap[sid]) sectionMap[sid] = { id: sid, features: [] };
+                        sectionMap[sid].features.push({ id: f.id, label: f.label, vals: f.vals, notes: f.notes });
+                    });
+                    decodedData = {
+                        brands: parsed.providers,
+                        sections: tierOrder.filter(id => sectionMap[id]).map(id => sectionMap[id])
+                    };
+                } else if (parsed.sections && parsed.brands) {
+                    // Legacy format
+                    decodedData = parsed;
+                } else {
+                    throw new Error('Invalid data structure — expected providers+features or sections+brands');
                 }
 
-                // Display preview
                 displayPreview();
                 showMessage('✅ Data decoded successfully!', 'success');
             } catch (error) {
@@ -419,6 +425,13 @@
             document.getElementById('previewAge').textContent = decodedData.clientAge || '-';
             document.getElementById('previewMembers').textContent = decodedData.clientMembers || '-';
 
+            const importBrands = decodedData.brands || BRANDS;
+
+            // Update table header dynamically
+            const headRow = document.getElementById('previewTableHead');
+            headRow.innerHTML = `<th style="width:30%;">Question</th>` +
+                importBrands.map(b => `<th>${b.toUpperCase()}</th>`).join('');
+
             let totalQuestions = 0;
             const tbody = document.getElementById('previewTable');
             tbody.innerHTML = '';
@@ -429,7 +442,7 @@
                     const row = `
                         <tr>
                             <td><strong>${feature.label}</strong></td>
-                            ${BRANDS.map((brand, idx) => {
+                            ${importBrands.map((brand, idx) => {
                                 const val = feature.vals[idx] || '-';
                                 const className = val === 'Y' ? 'badge-y' : val === 'N' ? 'badge-n' : val === 'E' ? 'badge-e' : '';
                                 return `<td><span class="badge ${className}">${val}</span></td>`;
@@ -452,6 +465,7 @@
             }
 
             const updateExisting = document.getElementById('updateExisting').checked;
+            const importBrands = decodedData.brands || BRANDS;
 
             try {
                 showMessage('⏳ Importing data... Please wait', 'info');
@@ -460,7 +474,7 @@
                 let errorCount = 0;
                 let errors = [];
 
-                console.log('Starting import with', decodedData.sections.length, 'sections');
+                console.log('Starting import with', decodedData.sections.length, 'sections, brands:', importBrands);
 
                 // Process each section and feature
                 for (const section of decodedData.sections) {
@@ -476,8 +490,8 @@
                                 notes: {}
                             };
 
-                            // Map brand values and notes
-                            BRANDS.forEach((brand, idx) => {
+                            // Use brand list from decoded data so indices match correctly
+                            importBrands.forEach((brand, idx) => {
                                 if (feature.vals && feature.vals[idx]) {
                                     payload.values[brand] = feature.vals[idx];
                                 }
