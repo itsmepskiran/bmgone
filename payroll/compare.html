@@ -1229,16 +1229,21 @@ function renderTableBody() {
 
 function renderWinner() {
   const totalQ = sections.reduce((sum, sec) => sum + sec.features.length, 0);
-  const scores = brands.map((_, ci) => {
+  // Only score brands that are currently visible (respect provider filter)
+  const visibleBrands = brands.filter(b => selectedProviders.has(b.id));
+  if (visibleBrands.length === 0) return;
+
+  const scores = visibleBrands.map(b => {
+    const ci = brands.findIndex(x => x.id === b.id);
     let s = 0;
     sections.forEach(sec => sec.features.forEach(f => { if (f.vals[ci] === 'Y') s++; }));
     return s;
   });
   const maxS = Math.max(...scores);
-  // Pick the first brand with the highest score — no hardcoded tie-breaker
-  const wi = scores.indexOf(maxS);
-  const w = brands[wi];
-  const sc = scores[wi];
+  const wvi = scores.indexOf(maxS);   // index in visibleBrands
+  const w = visibleBrands[wvi];
+  const wi = brands.findIndex(x => x.id === w.id);  // index in full brands array (for vals/notes)
+  const sc = scores[wvi];
 
   // Build reasons dynamically: winner's 'Y' features, differentiating ones first
   const diff = [], rest = [];
@@ -1246,7 +1251,12 @@ function renderWinner() {
     if (f.vals[wi] !== 'Y') return;
     const note = (f.notes && f.notes[wi]) ? f.notes[wi] : '';
     const text = note ? `${f.label} — ${note}` : f.label;
-    const isDiff = brands.some((_, ci) => ci !== wi && f.vals[ci] !== 'Y');
+    // Differentiator = at least one OTHER visible brand doesn't have Y
+    const isDiff = visibleBrands.some((vb, vci) => {
+      if (vci === wvi) return false;
+      const oci = brands.findIndex(x => x.id === vb.id);
+      return f.vals[oci] !== 'Y';
+    });
     (isDiff ? diff : rest).push(text);
   }));
   const reasons = [...diff, ...rest].slice(0, 8);
