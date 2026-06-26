@@ -45,7 +45,10 @@
         </ol>
     </div>
 
-    <button class="btn btn-primary" onclick="exportQuestions()">📥 Export Questions to Excel</button>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="exportQuestions()">📥 Export Questions to Excel</button>
+      <button class="btn" style="background:#F57C00;" onclick="window.location.href='dashboard.html'">🔙 Back to Dashboard</button>
+    </div>
 
     <div id="preview" class="preview" style="display: none;">
         <strong>Preview (first 5 rows):</strong>
