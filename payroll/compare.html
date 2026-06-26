@@ -78,7 +78,7 @@ input[type=text],input[type=number],textarea,select{-webkit-appearance:none;-moz
 .divider-inner{background:linear-gradient(120deg,#1B2631,#263238,#1B2631);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
 /* TABLE */
 .tbl-wrap{overflow-x:auto;border-radius:14px;box-shadow:0 6px 32px rgba(0,0,0,.15);}
-table{border-collapse:collapse;width:100%;background:#fff;table-layout:fixed;border:2px solid #1B2631;}
+table{border-collapse:collapse;width:auto;background:#fff;table-layout:fixed;border:2px solid #1B2631;}
 th,td{padding:8px 8px;vertical-align:middle;border:1px solid #D0D0D0;}
 .feat-th{background:#1B2631;color:#CFD8DC;font-size:11px;font-weight:700;text-align:left;border-right:2px solid #37474F;border-bottom:2px solid #37474F;min-width:160px;}
 .expl-th{background:#263238;color:#80CBC4;font-size:12px;font-weight:700;text-align:center;border-right:2px solid #37474F;border-bottom:2px solid #37474F;line-height:1.5;}
@@ -1114,10 +1114,10 @@ function renderTableHead() {
     if (tbl) tbl.style.minWidth = (340 + visibleBrands.length * 135) + 'px';
   }
 
-  // Logo row
+  // Logo row — explanation th spans all 4 header rows vertically
   let lr = `<tr>
     <th class="feat-th">FEATURE / BENEFIT</th>
-    <th class="expl-th">📝<br/>Detailed Explanation</th>`;
+    <th class="expl-th" rowspan="4" style="vertical-align:top;padding-top:14px;">📝<br/>Detailed<br/>Explanation</th>`;
   visibleBrands.forEach((b,idx) => {
     const logoHtml = (b.logo || LOGOS[b.id]) ? `<img src="${b.logo || LOGOS[b.id]}" alt="${b.name}" style="width:90px;height:50px;object-fit:contain;border-radius:4px;"/>` : `<div style="width:90px;height:50px;background:${b.light};border:2px solid ${b.mid};border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${b.dark};">${b.name}</div>`;
     lr += `<th class="brand-th" colspan="2" style="border-right:3px solid #1B2631;border-top:6px solid ${b.dark};padding:10px 8px;background:#fff;">
@@ -1128,47 +1128,43 @@ function renderTableHead() {
   });
   lr += '</tr>';
 
-
-  // Plan name row
+  // Plan name row — no explanation td (spanned above)
   let pnr = `<tr>
-    <td style="background:#1B2631;padding:8px 10px;border-right:2px solid #37474F;border-bottom:2px solid #263238;">
-      <div style="color:#80CBC4;font-size:10px;font-weight:700;text-align:center;">Plan Name</div>
-    </td>
-    <td style="background:#263238;border-right:2px solid #37474F;border-bottom:2px solid #263238;"></td>`;
+    <td style="background:#1B2631;padding:10px 12px;border-right:2px solid #37474F;border-bottom:2px solid #263238;">
+      <div style="color:#80CBC4;font-size:14px;font-weight:700;text-align:center;">Plan Name</div>
+    </td>`;
   visibleBrands.forEach((b,i) => {
     const brandIdx = brands.findIndex(x => x.id === b.id);
     pnr += `<td class="plan-name-td" colspan="2" style="background:${b.dark};border-right:2px solid rgba(255,255,255,.25);border-bottom:2px solid rgba(0,0,0,.3);">
-      <div style="font-size:9px;color:rgba(255,255,255,.65);font-weight:700;margin-bottom:3px;">${b.name}</div>
+      <div style="font-size:11px;color:rgba(255,255,255,.65);font-weight:700;margin-bottom:4px;">${b.name}</div>
       <input type="text" value="${b.plan}" onchange="brands[${brandIdx}].plan=this.value;renderWinner();"
-        style="width:95%;text-align:center;font-size:12px;font-weight:800;color:#fff;border:1.5px solid rgba(255,255,255,.35);border-radius:6px;padding:5px 6px;outline:none;background:rgba(255,255,255,.12);"/>
+        style="width:95%;text-align:center;font-size:13px;font-weight:800;color:#fff;border:1.5px solid rgba(255,255,255,.35);border-radius:6px;padding:5px 6px;outline:none;background:rgba(255,255,255,.12);"/>
     </td>`;
   });
   pnr += '</tr>';
 
-  // Sum Insured row
+  // Sum Insured row — no explanation td
   let sir = `<tr>
     <td class="prem-label-td">
-      <div style="color:#90A4AE;font-size:11px;font-weight:700;text-align:center;">Sum Insured</div>
-    </td>
-    <td style="background:#263238;border-right:2px solid #37474F;border-bottom:1px solid #1B2631;"></td>`;
+      <div style="color:#90A4AE;font-size:14px;font-weight:700;text-align:center;">Sum Insured</div>
+    </td>`;
   visibleBrands.forEach((b,i) => {
-    sir += `<td colspan="2" style="background:${b.dark};text-align:center;padding:8px 6px;border-right:2px solid rgba(255,255,255,.25);border-bottom:1px solid rgba(0,0,0,.2);color:rgba(255,255,255,.9);font-weight:700;font-size:13px;">₹10 Lakhs</td>`;
+    sir += `<td colspan="2" style="background:${b.dark};text-align:center;padding:9px 6px;border-right:2px solid rgba(255,255,255,.25);border-bottom:1px solid rgba(0,0,0,.2);color:rgba(255,255,255,.9);font-weight:700;font-size:15px;">₹10 Lakhs</td>`;
   });
   sir += '</tr>';
 
-  // Premium row
+  // Premium row — no explanation td
   let pr = `<tr>
     <td class="prem-label-td">
-      <div style="color:#90A4AE;font-size:11px;font-weight:700;text-align:center;">Annual Premium</div>
-      <div style="color:#546E7A;font-size:9px;text-align:center;">₹10L SI · 1 year</div>
-    </td>
-    <td style="background:#263238;border-right:2px solid #37474F;border-bottom:3px solid #1B2631;"></td>`;
+      <div style="color:#90A4AE;font-size:14px;font-weight:700;text-align:center;">Annual Premium</div>
+      <div style="color:#546E7A;font-size:11px;text-align:center;margin-top:3px;">₹10L SI · 1 year</div>
+    </td>`;
   visibleBrands.forEach((b,i) => {
     const brandIdx = brands.findIndex(x => x.id === b.id);
     pr += `<td colspan="2" style="background:${b.grad};text-align:center;padding:10px 6px;border-right:2px solid rgba(255,255,255,.25);border-bottom:3px solid #1B2631;">
       <input type="text" value="${b.premium}" onchange="brands[${brandIdx}].premium=this.value;renderWinner();"
         style="width:90%;background:rgba(255,255,255,.25);border:1px solid rgba(255,255,255,.5);color:#fff;font-weight:900;font-size:18px;border-radius:6px;padding:4px 6px;text-align:center;outline:none;"/>
-      <div style="color:rgba(255,255,255,.75);font-size:9px;margin-top:2px;">per year</div>
+      <div style="color:rgba(255,255,255,.75);font-size:11px;margin-top:3px;">per year</div>
     </td>`;
   });
   pr += '</tr>';
