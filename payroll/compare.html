@@ -564,6 +564,12 @@ const LOGOS = {
 // Plans are now fetched from API
 const BRANDS = [];
 let brands = [];
+let brandDisplayOrder = []; // brand IDs in display order — separate from brands[] so vals/notes indices stay correct
+let draggedBrandId = null;
+
+function getOrderedBrands() {
+  return brandDisplayOrder.map(id => brands.find(b => b.id === id)).filter(Boolean);
+}
 
 async function loadPlansFromAPI() {
   try {
@@ -608,6 +614,15 @@ async function loadPlansFromAPI() {
     });
 
     brands = JSON.parse(JSON.stringify(BRANDS));
+    // Restore saved display order, adding any new brands at the end
+    const savedOrder = localStorage.getItem('brandDisplayOrder');
+    if (savedOrder) {
+      const parsed = JSON.parse(savedOrder);
+      brandDisplayOrder = parsed.filter(id => brands.some(b => b.id === id));
+      brands.forEach(b => { if (!brandDisplayOrder.includes(b.id)) brandDisplayOrder.push(b.id); });
+    } else {
+      brandDisplayOrder = brands.map(b => b.id);
+    }
     console.log(`✅ Loaded ${BRANDS.length} plans from API`);
     return true;
   } catch (error) {
@@ -1097,7 +1112,7 @@ function syncClientAge() {
 // ── TABLE HEAD ─────────────────────────────────────────────────────────────
 function renderTableHead() {
   const h = document.getElementById('tableHead');
-  const visibleBrands = brands.filter(b => selectedProviders.has(b.id));
+  const visibleBrands = getOrderedBrands().filter(b => selectedProviders.has(b.id));
 
   // Rebuild colgroup to match current column count and widths
   const cg = document.getElementById('tableColgroup');
@@ -1119,8 +1134,17 @@ function renderTableHead() {
     <th class="feat-th">FEATURE / BENEFIT</th>
     <th class="expl-th" rowspan="4" style="vertical-align:top;padding-top:14px;">📝<br/>Detailed<br/>Explanation</th>`;
   visibleBrands.forEach((b,idx) => {
-    const logoHtml = (b.logo || LOGOS[b.id]) ? `<img src="${b.logo || LOGOS[b.id]}" alt="${b.name}" style="width:90px;height:50px;object-fit:contain;border-radius:4px;"/>` : `<div style="width:90px;height:50px;background:${b.light};border:2px solid ${b.mid};border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${b.dark};">${b.name}</div>`;
-    lr += `<th class="brand-th" colspan="2" style="border-right:3px solid #1B2631;border-top:6px solid ${b.dark};padding:10px 8px;background:#fff;">
+    const logoHtml = (b.logo || LOGOS[b.id]) ? `<img src="${b.logo || LOGOS[b.id]}" alt="${b.name}" style="width:90px;height:50px;object-fit:contain;border-radius:4px;pointer-events:none;"/>` : `<div style="width:90px;height:50px;background:${b.light};border:2px solid ${b.mid};border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:${b.dark};">${b.name}</div>`;
+    lr += `<th class="brand-th" colspan="2" draggable="true"
+      data-brand-id="${b.id}"
+      ondragstart="dragBrandStart(event,'${b.id}')"
+      ondragover="dragBrandOver(event)"
+      ondragleave="dragBrandLeave(event)"
+      ondrop="dragBrandDrop(event,'${b.id}')"
+      ondragend="dragBrandEnd(event)"
+      title="Drag to reorder"
+      style="border-right:3px solid #1B2631;border-top:6px solid ${b.dark};padding:10px 8px;background:#fff;cursor:grab;position:relative;transition:opacity .2s,outline .1s;">
+      <div style="position:absolute;top:4px;right:5px;font-size:10px;color:#bbb;" title="Drag to reorder">⠿</div>
       <div style="display:flex;flex-direction:column;align-items:center;gap:4px;">
         ${logoHtml}
       </div>
@@ -1175,7 +1199,7 @@ function renderTableHead() {
 // ── TABLE BODY ─────────────────────────────────────────────────────────────
 function renderTableBody() {
   const tb = document.getElementById('tableBody');
-  const visibleBrands = brands.filter(b => selectedProviders.has(b.id));
+  const visibleBrands = getOrderedBrands().filter(b => selectedProviders.has(b.id));
   let html = '';
 
   sections.forEach(sec => {
@@ -1242,7 +1266,7 @@ function renderTableBody() {
 function renderWinner() {
   const totalQ = sections.reduce((sum, sec) => sum + sec.features.length, 0);
   // Only score brands that are currently visible (respect provider filter)
-  const visibleBrands = brands.filter(b => selectedProviders.has(b.id));
+  const visibleBrands = getOrderedBrands().filter(b => selectedProviders.has(b.id));
   if (visibleBrands.length === 0) return;
 
   const scores = visibleBrands.map(b => {
@@ -1773,6 +1797,44 @@ function toggleEdit() {
 // ── PROVIDER SELECTION & EXIT ────────────────────────────────────────────────
 let selectedProviders = new Set(['ab','ic','star','care','tata']); // Default: all selected
 
+// ── COLUMN DRAG-AND-DROP ──────────────────────────────────────────────────────
+function dragBrandStart(event, brandId) {
+  draggedBrandId = brandId;
+  event.dataTransfer.effectAllowed = 'move';
+  event.dataTransfer.setData('text/plain', brandId);
+  event.currentTarget.style.opacity = '0.4';
+}
+function dragBrandOver(event) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+  event.currentTarget.style.outline = '3px dashed #FFD54F';
+  event.currentTarget.style.outlineOffset = '-3px';
+}
+function dragBrandLeave(event) {
+  event.currentTarget.style.outline = '';
+}
+function dragBrandDrop(event, targetId) {
+  event.preventDefault();
+  event.currentTarget.style.outline = '';
+  if (!draggedBrandId || draggedBrandId === targetId) return;
+  const from = brandDisplayOrder.indexOf(draggedBrandId);
+  const to   = brandDisplayOrder.indexOf(targetId);
+  if (from === -1 || to === -1) return;
+  const [moved] = brandDisplayOrder.splice(from, 1);
+  brandDisplayOrder.splice(to, 0, moved);
+  localStorage.setItem('brandDisplayOrder', JSON.stringify(brandDisplayOrder));
+  renderTableHead();
+  renderTableBody();
+  renderWinner();
+}
+function dragBrandEnd(event) {
+  draggedBrandId = null;
+  document.querySelectorAll('.brand-th').forEach(th => {
+    th.style.opacity = '';
+    th.style.outline = '';
+  });
+}
+
 function initializeProviderSelection() {
   const container = document.getElementById('provider-checkboxes');
   if (!container) return;
@@ -1785,9 +1847,9 @@ function initializeProviderSelection() {
     selectedProviders = new Set(['ab','ic','star','care','tata']);
   }
 
-  // Render checkboxes for each brand
+  // Render checkboxes in current display order
   container.innerHTML = '';
-  brands.forEach(b=>{
+  getOrderedBrands().forEach(b=>{
     const isChecked = selectedProviders.has(b.id);
     const label = document.createElement('label');
     label.style.cssText = 'display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:8px;cursor:pointer;color:#fff;font-weight:700;';
