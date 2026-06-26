@@ -78,7 +78,7 @@ input[type=text],input[type=number],textarea,select{-webkit-appearance:none;-moz
 .divider-inner{background:linear-gradient(120deg,#1B2631,#263238,#1B2631);padding:18px 32px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
 /* TABLE */
 .tbl-wrap{overflow-x:auto;border-radius:14px;box-shadow:0 6px 32px rgba(0,0,0,.15);}
-table{border-collapse:collapse;width:100%;background:#fff;table-layout:auto;min-width:600px;border:2px solid #1B2631;}
+table{border-collapse:collapse;width:100%;background:#fff;table-layout:fixed;border:2px solid #1B2631;}
 th,td{padding:8px 8px;vertical-align:middle;border:1px solid #D0D0D0;}
 .feat-th{background:#1B2631;color:#CFD8DC;font-size:11px;font-weight:700;text-align:left;border-right:2px solid #37474F;border-bottom:2px solid #37474F;min-width:160px;}
 .expl-th{background:#263238;color:#80CBC4;font-size:12px;font-weight:700;text-align:center;border-right:2px solid #37474F;border-bottom:2px solid #37474F;line-height:1.5;}
@@ -228,7 +228,7 @@ th,td{padding:8px 8px;vertical-align:middle;border:1px solid #D0D0D0;}
   .cell-td{padding:4px 2px!important;}
   .cover,.divider,.winner-banner,.disclaimer,.footer{page-break-inside:avoid;}
   .tbl-wrap{overflow:visible!important;page-break-inside:avoid;}
-  table{min-width:unset!important;page-break-inside:allow;width:100%;table-layout:fixed!important;}
+  table{min-width:unset!important;width:100%!important;page-break-inside:allow;table-layout:fixed!important;}
   thead{display:table-header-group;page-break-inside:avoid;}
   tbody{display:table-row-group;}
   tr{page-break-inside:avoid;page-break-after:auto;}
@@ -491,15 +491,7 @@ th,td{padding:8px 8px;vertical-align:middle;border:1px solid #D0D0D0;}
 <!-- TABLE -->
 <div class="tbl-wrap">
   <table id="mainTable">
-    <colgroup>
-      <col style="width:12%"/>
-      <col style="width:12%"/>
-      <col style="width:13.5%"/>
-      <col style="width:13.5%"/>
-      <col style="width:13.5%"/>
-      <col style="width:13.5%"/>
-      <col style="width:22%"/>
-    </colgroup>
+    <colgroup id="tableColgroup"></colgroup>
     <thead id="tableHead"></thead>
     <tbody id="tableBody"></tbody>
   </table>
@@ -1106,6 +1098,21 @@ function syncClientAge() {
 function renderTableHead() {
   const h = document.getElementById('tableHead');
   const visibleBrands = brands.filter(b => selectedProviders.has(b.id));
+
+  // Rebuild colgroup to match current column count and widths
+  const cg = document.getElementById('tableColgroup');
+  if (cg) {
+    let cgHtml = '<col style="width:200px"/>';   // feature label
+    cgHtml    += '<col style="width:140px"/>';   // explanation
+    visibleBrands.forEach(() => {
+      cgHtml  += '<col style="width:25px"/>';    // tick
+      cgHtml  += '<col style="width:110px"/>';   // notes
+    });
+    cg.innerHTML = cgHtml;
+    // Set table min-width so all columns fit
+    const tbl = document.getElementById('mainTable');
+    if (tbl) tbl.style.minWidth = (340 + visibleBrands.length * 135) + 'px';
+  }
 
   // Logo row
   let lr = `<tr>
