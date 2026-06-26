@@ -937,6 +937,7 @@ function renderTableBody() {
   });
 
   // Score row
+  const totalQ = sections.reduce((sum, sec) => sum + sec.features.length, 0);
   const scores = brands.map((_,ci) => {
     let s=0;
     sections.forEach(sec=>sec.features.forEach(f=>{if(f.vals[ci]==='Y')s++;})  );
@@ -944,7 +945,7 @@ function renderTableBody() {
   });
   const maxS = Math.max(...scores);
   html += `<tr class="score-row">
-    <td class="score-label">⭐ Overall Score<div style="font-size:10px;color:#90A4AE;font-weight:400;margin-top:2px;">out of 50 features</div></td>
+    <td class="score-label">⭐ Overall Score<div style="font-size:10px;color:#90A4AE;font-weight:400;margin-top:2px;">out of ${totalQ} features</div></td>
     <td style="background:#1B2631;border-top:3px solid #0D47A1;border-right:2px solid #263238;"></td>`;
   brands.forEach((b,i) => {
     const sc = scores[i];
@@ -952,9 +953,9 @@ function renderTableBody() {
     const rankBg = sc===maxS?'#1B5E20':sc>=maxS-2?'#2E7D32':sc>=maxS-4?'#F57F17':'#757575';
     html += `<td class="score-cell" style="background:${b.light};border-top:3px solid ${b.dark};border-right:1px solid ${b.mid};">
       <div class="score-num" style="color:${b.dark};">${sc}</div>
-      <div style="font-size:11px;color:#607D8B;">/50</div>
+      <div style="font-size:11px;color:#607D8B;">/${totalQ}</div>
       <div class="rank-badge" style="background:${rankBg};">${rank}</div>
-      <div class="score-bar"><div class="score-bar-fill" style="width:${sc/50*100}%;background:${b.grad};"></div></div>
+      <div class="score-bar"><div class="score-bar-fill" style="width:${totalQ>0?sc/totalQ*100:0}%;background:${b.grad};"></div></div>
     </td>`;
   });
   html += '</tr>';
@@ -963,19 +964,27 @@ function renderTableBody() {
 }
 
 function renderWinner() {
-  const scores = brands.map((_,ci) => {
-    let s=0;
-    sections.forEach(sec=>sec.features.forEach(f=>{if(f.vals[ci]==='Y')s++;}));
+  const totalQ = sections.reduce((sum, sec) => sum + sec.features.length, 0);
+  const scores = brands.map((_, ci) => {
+    let s = 0;
+    sections.forEach(sec => sec.features.forEach(f => { if (f.vals[ci] === 'Y') s++; }));
     return s;
   });
   const maxS = Math.max(...scores);
-  let wi = scores.reduce((best,sc,i) => {
-    if(sc>scores[best]) return i;
-    if(sc===scores[best]&&brands[i].id==='ic') return i;
-    return best;
-  },0);
+  const wi = scores.indexOf(maxS);
   const w = brands[wi];
   const sc = scores[wi];
+
+  const diff = [], rest = [];
+  sections.forEach(sec => sec.features.forEach(f => {
+    if (f.vals[wi] !== 'Y') return;
+    const note = (f.notes && f.notes[wi]) ? f.notes[wi] : '';
+    const text = note ? `${f.label} — ${note}` : f.label;
+    const isDiff = brands.some((_, ci) => ci !== wi && f.vals[ci] !== 'Y');
+    (isDiff ? diff : rest).push(text);
+  }));
+  const reasons = [...diff, ...rest].slice(0, 8);
+
   const banner = document.getElementById('winnerBanner');
   banner.innerHTML = `
     <div style="height:5px;background:linear-gradient(90deg,#F9A825,#FFD54F,#F9A825);"></div>
@@ -991,7 +1000,7 @@ function renderWinner() {
             <div style="color:#FFAB91;font-size:15px;font-weight:700;margin-top:4px;">${w.plan}</div>
             <div style="margin-top:10px;display:flex;align-items:baseline;gap:8px;">
               <span style="color:#FFD54F;font-size:44px;font-weight:900;line-height:1;">${sc}</span>
-              <span style="color:rgba(255,255,255,.5);font-size:18px;">/ 50</span>
+              <span style="color:rgba(255,255,255,.5);font-size:18px;">/ ${totalQ}</span>
               <span style="background:#1B5E20;color:#fff;font-size:12px;font-weight:800;border-radius:20px;padding:4px 14px;margin-left:6px;">🥇 BEST PICK</span>
             </div>
           </div>
@@ -1001,7 +1010,7 @@ function renderWinner() {
       <div>
         <div style="color:#90CAF9;font-size:11px;font-weight:700;letter-spacing:2px;margin-bottom:12px;text-align:center;">WHY THIS PLAN STANDS OUT</div>
         <div class="winner-reasons">
-          ${WINNER_REASONS.map(r=>`<div class="reason-card"><span style="color:#FFD54F;font-size:16px;margin-top:1px;flex-shrink:0;">★</span><span style="color:rgba(255,255,255,.85);font-size:12px;line-height:1.5;">${r}</span></div>`).join('')}
+          ${reasons.map(r=>`<div class="reason-card"><span style="color:#FFD54F;font-size:16px;margin-top:1px;flex-shrink:0;">★</span><span style="color:rgba(255,255,255,.85);font-size:12px;line-height:1.5;">${r}</span></div>`).join('')}
         </div>
       </div>
       <div style="margin-top:18px;text-align:center;color:rgba(255,255,255,.35);font-size:11px;font-style:italic;">
