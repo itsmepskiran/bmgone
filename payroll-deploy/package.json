@@ -25,7 +25,8 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/itsmepskiran/bmgone-payroll"
+    "url": "https://github.com/itsmepskiran/bmgone",
+    "branch": "payroll"
   },
-  "homepage": "https://pay.bmgone.com"
+  "homepage": "https://bmgone.com"
 }
