@@ -826,7 +826,11 @@
                 ocrWorker = await Tesseract.createWorker('eng', 1, {
                     logger: (m) => {
                         if (m.status === 'recognizing text' && currentProcessingId) {
-                            const pct = Math.round((m.progress || 0) * 100);
+                            // When OCR-ing a table cell-by-cell, currentCellTotal is set so we
+                            // report overall progress across all cells rather than per-cell 0-100%.
+                            const pct = currentCellTotal
+                                ? Math.round(((currentCellIndex + (m.progress || 0)) / currentCellTotal) * 100)
+                                : Math.round((m.progress || 0) * 100);
                             const fill = document.getElementById(`progress-fill-${currentProcessingId}`);
                             if (fill) fill.style.width = pct + '%';
                             updateMeta(currentProcessingId, `Recognizing text… ${pct}%`);
@@ -838,6 +842,8 @@
         }
 
         let currentProcessingId = null;
+        let currentCellIndex = null;
+        let currentCellTotal = null;
 
         async function convertAll() {
             document.getElementById('convertBtn').disabled = true;
@@ -845,12 +851,6 @@
 
             try {
                 const worker = await getWorker();
-                const numbersOnly = document.getElementById('numbersOnlyMode').checked;
-                await worker.setParameters({
-                    tessedit_char_whitelist: numbersOnly ? '0123456789.,-%$()/ ' : '',
-                    tessedit_pageseg_mode: '6'
-                });
-
                 for (const img of images) {
                     await runOCR(img, worker);
                 }
@@ -868,11 +868,6 @@
             const img = images.find(i => i.id === id);
             if (!img) return;
             const worker = await getWorker();
-            const numbersOnly = document.getElementById('numbersOnlyMode').checked;
-            await worker.setParameters({
-                tessedit_char_whitelist: numbersOnly ? '0123456789.,-%$()/ ' : '',
-                tessedit_pageseg_mode: '6'
-            });
             await runOCR(img, worker);
             updateButtons();
         }
@@ -892,6 +887,9 @@
                 // reliably once character height is larger.
                 const upscaled = scaleCanvas(cropCanvas, cropCanvas.width < 1400 ? 2 : 1.4);
 
+                const numbersOnly = document.getElementById('numbersOnlyMode').checked;
+                const enhance = document.getElementById('enhanceMode').checked;
+
                 // The admin-specified row/column count builds a reliable uniform grid.
                 // Pixel-based line detection is not trustworthy on dense, real photos
                 // (text ink alone can swamp the darkness signal used to find borders),
@@ -900,20 +898,26 @@
                     ? buildUniformGrid(upscaled.width, upscaled.height, img.rowCount, img.colCount)
                     : null;
 
-                // Paint over the known cell-boundary bands so OCR doesn't misread grid
-                // lines as stray "|" / "1" characters at the edge of every cell.
-                const masked = grid ? maskGridLines(upscaled, grid.colBounds, grid.rowBounds) : upscaled;
-
-                const enhance = document.getElementById('enhanceMode').checked;
-                const ocrSource = enhance ? enhanceCanvas(masked) : masked;
-
-                const { data } = await worker.recognize(ocrSource);
-                const words = (data.words || []).filter(w => w.text && w.text.trim().length > 0);
-
-                img.usedGrid = !!grid;
-                img.tableData = grid
-                    ? assignWordsToGrid(words, grid.colBounds, grid.rowBounds)
-                    : wordsToRows(words);
+                if (grid) {
+                    // OCR each cell as its own image instead of one whole-table pass.
+                    // A single pass + bounding-box bucketing falls apart whenever real
+                    // column widths aren't uniform (text drifts into the wrong bucket)
+                    // and often merges/drops words at cell boundaries. Cropping each
+                    // cell out and recognizing it alone fixes both, and lets small text
+                    // be upscaled further on a per-cell basis.
+                    img.tableData = await ocrGridCellByCell(upscaled, grid, worker, { numbersOnly, enhance, imgId: img.id });
+                    img.usedGrid = true;
+                } else {
+                    await worker.setParameters({
+                        tessedit_char_whitelist: numbersOnly ? '0123456789.,-%$()/ ' : '',
+                        tessedit_pageseg_mode: '6'
+                    });
+                    const ocrSource = enhance ? enhanceCanvas(upscaled) : upscaled;
+                    const { data } = await worker.recognize(ocrSource);
+                    const words = (data.words || []).filter(w => w.text && w.text.trim().length > 0);
+                    img.tableData = wordsToRows(words);
+                    img.usedGrid = false;
+                }
                 img.status = 'done';
                 updateMeta(img.id, statusLabel('done', img));
             } catch (error) {
@@ -948,22 +952,68 @@
             return { colBounds, rowBounds };
         }
 
-        // Paint over known cell-boundary bands so OCR doesn't pick up border lines as characters
-        function maskGridLines(sourceCanvas, colBounds, rowBounds) {
+        // Crop a single grid cell out of the full canvas, trimming a small inward margin
+        // so any real border line sitting right at the cell edge doesn't get read as a
+        // stray "|" / "1" character.
+        function extractCellCanvas(sourceCanvas, colBounds, rowBounds, row, col, paddingFrac = 0.05) {
+            const x0 = colBounds[col];
+            const x1 = colBounds[col + 1];
+            const y0 = rowBounds[row];
+            const y1 = rowBounds[row + 1];
+            const w = x1 - x0;
+            const h = y1 - y0;
+            const padX = Math.round(w * paddingFrac);
+            const padY = Math.round(h * paddingFrac);
+            const sx = x0 + padX;
+            const sy = y0 + padY;
+            const sw = Math.max(1, w - padX * 2);
+            const sh = Math.max(1, h - padY * 2);
+
             const canvas = document.createElement('canvas');
-            canvas.width = sourceCanvas.width;
-            canvas.height = sourceCanvas.height;
+            canvas.width = sw;
+            canvas.height = sh;
             const ctx = canvas.getContext('2d');
-            ctx.drawImage(sourceCanvas, 0, 0);
-            ctx.fillStyle = '#ffffff';
-            const bandHalf = Math.max(1, Math.round(Math.min(canvas.width, canvas.height) * 0.002));
-            colBounds.forEach(x => {
-                if (x > 0 && x < canvas.width) ctx.fillRect(x - bandHalf, 0, bandHalf * 2, canvas.height);
-            });
-            rowBounds.forEach(y => {
-                if (y > 0 && y < canvas.height) ctx.fillRect(0, y - bandHalf, canvas.width, bandHalf * 2);
-            });
+            ctx.drawImage(sourceCanvas, sx, sy, sw, sh, 0, 0, sw, sh);
             return canvas;
+        }
+
+        // Individual grid cells are often small — upscale further so character height
+        // reaches a range Tesseract recognizes reliably.
+        function ensureMinCellHeight(canvas, minHeight = 44, maxFactor = 4) {
+            if (canvas.height >= minHeight) return canvas;
+            return scaleCanvas(canvas, Math.min(maxFactor, minHeight / canvas.height));
+        }
+
+        // OCR each grid cell as its own image rather than OCR-ing the whole table and
+        // bucketing word bounding boxes afterwards — see the comment at the call site.
+        async function ocrGridCellByCell(sourceCanvas, grid, worker, { numbersOnly, enhance, imgId }) {
+            await worker.setParameters({
+                tessedit_char_whitelist: numbersOnly ? '0123456789.,-%$()/ ' : '',
+                tessedit_pageseg_mode: '7'
+            });
+
+            const numRows = grid.rowBounds.length - 1;
+            const numCols = grid.colBounds.length - 1;
+            const table = Array.from({ length: numRows }, () => new Array(numCols).fill(''));
+
+            currentCellTotal = numRows * numCols;
+            let cellIndex = 0;
+
+            for (let r = 0; r < numRows; r++) {
+                for (let c = 0; c < numCols; c++) {
+                    currentCellIndex = cellIndex;
+                    let cellCanvas = extractCellCanvas(sourceCanvas, grid.colBounds, grid.rowBounds, r, c);
+                    cellCanvas = ensureMinCellHeight(cellCanvas);
+                    const ocrSource = enhance ? enhanceCanvas(cellCanvas) : cellCanvas;
+                    const { data } = await worker.recognize(ocrSource);
+                    table[r][c] = (data.text || '').replace(/\n+/g, ' ').trim();
+                    cellIndex++;
+                }
+            }
+
+            currentCellTotal = null;
+            currentCellIndex = null;
+            return table;
         }
 
         // Grayscale + simple threshold to improve OCR on scanned/photographed tables
@@ -1073,32 +1123,6 @@
             return result;
         }
 
-        function findBoundIndex(bounds, value) {
-            for (let i = 0; i < bounds.length - 1; i++) {
-                if (value >= bounds[i] && value < bounds[i + 1]) return i;
-            }
-            if (value < bounds[0]) return 0;
-            return bounds.length - 2;
-        }
-
-        // Snap OCR'd words into the grid cells defined by detected borders
-        function assignWordsToGrid(words, colBounds, rowBounds) {
-            const numCols = colBounds.length - 1;
-            const numRows = rowBounds.length - 1;
-            const cells = Array.from({ length: numRows }, () => Array.from({ length: numCols }, () => []));
-
-            words.forEach(word => {
-                const cx = (word.bbox.x0 + word.bbox.x1) / 2;
-                const cy = (word.bbox.y0 + word.bbox.y1) / 2;
-                const col = findBoundIndex(colBounds, cx);
-                const row = findBoundIndex(rowBounds, cy);
-                cells[row][col].push(word);
-            });
-
-            return cells.map(rowCells => rowCells.map(cellWords =>
-                cellWords.sort((a, b) => a.bbox.x0 - b.bbox.x0).map(w => w.text).join(' ')
-            ));
-        }
 
         // --- Fallback: word bounding boxes -> row/column grid (no visible borders) ---
         function wordsToRows(words) {
