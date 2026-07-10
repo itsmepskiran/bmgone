@@ -168,14 +168,6 @@
             gap: 0.75rem;
         }
 
-        .image-card-title img {
-            width: 56px;
-            height: 56px;
-            object-fit: cover;
-            border-radius: 6px;
-            border: 1px solid #e5e7eb;
-        }
-
         .image-card-title .name {
             font-weight: 600;
             color: #1f2937;
@@ -187,13 +179,65 @@
             color: #6b7280;
         }
 
+        .cropper-section {
+            margin-bottom: 1rem;
+        }
+
+        .crop-hint {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin: 0 0 0.5rem 0;
+        }
+
+        .cropper-wrap {
+            position: relative;
+            display: block;
+            width: 100%;
+            max-width: 640px;
+            line-height: 0;
+            cursor: crosshair;
+            user-select: none;
+            touch-action: none;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .crop-img {
+            width: 100%;
+            height: auto;
+            display: block;
+            pointer-events: none;
+        }
+
+        .crop-box {
+            position: absolute;
+            display: none;
+            border: 2px dashed #059669;
+            background: rgba(5, 150, 105, 0.15);
+            pointer-events: none;
+        }
+
+        .crop-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-top: 0.5rem;
+        }
+
+        .crop-status {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
         .progress-bar-track {
             width: 100%;
             height: 8px;
             background: #e5e7eb;
             border-radius: 4px;
             overflow: hidden;
-            margin: 0.5rem 0;
+            margin: 0.75rem 0;
         }
 
         .progress-bar-fill {
@@ -279,7 +323,7 @@
     <div class="itx-container">
         <div class="header-section">
             <h1>🧾 Image to Excel Converter</h1>
-            <p>Upload table images (scans/photos with numbers) and export the recognized data as an Excel file.</p>
+            <p>Upload table images or screen photos and export the recognized data as a single Excel file — all images are combined into one sheet, in the order you upload them.</p>
         </div>
 
         <div class="content-box">
@@ -297,7 +341,7 @@
                 <div class="options-row">
                     <label>
                         <input type="checkbox" id="numbersOnlyMode">
-                        Numbers-only mode (recommended for pure numeric tables)
+                        Numbers-only mode (only if the table has no letters/names)
                     </label>
                     <label>
                         <input type="checkbox" id="enhanceMode" checked>
@@ -308,7 +352,7 @@
                 <div class="button-group">
                     <button class="btn-primary" id="convertBtn" onclick="convertAll()" disabled>🔍 Convert to Tables</button>
                     <button class="btn-secondary" onclick="clearAll()">Clear All</button>
-                    <button class="btn-primary" id="downloadBtn" style="background:#059669;" onclick="downloadExcel()" disabled>📥 Download Excel</button>
+                    <button class="btn-primary" id="downloadBtn" style="background:#059669;" onclick="downloadExcel()" disabled>📥 Download Combined Excel</button>
                 </div>
             </div>
 
@@ -324,9 +368,10 @@
         };
 
         let token = localStorage.getItem('token');
-        let images = []; // { id, file, dataUrl, name, status, tableData, worker-managed }
+        let images = []; // { id, file, dataUrl, name, status, tableData, crop, usedGrid }
         let nextId = 1;
         let ocrWorker = null;
+        let activeDrag = null;
 
         // Check authentication - admin/master_admin only
         window.addEventListener('load', function () {
@@ -380,7 +425,9 @@
                         dataUrl: e.target.result,
                         name: file.name,
                         status: 'pending',
-                        tableData: null
+                        tableData: null,
+                        crop: null,
+                        usedGrid: false
                     });
                     renderImageList();
                     updateButtons();
@@ -407,10 +454,9 @@
                 card.innerHTML = `
                     <div class="image-card-header">
                         <div class="image-card-title">
-                            <img src="${img.dataUrl}" alt="${img.name}">
                             <div>
                                 <div class="name">${img.name}</div>
-                                <div class="meta" id="meta-${img.id}">${statusLabel(img.status)}</div>
+                                <div class="meta" id="meta-${img.id}">${statusLabel(img.status, img)}</div>
                             </div>
                         </div>
                         <div class="button-group">
@@ -418,6 +464,20 @@
                             <button class="btn-small danger" onclick="removeImage(${img.id})">🗑 Remove</button>
                         </div>
                     </div>
+
+                    <div class="cropper-section">
+                        <p class="crop-hint">Drag on the image to crop out anything that isn't part of the data table (menus, toolbars, row/column headers, sheet tabs). Leave unset to use the full image.</p>
+                        <div class="cropper-wrap" id="cropper-wrap-${img.id}">
+                            <img src="${img.dataUrl}" class="crop-img" id="crop-img-${img.id}" alt="${img.name}" draggable="false">
+                            <div class="crop-box" id="crop-box-${img.id}"></div>
+                        </div>
+                        <div class="crop-controls">
+                            <button class="btn-small" onclick="resetCrop(${img.id})">Reset Crop</button>
+                            <button class="btn-small" onclick="applyCropToAll(${img.id})">📋 Apply Crop to All Images</button>
+                            <span class="crop-status" id="crop-status-${img.id}">Using full image (drag on the image to crop)</span>
+                        </div>
+                    </div>
+
                     <div class="progress-bar-track" id="progress-track-${img.id}" style="display:none;">
                         <div class="progress-bar-fill" id="progress-fill-${img.id}"></div>
                     </div>
@@ -425,17 +485,23 @@
                 `;
                 container.appendChild(card);
 
+                attachCropHandlers(img);
+                updateCropStatus(img.id);
+
                 if (img.tableData) {
                     renderTable(img.id);
                 }
             });
         }
 
-        function statusLabel(status) {
+        function statusLabel(status, img) {
             switch (status) {
                 case 'pending': return 'Waiting to convert';
                 case 'processing': return 'Recognizing text…';
-                case 'done': return 'Converted — review the table below';
+                case 'done':
+                    return img && img.usedGrid
+                        ? 'Converted using detected table borders — review below'
+                        : 'Converted — review below (no clear table borders detected, so columns may need fixing)';
                 case 'error': return 'OCR failed';
                 default: return '';
             }
@@ -457,7 +523,172 @@
             renderImageList();
             updateButtons();
             showMessage('', '');
-            document.getElementById('statusMessage').style.display = 'none';
+        }
+
+        // --- Cropping ---
+        window.addEventListener('mousemove', (e) => { if (activeDrag) handleDragMove(e.clientX, e.clientY); });
+        window.addEventListener('mouseup', () => { if (activeDrag) handleDragEnd(); });
+        window.addEventListener('touchmove', (e) => {
+            if (activeDrag && e.touches[0]) handleDragMove(e.touches[0].clientX, e.touches[0].clientY);
+        }, { passive: true });
+        window.addEventListener('touchend', () => { if (activeDrag) handleDragEnd(); });
+
+        function attachCropHandlers(img) {
+            const wrap = document.getElementById(`cropper-wrap-${img.id}`);
+            const box = document.getElementById(`crop-box-${img.id}`);
+            const imageEl = document.getElementById(`crop-img-${img.id}`);
+            if (!wrap || !box || !imageEl) return;
+
+            const start = (clientX, clientY) => {
+                const rect = wrap.getBoundingClientRect();
+                activeDrag = { img, wrap, box, imageEl, startX: clientX - rect.left, startY: clientY - rect.top };
+                box.style.display = 'block';
+                box.style.left = activeDrag.startX + 'px';
+                box.style.top = activeDrag.startY + 'px';
+                box.style.width = '0px';
+                box.style.height = '0px';
+            };
+
+            wrap.addEventListener('mousedown', (e) => { e.preventDefault(); start(e.clientX, e.clientY); });
+            wrap.addEventListener('touchstart', (e) => {
+                if (!e.touches[0]) return;
+                start(e.touches[0].clientX, e.touches[0].clientY);
+            }, { passive: true });
+
+            if (imageEl.complete && imageEl.naturalWidth) {
+                drawStoredCrop(img);
+            } else {
+                imageEl.addEventListener('load', () => drawStoredCrop(img));
+            }
+        }
+
+        function drawStoredCrop(img) {
+            const wrap = document.getElementById(`cropper-wrap-${img.id}`);
+            const box = document.getElementById(`crop-box-${img.id}`);
+            const imageEl = document.getElementById(`crop-img-${img.id}`);
+            if (!wrap || !box || !imageEl || !imageEl.naturalWidth) return;
+            if (!img.crop) { box.style.display = 'none'; return; }
+
+            const rect = wrap.getBoundingClientRect();
+            const scaleX = rect.width / imageEl.naturalWidth;
+            const scaleY = rect.height / imageEl.naturalHeight;
+            box.style.display = 'block';
+            box.style.left = (img.crop.x * scaleX) + 'px';
+            box.style.top = (img.crop.y * scaleY) + 'px';
+            box.style.width = (img.crop.w * scaleX) + 'px';
+            box.style.height = (img.crop.h * scaleY) + 'px';
+        }
+
+        function handleDragMove(clientX, clientY) {
+            if (!activeDrag) return;
+            const { wrap, box, startX, startY } = activeDrag;
+            const rect = wrap.getBoundingClientRect();
+            const curX = Math.min(Math.max(clientX - rect.left, 0), rect.width);
+            const curY = Math.min(Math.max(clientY - rect.top, 0), rect.height);
+            const x = Math.min(startX, curX);
+            const y = Math.min(startY, curY);
+            box.style.left = x + 'px';
+            box.style.top = y + 'px';
+            box.style.width = Math.abs(curX - startX) + 'px';
+            box.style.height = Math.abs(curY - startY) + 'px';
+        }
+
+        function handleDragEnd() {
+            if (!activeDrag) return;
+            const { img, wrap, box, imageEl } = activeDrag;
+            const rect = wrap.getBoundingClientRect();
+            const boxLeft = parseFloat(box.style.left) || 0;
+            const boxTop = parseFloat(box.style.top) || 0;
+            const boxW = parseFloat(box.style.width) || 0;
+            const boxH = parseFloat(box.style.height) || 0;
+
+            if (boxW < 15 || boxH < 15) {
+                box.style.display = 'none';
+                img.crop = null;
+            } else {
+                const scaleX = imageEl.naturalWidth / rect.width;
+                const scaleY = imageEl.naturalHeight / rect.height;
+                img.crop = {
+                    x: Math.round(boxLeft * scaleX),
+                    y: Math.round(boxTop * scaleY),
+                    w: Math.round(boxW * scaleX),
+                    h: Math.round(boxH * scaleY)
+                };
+            }
+            updateCropStatus(img.id);
+            activeDrag = null;
+        }
+
+        function resetCrop(id) {
+            const img = images.find(i => i.id === id);
+            if (!img) return;
+            img.crop = null;
+            const box = document.getElementById(`crop-box-${id}`);
+            if (box) box.style.display = 'none';
+            updateCropStatus(id);
+        }
+
+        function applyCropToAll(id) {
+            const source = images.find(i => i.id === id);
+            if (!source || !source.crop) {
+                showMessage('❌ Set a crop on this image first', 'error');
+                return;
+            }
+
+            loadImage(source.dataUrl).then(sourceImg => {
+                const fx = source.crop.x / sourceImg.naturalWidth;
+                const fy = source.crop.y / sourceImg.naturalHeight;
+                const fw = source.crop.w / sourceImg.naturalWidth;
+                const fh = source.crop.h / sourceImg.naturalHeight;
+
+                const tasks = images.filter(i => i.id !== id).map(target =>
+                    loadImage(target.dataUrl).then(targetImg => {
+                        target.crop = {
+                            x: Math.round(fx * targetImg.naturalWidth),
+                            y: Math.round(fy * targetImg.naturalHeight),
+                            w: Math.round(fw * targetImg.naturalWidth),
+                            h: Math.round(fh * targetImg.naturalHeight)
+                        };
+                        drawStoredCrop(target);
+                        updateCropStatus(target.id);
+                    })
+                );
+
+                Promise.all(tasks).then(() => showMessage('✅ Crop applied to all images', 'success'));
+            });
+        }
+
+        function updateCropStatus(id) {
+            const img = images.find(i => i.id === id);
+            const el = document.getElementById(`crop-status-${id}`);
+            if (!el || !img) return;
+            el.textContent = img.crop
+                ? `Crop set: ${img.crop.w}×${img.crop.h}px`
+                : 'Using full image (drag on the image to crop)';
+        }
+
+        function loadImage(src) {
+            return new Promise((resolve, reject) => {
+                const image = new Image();
+                image.onload = () => resolve(image);
+                image.onerror = reject;
+                image.src = src;
+            });
+        }
+
+        function getCroppedCanvas(imageEl, crop) {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            if (crop && crop.w > 0 && crop.h > 0) {
+                canvas.width = crop.w;
+                canvas.height = crop.h;
+                ctx.drawImage(imageEl, crop.x, crop.y, crop.w, crop.h, 0, 0, crop.w, crop.h);
+            } else {
+                canvas.width = imageEl.naturalWidth;
+                canvas.height = imageEl.naturalHeight;
+                ctx.drawImage(imageEl, 0, 0);
+            }
+            return canvas;
         }
 
         // --- OCR pipeline ---
@@ -493,7 +724,7 @@
                 for (const img of images) {
                     await runOCR(img, worker);
                 }
-                showMessage('✅ Conversion complete. Review and edit the tables, then download the Excel file.', 'success');
+                showMessage('✅ Conversion complete. Review and edit the tables, then download the combined Excel file.', 'success');
             } catch (error) {
                 console.error('Conversion error:', error);
                 showMessage(`❌ Conversion failed: ${error.message}`, 'error');
@@ -523,14 +754,24 @@
             updateMeta(img.id, 'Recognizing text… 0%');
 
             try {
-                const enhance = document.getElementById('enhanceMode').checked;
-                const source = enhance ? await enhanceImage(img.dataUrl) : img.dataUrl;
+                const imageEl = await loadImage(img.dataUrl);
+                const cropCanvas = getCroppedCanvas(imageEl, img.crop);
 
-                const { data } = await worker.recognize(source);
+                // Detect real cell borders in the (cropped) image before OCR-specific processing
+                const grid = detectGrid(cropCanvas);
+
+                const enhance = document.getElementById('enhanceMode').checked;
+                const ocrSource = enhance ? enhanceCanvas(cropCanvas) : cropCanvas;
+
+                const { data } = await worker.recognize(ocrSource);
                 const words = (data.words || []).filter(w => w.text && w.text.trim().length > 0);
-                img.tableData = wordsToRows(words);
+
+                img.usedGrid = !!grid;
+                img.tableData = grid
+                    ? assignWordsToGrid(words, grid.colBounds, grid.rowBounds)
+                    : wordsToRows(words);
                 img.status = 'done';
-                updateMeta(img.id, statusLabel('done'));
+                updateMeta(img.id, statusLabel('done', img));
             } catch (error) {
                 console.error(`OCR failed for ${img.name}:`, error);
                 img.status = 'error';
@@ -543,32 +784,140 @@
         }
 
         // Grayscale + simple threshold to improve OCR on scanned/photographed tables
-        function enhanceImage(dataUrl) {
-            return new Promise((resolve, reject) => {
-                const image = new Image();
-                image.onload = () => {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = image.width;
-                    canvas.height = image.height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(image, 0, 0);
+        function enhanceCanvas(sourceCanvas) {
+            const canvas = document.createElement('canvas');
+            canvas.width = sourceCanvas.width;
+            canvas.height = sourceCanvas.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(sourceCanvas, 0, 0);
 
-                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-                    const data = imageData.data;
-                    for (let i = 0; i < data.length; i += 4) {
-                        const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
-                        const value = gray > 150 ? 255 : (gray < 90 ? 0 : gray);
-                        data[i] = data[i + 1] = data[i + 2] = value;
-                    }
-                    ctx.putImageData(imageData, 0, 0);
-                    resolve(canvas.toDataURL('image/png'));
-                };
-                image.onerror = reject;
-                image.src = dataUrl;
-            });
+            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imageData.data;
+            for (let i = 0; i < data.length; i += 4) {
+                const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                const value = gray > 150 ? 255 : (gray < 90 ? 0 : gray);
+                data[i] = data[i + 1] = data[i + 2] = value;
+            }
+            ctx.putImageData(imageData, 0, 0);
+            return canvas;
         }
 
-        // --- Word bounding boxes -> row/column grid ---
+        // --- Gridline detection: find real cell borders (e.g. Excel screenshots) ---
+        function detectGrid(canvas) {
+            const w = canvas.width;
+            const h = canvas.height;
+            if (w < 20 || h < 20) return null;
+
+            const ctx = canvas.getContext('2d');
+            const imageData = ctx.getImageData(0, 0, w, h);
+            const data = imageData.data;
+            const darkThreshold = 140;
+
+            const colDark = new Float64Array(w);
+            const rowDark = new Float64Array(h);
+
+            for (let y = 0; y < h; y++) {
+                const rowOffset = y * w;
+                for (let x = 0; x < w; x++) {
+                    const idx = (rowOffset + x) * 4;
+                    const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+                    if (lum < darkThreshold) {
+                        colDark[x]++;
+                        rowDark[y]++;
+                    }
+                }
+            }
+
+            const lineFraction = 0.35;
+            const colLineIdxs = findLineIndices(colDark, h, lineFraction);
+            const rowLineIdxs = findLineIndices(rowDark, w, lineFraction);
+
+            const colBounds = normalizeBounds(mergeLineIndices(colLineIdxs), w);
+            const rowBounds = normalizeBounds(mergeLineIndices(rowLineIdxs), h);
+
+            // Sanity limits: too few or implausibly many lines means this isn't a clean bordered grid
+            const numCols = colBounds.length - 1;
+            const numRows = rowBounds.length - 1;
+            if (numCols < 2 || numRows < 2 || numCols > 60 || numRows > 300) return null;
+
+            return { colBounds, rowBounds };
+        }
+
+        function findLineIndices(darkCounts, total, threshold) {
+            const idxs = [];
+            for (let i = 0; i < darkCounts.length; i++) {
+                if (darkCounts[i] / total >= threshold) idxs.push(i);
+            }
+            return idxs;
+        }
+
+        function mergeLineIndices(idxs) {
+            if (idxs.length === 0) return [];
+            const merged = [];
+            let group = [idxs[0]];
+            for (let i = 1; i < idxs.length; i++) {
+                if (idxs[i] - idxs[i - 1] <= 4) {
+                    group.push(idxs[i]);
+                } else {
+                    merged.push(Math.round(group.reduce((s, v) => s + v, 0) / group.length));
+                    group = [idxs[i]];
+                }
+            }
+            merged.push(Math.round(group.reduce((s, v) => s + v, 0) / group.length));
+            return merged;
+        }
+
+        function normalizeBounds(lines, size) {
+            let bounds = [...lines];
+            if (bounds.length === 0 || bounds[0] > size * 0.02) bounds.unshift(0);
+            if (bounds[bounds.length - 1] < size * 0.98) bounds.push(size);
+            bounds.sort((a, b) => a - b);
+
+            const minGap = Math.max(10, size * 0.008);
+            const result = [bounds[0]];
+            for (let i = 1; i < bounds.length; i++) {
+                if (bounds[i] - result[result.length - 1] >= minGap) {
+                    result.push(bounds[i]);
+                }
+            }
+            if (result[result.length - 1] !== size) {
+                if (size - result[result.length - 1] < minGap && result.length > 1) {
+                    result[result.length - 1] = size;
+                } else {
+                    result.push(size);
+                }
+            }
+            return result;
+        }
+
+        function findBoundIndex(bounds, value) {
+            for (let i = 0; i < bounds.length - 1; i++) {
+                if (value >= bounds[i] && value < bounds[i + 1]) return i;
+            }
+            if (value < bounds[0]) return 0;
+            return bounds.length - 2;
+        }
+
+        // Snap OCR'd words into the grid cells defined by detected borders
+        function assignWordsToGrid(words, colBounds, rowBounds) {
+            const numCols = colBounds.length - 1;
+            const numRows = rowBounds.length - 1;
+            const cells = Array.from({ length: numRows }, () => Array.from({ length: numCols }, () => []));
+
+            words.forEach(word => {
+                const cx = (word.bbox.x0 + word.bbox.x1) / 2;
+                const cy = (word.bbox.y0 + word.bbox.y1) / 2;
+                const col = findBoundIndex(colBounds, cx);
+                const row = findBoundIndex(rowBounds, cy);
+                cells[row][col].push(word);
+            });
+
+            return cells.map(rowCells => rowCells.map(cellWords =>
+                cellWords.sort((a, b) => a.bbox.x0 - b.bbox.x0).map(w => w.text).join(' ')
+            ));
+        }
+
+        // --- Fallback: word bounding boxes -> row/column grid (no visible borders) ---
         function wordsToRows(words) {
             if (words.length === 0) return [['']];
 
@@ -596,7 +945,7 @@
             const rows = lines.map(line => {
                 const cells = [];
                 let current = null;
-                line.words.forEach((word, idx) => {
+                line.words.forEach((word) => {
                     if (!current) {
                         current = { x0: word.bbox.x0, x1: word.bbox.x1, text: word.text };
                     } else {
@@ -733,7 +1082,7 @@
             renderTable(id);
         }
 
-        // --- Excel export ---
+        // --- Excel export: combine all converted images into one continuous sheet ---
         function downloadExcel() {
             const ready = images.filter(img => img.tableData && img.status !== 'error');
             if (ready.length === 0) {
@@ -741,23 +1090,21 @@
                 return;
             }
 
-            const usedNames = new Set();
-            const wb = XLSX.utils.book_new();
-
-            ready.forEach((img, idx) => {
-                const ws = XLSX.utils.aoa_to_sheet(img.tableData);
-                let sheetName = img.name.replace(/\.[^/.]+$/, '').replace(/[\\/?*[\]:]/g, '_').slice(0, 28) || `Sheet${idx + 1}`;
-                let finalName = sheetName;
-                let suffix = 1;
-                while (usedNames.has(finalName)) {
-                    finalName = `${sheetName}_${suffix++}`.slice(0, 31);
-                }
-                usedNames.add(finalName);
-                XLSX.utils.book_append_sheet(wb, ws, finalName);
+            const maxCols = Math.max(...ready.flatMap(img => img.tableData.map(row => row.length)));
+            const combined = [];
+            ready.forEach(img => {
+                img.tableData.forEach(row => {
+                    const padded = row.slice(0, maxCols);
+                    while (padded.length < maxCols) padded.push('');
+                    combined.push(padded);
+                });
             });
 
+            const wb = XLSX.utils.book_new();
+            const ws = XLSX.utils.aoa_to_sheet(combined);
+            XLSX.utils.book_append_sheet(wb, ws, 'Converted Data');
             XLSX.writeFile(wb, `image-to-excel-${Date.now()}.xlsx`);
-            showMessage('✅ Excel file downloaded', 'success');
+            showMessage(`✅ Excel file downloaded — ${combined.length} rows combined from ${ready.length} image${ready.length > 1 ? 's' : ''}`, 'success');
         }
 
         function showMessage(message, type) {
