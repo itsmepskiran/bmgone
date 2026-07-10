@@ -218,7 +218,7 @@
             pointer-events: none;
         }
 
-        .crop-controls {
+        .crop-controls, .grid-controls {
             display: flex;
             align-items: center;
             gap: 0.75rem;
@@ -226,10 +226,47 @@
             margin-top: 0.5rem;
         }
 
+        .grid-controls {
+            margin-top: 0.75rem;
+        }
+
+        .grid-controls label {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.85rem;
+            color: #374151;
+        }
+
+        .grid-controls input[type="number"] {
+            width: 70px;
+            padding: 0.35rem 0.5rem;
+            border: 1.5px solid #d1d5db;
+            border-radius: 5px;
+            font-size: 0.85rem;
+        }
+
         .crop-status {
             font-size: 0.8rem;
             color: #6b7280;
         }
+
+        .grid-preview {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .grid-preview-line {
+            position: absolute;
+            background: rgba(220, 38, 38, 0.65);
+        }
+
+        .grid-preview-v { width: 1px; }
+        .grid-preview-h { height: 1px; }
 
         .progress-bar-track {
             width: 100%;
@@ -323,7 +360,7 @@
     <div class="itx-container">
         <div class="header-section">
             <h1>🧾 Image to Excel Converter</h1>
-            <p>Upload table images or screen photos and export the recognized data as a single Excel file — all images are combined into one sheet, in the order you upload them.</p>
+            <p>Upload table images or screen photos, crop to just the data, tell us the row/column count, and export as one combined Excel file.</p>
         </div>
 
         <div class="content-box">
@@ -427,6 +464,8 @@
                         status: 'pending',
                         tableData: null,
                         crop: null,
+                        rowCount: null,
+                        colCount: null,
                         usedGrid: false
                     });
                     renderImageList();
@@ -466,15 +505,23 @@
                     </div>
 
                     <div class="cropper-section">
-                        <p class="crop-hint">Drag on the image to crop out anything that isn't part of the data table (menus, toolbars, row/column headers, sheet tabs). Leave unset to use the full image.</p>
+                        <p class="crop-hint"><strong>Step A:</strong> Drag on the image to crop out anything that isn't part of the data table (menus, toolbars, row/column headers, sheet tabs).</p>
                         <div class="cropper-wrap" id="cropper-wrap-${img.id}">
                             <img src="${img.dataUrl}" class="crop-img" id="crop-img-${img.id}" alt="${img.name}" draggable="false">
                             <div class="crop-box" id="crop-box-${img.id}"></div>
+                            <div class="grid-preview" id="grid-preview-${img.id}"></div>
                         </div>
                         <div class="crop-controls">
                             <button class="btn-small" onclick="resetCrop(${img.id})">Reset Crop</button>
-                            <button class="btn-small" onclick="applyCropToAll(${img.id})">📋 Apply Crop to All Images</button>
+                            <button class="btn-small" onclick="applyCropToAll(${img.id})">📋 Apply Crop + Grid to All Images</button>
                             <span class="crop-status" id="crop-status-${img.id}">Using full image (drag on the image to crop)</span>
+                        </div>
+
+                        <p class="crop-hint"><strong>Step B:</strong> Count the rows and columns in the cropped area (the red lines above show your current setting) — this is far more reliable than automatic detection.</p>
+                        <div class="grid-controls">
+                            <label>Rows <input type="number" min="1" max="300" id="rowCount-${img.id}" value="${img.rowCount || ''}"></label>
+                            <label>Columns <input type="number" min="1" max="60" id="colCount-${img.id}" value="${img.colCount || ''}"></label>
+                            <button class="btn-small" onclick="autoSuggestGrid(${img.id})">✨ Auto-Suggest</button>
                         </div>
                     </div>
 
@@ -488,6 +535,17 @@
                 attachCropHandlers(img);
                 updateCropStatus(img.id);
 
+                const rowInput = document.getElementById(`rowCount-${img.id}`);
+                const colInput = document.getElementById(`colCount-${img.id}`);
+                rowInput.addEventListener('input', () => {
+                    img.rowCount = parseInt(rowInput.value, 10) || null;
+                    updateGridPreview(img);
+                });
+                colInput.addEventListener('input', () => {
+                    img.colCount = parseInt(colInput.value, 10) || null;
+                    updateGridPreview(img);
+                });
+
                 if (img.tableData) {
                     renderTable(img.id);
                 }
@@ -500,8 +558,8 @@
                 case 'processing': return 'Recognizing text…';
                 case 'done':
                     return img && img.usedGrid
-                        ? 'Converted using detected table borders — review below'
-                        : 'Converted — review below (no clear table borders detected, so columns may need fixing)';
+                        ? 'Converted using your row/column count — review below'
+                        : 'Converted — review below (no row/column count set, so columns may need fixing; try setting rows/columns above and re-running)';
                 case 'error': return 'OCR failed';
                 default: return '';
             }
@@ -577,6 +635,45 @@
             box.style.top = (img.crop.y * scaleY) + 'px';
             box.style.width = (img.crop.w * scaleX) + 'px';
             box.style.height = (img.crop.h * scaleY) + 'px';
+            updateGridPreview(img);
+        }
+
+        function updateGridPreview(img) {
+            const wrap = document.getElementById(`cropper-wrap-${img.id}`);
+            const imageEl = document.getElementById(`crop-img-${img.id}`);
+            const overlay = document.getElementById(`grid-preview-${img.id}`);
+            if (!wrap || !imageEl || !overlay || !imageEl.naturalWidth) return;
+
+            overlay.innerHTML = '';
+            const rows = img.rowCount;
+            const cols = img.colCount;
+            if (!rows || !cols || rows < 1 || cols < 1) return;
+
+            const rect = wrap.getBoundingClientRect();
+            const scaleX = rect.width / imageEl.naturalWidth;
+            const scaleY = rect.height / imageEl.naturalHeight;
+            const crop = img.crop || { x: 0, y: 0, w: imageEl.naturalWidth, h: imageEl.naturalHeight };
+            const left = crop.x * scaleX;
+            const top = crop.y * scaleY;
+            const width = crop.w * scaleX;
+            const height = crop.h * scaleY;
+
+            for (let c = 1; c < cols; c++) {
+                const line = document.createElement('div');
+                line.className = 'grid-preview-line grid-preview-v';
+                line.style.left = (left + (width * c / cols)) + 'px';
+                line.style.top = top + 'px';
+                line.style.height = height + 'px';
+                overlay.appendChild(line);
+            }
+            for (let r = 1; r < rows; r++) {
+                const line = document.createElement('div');
+                line.className = 'grid-preview-line grid-preview-h';
+                line.style.top = (top + (height * r / rows)) + 'px';
+                line.style.left = left + 'px';
+                line.style.width = width + 'px';
+                overlay.appendChild(line);
+            }
         }
 
         function handleDragMove(clientX, clientY) {
@@ -616,6 +713,7 @@
                 };
             }
             updateCropStatus(img.id);
+            updateGridPreview(img);
             activeDrag = null;
         }
 
@@ -626,6 +724,7 @@
             const box = document.getElementById(`crop-box-${id}`);
             if (box) box.style.display = 'none';
             updateCropStatus(id);
+            updateGridPreview(img);
         }
 
         function applyCropToAll(id) {
@@ -649,12 +748,18 @@
                             w: Math.round(fw * targetImg.naturalWidth),
                             h: Math.round(fh * targetImg.naturalHeight)
                         };
+                        target.rowCount = source.rowCount;
+                        target.colCount = source.colCount;
+                        const rowInput = document.getElementById(`rowCount-${target.id}`);
+                        const colInput = document.getElementById(`colCount-${target.id}`);
+                        if (rowInput) rowInput.value = target.rowCount || '';
+                        if (colInput) colInput.value = target.colCount || '';
                         drawStoredCrop(target);
                         updateCropStatus(target.id);
                     })
                 );
 
-                Promise.all(tasks).then(() => showMessage('✅ Crop applied to all images', 'success'));
+                Promise.all(tasks).then(() => showMessage('✅ Crop and row/column count applied to all images', 'success'));
             });
         }
 
@@ -674,6 +779,30 @@
                 image.onerror = reject;
                 image.src = src;
             });
+        }
+
+        // Best-effort starting suggestion only — the admin should verify/adjust against the preview overlay
+        async function autoSuggestGrid(id) {
+            const img = images.find(i => i.id === id);
+            if (!img) return;
+
+            const imageEl = await loadImage(img.dataUrl);
+            const cropCanvas = getCroppedCanvas(imageEl, img.crop);
+            const grid = detectGrid(cropCanvas);
+
+            if (!grid) {
+                showMessage('❌ Could not auto-suggest a grid for this image — please count the rows/columns manually', 'error');
+                return;
+            }
+
+            img.rowCount = grid.rowBounds.length - 1;
+            img.colCount = grid.colBounds.length - 1;
+            const rowInput = document.getElementById(`rowCount-${id}`);
+            const colInput = document.getElementById(`colCount-${id}`);
+            if (rowInput) rowInput.value = img.rowCount;
+            if (colInput) colInput.value = img.colCount;
+            updateGridPreview(img);
+            showMessage('✅ Suggested a row/column count — check the preview lines against the image and adjust if needed', 'info');
         }
 
         function getCroppedCanvas(imageEl, crop) {
@@ -718,7 +847,8 @@
                 const worker = await getWorker();
                 const numbersOnly = document.getElementById('numbersOnlyMode').checked;
                 await worker.setParameters({
-                    tessedit_char_whitelist: numbersOnly ? '0123456789.,-%$()/ ' : ''
+                    tessedit_char_whitelist: numbersOnly ? '0123456789.,-%$()/ ' : '',
+                    tessedit_pageseg_mode: '6'
                 });
 
                 for (const img of images) {
@@ -740,7 +870,8 @@
             const worker = await getWorker();
             const numbersOnly = document.getElementById('numbersOnlyMode').checked;
             await worker.setParameters({
-                tessedit_char_whitelist: numbersOnly ? '0123456789.,-%$()/ ' : ''
+                tessedit_char_whitelist: numbersOnly ? '0123456789.,-%$()/ ' : '',
+                tessedit_pageseg_mode: '6'
             });
             await runOCR(img, worker);
             updateButtons();
@@ -757,11 +888,24 @@
                 const imageEl = await loadImage(img.dataUrl);
                 const cropCanvas = getCroppedCanvas(imageEl, img.crop);
 
-                // Detect real cell borders in the (cropped) image before OCR-specific processing
-                const grid = detectGrid(cropCanvas);
+                // Upscale first — small text in phone photos of screens OCRs far more
+                // reliably once character height is larger.
+                const upscaled = scaleCanvas(cropCanvas, cropCanvas.width < 1400 ? 2 : 1.4);
+
+                // The admin-specified row/column count builds a reliable uniform grid.
+                // Pixel-based line detection is not trustworthy on dense, real photos
+                // (text ink alone can swamp the darkness signal used to find borders),
+                // so it is only ever used for the manual "Auto-Suggest" starting point.
+                const grid = (img.rowCount && img.colCount)
+                    ? buildUniformGrid(upscaled.width, upscaled.height, img.rowCount, img.colCount)
+                    : null;
+
+                // Paint over the known cell-boundary bands so OCR doesn't misread grid
+                // lines as stray "|" / "1" characters at the edge of every cell.
+                const masked = grid ? maskGridLines(upscaled, grid.colBounds, grid.rowBounds) : upscaled;
 
                 const enhance = document.getElementById('enhanceMode').checked;
-                const ocrSource = enhance ? enhanceCanvas(cropCanvas) : cropCanvas;
+                const ocrSource = enhance ? enhanceCanvas(masked) : masked;
 
                 const { data } = await worker.recognize(ocrSource);
                 const words = (data.words || []).filter(w => w.text && w.text.trim().length > 0);
@@ -781,6 +925,45 @@
                 if (track) track.style.display = 'none';
                 renderTable(img.id);
             }
+        }
+
+        function scaleCanvas(sourceCanvas, factor) {
+            if (factor === 1) return sourceCanvas;
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.round(sourceCanvas.width * factor);
+            canvas.height = Math.round(sourceCanvas.height * factor);
+            const ctx = canvas.getContext('2d');
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(sourceCanvas, 0, 0, canvas.width, canvas.height);
+            return canvas;
+        }
+
+        // Evenly divide the image into the admin-specified row/column count
+        function buildUniformGrid(width, height, rows, cols) {
+            const colBounds = [];
+            for (let c = 0; c <= cols; c++) colBounds.push(Math.round(width * c / cols));
+            const rowBounds = [];
+            for (let r = 0; r <= rows; r++) rowBounds.push(Math.round(height * r / rows));
+            return { colBounds, rowBounds };
+        }
+
+        // Paint over known cell-boundary bands so OCR doesn't pick up border lines as characters
+        function maskGridLines(sourceCanvas, colBounds, rowBounds) {
+            const canvas = document.createElement('canvas');
+            canvas.width = sourceCanvas.width;
+            canvas.height = sourceCanvas.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(sourceCanvas, 0, 0);
+            ctx.fillStyle = '#ffffff';
+            const bandHalf = Math.max(1, Math.round(Math.min(canvas.width, canvas.height) * 0.002));
+            colBounds.forEach(x => {
+                if (x > 0 && x < canvas.width) ctx.fillRect(x - bandHalf, 0, bandHalf * 2, canvas.height);
+            });
+            rowBounds.forEach(y => {
+                if (y > 0 && y < canvas.height) ctx.fillRect(0, y - bandHalf, canvas.width, bandHalf * 2);
+            });
+            return canvas;
         }
 
         // Grayscale + simple threshold to improve OCR on scanned/photographed tables
