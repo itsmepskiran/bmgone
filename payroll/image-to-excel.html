@@ -246,6 +246,26 @@
             font-size: 0.85rem;
         }
 
+        .mapping-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .mapping-label {
+            font-size: 0.8rem;
+            color: #6b7280;
+            min-width: 80px;
+        }
+
+        .mapping-row select {
+            padding: 0.35rem 0.5rem;
+            border: 1.5px solid #d1d5db;
+            border-radius: 5px;
+            font-size: 0.85rem;
+        }
+
         .crop-status {
             font-size: 0.8rem;
             color: #6b7280;
@@ -360,7 +380,7 @@
     <div class="itx-container">
         <div class="header-section">
             <h1>🧾 Image to Excel Converter</h1>
-            <p>Upload table images or screen photos, crop to just the data, tell us the row/column count, and export as one combined Excel file.</p>
+            <p>Upload table images or screen photos, crop to just the data, tell us the row/column count, review the recognized text, then export a CSV to run through the formatting script (payroll/tools/csv_to_excel_agent_records.py).</p>
         </div>
 
         <div class="content-box">
@@ -394,6 +414,7 @@
             </div>
 
             <div id="imageList"></div>
+            <div id="columnMappingSection"></div>
         </div>
     </div>
 
@@ -409,6 +430,19 @@
         let nextId = 1;
         let ocrWorker = null;
         let activeDrag = null;
+
+        // Fixed schema expected by the downstream CSV formatting script
+        const CSV_FIELDS = [
+            { key: 'RowID', label: 'Row ID' },
+            { key: 'AgentCode', label: 'Agent Code' },
+            { key: 'FirstName', label: 'First Name' },
+            { key: 'LastName', label: 'Last Name' },
+            { key: 'City', label: 'City' },
+            { key: 'Pincode', label: 'Pincode' },
+            { key: 'Phone', label: 'Phone' },
+            { key: 'Month', label: 'Month' }
+        ];
+        let columnMapping = []; // index = detected column index, value = CSV_FIELDS key or ''
 
         // Check authentication - admin/master_admin only
         window.addEventListener('load', function () {
@@ -574,12 +608,14 @@
             images = images.filter(img => img.id !== id);
             renderImageList();
             updateButtons();
+            renderColumnMapping();
         }
 
         function clearAll() {
             images = [];
             renderImageList();
             updateButtons();
+            renderColumnMapping();
             showMessage('', '');
         }
 
@@ -928,6 +964,7 @@
                 currentProcessingId = null;
                 if (track) track.style.display = 'none';
                 renderTable(img.id);
+                renderColumnMapping();
             }
         }
 
@@ -1289,13 +1326,10 @@
             renderTable(id);
         }
 
-        // --- Excel export: combine all converted images into one continuous sheet ---
-        function downloadExcel() {
+        // --- Combine all converted images into one continuous set of rows (upload order) ---
+        function getCombinedRows() {
             const ready = images.filter(img => img.tableData && img.status !== 'error');
-            if (ready.length === 0) {
-                showMessage('❌ No converted tables to export yet', 'error');
-                return;
-            }
+            if (ready.length === 0) return { combined: [], maxCols: 0, readyCount: 0 };
 
             const maxCols = Math.max(...ready.flatMap(img => img.tableData.map(row => row.length)));
             const combined = [];
@@ -1306,12 +1340,105 @@
                     combined.push(padded);
                 });
             });
+            return { combined, maxCols, readyCount: ready.length };
+        }
+
+        function downloadExcel() {
+            const { combined, readyCount } = getCombinedRows();
+            if (readyCount === 0) {
+                showMessage('❌ No converted tables to export yet', 'error');
+                return;
+            }
 
             const wb = XLSX.utils.book_new();
             const ws = XLSX.utils.aoa_to_sheet(combined);
             XLSX.utils.book_append_sheet(wb, ws, 'Converted Data');
             XLSX.writeFile(wb, `image-to-excel-${Date.now()}.xlsx`);
-            showMessage(`✅ Excel file downloaded — ${combined.length} rows combined from ${ready.length} image${ready.length > 1 ? 's' : ''}`, 'success');
+            showMessage(`✅ Excel file downloaded — ${combined.length} rows combined from ${readyCount} image${readyCount > 1 ? 's' : ''}`, 'success');
+        }
+
+        // --- Step 3: map detected columns to the CSV schema the formatting script expects ---
+        function renderColumnMapping() {
+            const section = document.getElementById('columnMappingSection');
+            const { maxCols, readyCount } = getCombinedRows();
+
+            if (readyCount === 0 || maxCols === 0) {
+                section.innerHTML = '';
+                columnMapping = [];
+                return;
+            }
+
+            const previous = columnMapping;
+            columnMapping = new Array(maxCols).fill('');
+            for (let i = 0; i < maxCols; i++) {
+                if (previous[i]) columnMapping[i] = previous[i];
+            }
+            // First time we see exactly 8 columns, default to the standard field order
+            if (maxCols === CSV_FIELDS.length && previous.every(v => !v)) {
+                CSV_FIELDS.forEach((f, i) => { columnMapping[i] = f.key; });
+            }
+
+            const rowsHtml = [];
+            for (let i = 0; i < maxCols; i++) {
+                const options = ['<option value="">— Skip —</option>']
+                    .concat(CSV_FIELDS.map(f => `<option value="${f.key}" ${columnMapping[i] === f.key ? 'selected' : ''}>${f.label}</option>`))
+                    .join('');
+                rowsHtml.push(`
+                    <div class="mapping-row">
+                        <span class="mapping-label">Column ${i + 1}</span>
+                        <select onchange="setColumnMapping(${i}, this.value)">${options}</select>
+                    </div>
+                `);
+            }
+
+            section.innerHTML = `
+                <div class="form-section">
+                    <h2>Step 3: Map Columns for CSV Export</h2>
+                    <p class="crop-hint">Match each detected column to the field the formatting script expects (RowID, AgentCode, FirstName, LastName, City, Pincode, Phone, Month). Unmapped columns are left blank in the CSV.</p>
+                    ${rowsHtml.join('')}
+                    <div class="button-group" style="margin-top:0.75rem;">
+                        <button class="btn-primary" style="background:#7c3aed;" onclick="downloadCSV()">📄 Download CSV (for formatting script)</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function setColumnMapping(index, value) {
+            columnMapping[index] = value;
+        }
+
+        function downloadCSV() {
+            const { combined, readyCount } = getCombinedRows();
+            if (readyCount === 0) {
+                showMessage('❌ No converted tables to export yet', 'error');
+                return;
+            }
+            if (!columnMapping.some(v => v)) {
+                showMessage('❌ Map at least one column before exporting CSV', 'error');
+                return;
+            }
+
+            const rows = [CSV_FIELDS.map(f => f.key)];
+            combined.forEach(sourceRow => {
+                rows.push(CSV_FIELDS.map(f => {
+                    const colIdx = columnMapping.indexOf(f.key);
+                    return colIdx === -1 ? '' : (sourceRow[colIdx] || '');
+                }));
+            });
+
+            const ws = XLSX.utils.aoa_to_sheet(rows);
+            const csv = XLSX.utils.sheet_to_csv(ws);
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `agent-records-${Date.now()}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+
+            showMessage(`✅ CSV downloaded (${rows.length - 1} rows). Run it through the formatting script to get the final styled Excel file.`, 'success');
         }
 
         function showMessage(message, type) {
