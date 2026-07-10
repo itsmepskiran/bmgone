@@ -349,6 +349,20 @@
                     </button>
                 </div>
             </div>
+
+            <!-- Image to Excel Card (Admin Only) -->
+            <div class="dashboard-card admin-card" id="imageToExcelCard" style="display: none;">
+                <div class="card-header">
+                    <h2 class="card-title">Image to Excel</h2>
+                    <span style="font-size: 2rem;">🧾</span>
+                </div>
+                <div style="text-align: center; padding: 2rem 1rem;">
+                    <p style="color: #6b7280; margin-bottom: 1.5rem;">Convert table images with numbers into an Excel file.</p>
+                    <button onclick="openImageToExcel()" class="btn-submit" style="width: 100%; padding: 0.75rem;">
+                        Image to Excel
+                    </button>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -1017,6 +1031,15 @@
                 : 'https://pay.bmgone.com/employee-management.html';
 
             window.location.href = employeeManagementPath;
+        }
+
+        function openImageToExcel() {
+            // Navigate to image to excel converter page - only for admins
+            const imageToExcelPath = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+                ? '/image-to-excel.html'
+                : 'https://pay.bmgone.com/image-to-excel.html';
+
+            window.location.href = imageToExcelPath;
         }
     </script>
 </body>

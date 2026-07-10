@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image to Excel - BMGOne Payroll</title>
+    <link rel="icon" type="image/png" href="logo.png">
+    <link rel="apple-touch-icon" href="logo.png">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        .itx-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            margin-top: 80px;
+        }
+
+        .header-section {
+            background: var(--gradient-primary);
+            color: white;
+            padding: 2rem;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+        }
+
+        .header-section h1 {
+            margin: 0 0 0.5rem 0;
+        }
+
+        .header-section p {
+            margin: 0;
+            opacity: 0.9;
+        }
+
+        .content-box {
+            background: white;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 2rem;
+        }
+
+        .form-section h2 {
+            color: #1f2937;
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid #e5e7eb;
+            padding-bottom: 0.5rem;
+        }
+
+        .dropzone {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #f9fafb;
+        }
+
+        .dropzone.dragover {
+            border-color: var(--primary-blue);
+            background: #eff6ff;
+        }
+
+        .dropzone p {
+            margin: 0.25rem 0;
+            color: #6b7280;
+        }
+
+        .options-row {
+            display: flex;
+            gap: 1.5rem;
+            flex-wrap: wrap;
+            margin: 1rem 0 1.5rem;
+        }
+
+        .options-row label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #374151;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: var(--gradient-primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover { opacity: 0.9; }
+        .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover { background: #d1d5db; }
+
+        .btn-small {
+            background: #e5e7eb;
+            color: #374151;
+            border: none;
+            padding: 0.4rem 0.8rem;
+            border-radius: 5px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-small:hover { background: #d1d5db; }
+
+        .btn-small.danger { background: #fee2e2; color: #991b1b; }
+        .btn-small.danger:hover { background: #fca5a5; }
+
+        .status-message {
+            padding: 1rem;
+            border-radius: 5px;
+            margin-bottom: 1rem;
+            display: none;
+            white-space: pre-line;
+        }
+
+        .status-message.success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; display: block; }
+        .status-message.error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; display: block; }
+        .status-message.info { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; display: block; }
+
+        .image-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+        }
+
+        .image-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-bottom: 0.75rem;
+        }
+
+        .image-card-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .image-card-title img {
+            width: 56px;
+            height: 56px;
+            object-fit: cover;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .image-card-title .name {
+            font-weight: 600;
+            color: #1f2937;
+            word-break: break-all;
+        }
+
+        .image-card-title .meta {
+            font-size: 0.8rem;
+            color: #6b7280;
+        }
+
+        .progress-bar-track {
+            width: 100%;
+            height: 8px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 0.5rem 0;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: var(--gradient-primary);
+            width: 0%;
+            transition: width 0.2s ease;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            margin-top: 1rem;
+        }
+
+        .itx-table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        .itx-table td {
+            border: 1px solid #e5e7eb;
+            padding: 0;
+            min-width: 90px;
+        }
+
+        .itx-table td[contenteditable="true"] {
+            padding: 0.5rem 0.6rem;
+            font-size: 0.85rem;
+            color: #1f2937;
+            outline: none;
+        }
+
+        .itx-table td[contenteditable="true"]:focus {
+            background: #eff6ff;
+            box-shadow: inset 0 0 0 2px var(--primary-blue);
+        }
+
+        .table-toolbar {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.75rem;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #6b7280;
+            padding: 1rem;
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 768px) {
+            .itx-container { padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <img src="logo.png" alt="BMGOne" class="logo-img">
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="https://bmgone.com" class="nav-link">Home</a>
+                </li>
+                <li class="nav-item">
+                    <a href="index.html" class="nav-link">Dashboard</a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="btn btn-staff-login" id="logoutBtn">Logout</a>
+                </li>
+            </ul>
+            <div class="hamburger">
+                <span class="bar"></span>
+                <span class="bar"></span>
+                <span class="bar"></span>
+            </div>
+        </div>
+    </nav>
+
+    <div class="itx-container">
+        <div class="header-section">
+            <h1>🧾 Image to Excel Converter</h1>
+            <p>Upload table images (scans/photos with numbers) and export the recognized data as an Excel file.</p>
+        </div>
+
+        <div class="content-box">
+            <div class="status-message" id="statusMessage"></div>
+
+            <div class="form-section">
+                <h2>Step 1: Upload Images</h2>
+                <div class="dropzone" id="dropzone">
+                    <p style="font-size: 2rem; margin-bottom: 0.5rem;">📤</p>
+                    <p><strong>Click to select images</strong> or drag and drop here</p>
+                    <p style="font-size: 0.8rem;">JPG, PNG or WEBP — you can select multiple files</p>
+                </div>
+                <input type="file" id="fileInput" accept="image/*" multiple style="display:none;">
+
+                <div class="options-row">
+                    <label>
+                        <input type="checkbox" id="numbersOnlyMode">
+                        Numbers-only mode (recommended for pure numeric tables)
+                    </label>
+                    <label>
+                        <input type="checkbox" id="enhanceMode" checked>
+                        Enhance image before OCR (grayscale + contrast)
+                    </label>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" id="convertBtn" onclick="convertAll()" disabled>🔍 Convert to Tables</button>
+                    <button class="btn-secondary" onclick="clearAll()">Clear All</button>
+                    <button class="btn-primary" id="downloadBtn" style="background:#059669;" onclick="downloadExcel()" disabled>📥 Download Excel</button>
+                </div>
+            </div>
+
+            <div id="imageList"></div>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js"></script>
+    <script>
+        const CONFIG = {
+            API_BASE: 'https://pay.bmgone.com/api'
+        };
+
+        let token = localStorage.getItem('token');
+        let images = []; // { id, file, dataUrl, name, status, tableData, worker-managed }
+        let nextId = 1;
+        let ocrWorker = null;
+
+        // Check authentication - admin/master_admin only
+        window.addEventListener('load', function () {
+            if (!token) {
+                alert('⚠️ Not authenticated. Please login first.');
+                window.location.href = 'index.html';
+                return;
+            }
+
+            const employee = localStorage.getItem('employee');
+            if (employee) {
+                try {
+                    const employeeData = JSON.parse(employee);
+                    if (!employeeData.role || !['admin', 'master_admin'].includes(employeeData.role)) {
+                        alert('❌ Access Denied. Only admins can access this page.');
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                } catch (e) {
+                    alert('❌ Invalid authentication data.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+            }
+        });
+
+        // --- File selection / drag & drop ---
+        const dropzone = document.getElementById('dropzone');
+        const fileInput = document.getElementById('fileInput');
+
+        dropzone.addEventListener('click', () => fileInput.click());
+        dropzone.addEventListener('dragover', (e) => { e.preventDefault(); dropzone.classList.add('dragover'); });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            handleFiles(e.dataTransfer.files);
+        });
+        fileInput.addEventListener('change', (e) => handleFiles(e.target.files));
+
+        function handleFiles(fileList) {
+            const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+            if (files.length === 0) return;
+
+            files.forEach(file => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    images.push({
+                        id: nextId++,
+                        file,
+                        dataUrl: e.target.result,
+                        name: file.name,
+                        status: 'pending',
+                        tableData: null
+                    });
+                    renderImageList();
+                    updateButtons();
+                };
+                reader.readAsDataURL(file);
+            });
+            fileInput.value = '';
+        }
+
+        function updateButtons() {
+            document.getElementById('convertBtn').disabled = images.length === 0;
+            document.getElementById('downloadBtn').disabled = !images.some(img => img.tableData);
+        }
+
+        function renderImageList() {
+            const container = document.getElementById('imageList');
+            container.innerHTML = '';
+
+            images.forEach(img => {
+                const card = document.createElement('div');
+                card.className = 'image-card';
+                card.id = `image-card-${img.id}`;
+
+                card.innerHTML = `
+                    <div class="image-card-header">
+                        <div class="image-card-title">
+                            <img src="${img.dataUrl}" alt="${img.name}">
+                            <div>
+                                <div class="name">${img.name}</div>
+                                <div class="meta" id="meta-${img.id}">${statusLabel(img.status)}</div>
+                            </div>
+                        </div>
+                        <div class="button-group">
+                            <button class="btn-small" onclick="reRunOCR(${img.id})">🔁 Re-run OCR</button>
+                            <button class="btn-small danger" onclick="removeImage(${img.id})">🗑 Remove</button>
+                        </div>
+                    </div>
+                    <div class="progress-bar-track" id="progress-track-${img.id}" style="display:none;">
+                        <div class="progress-bar-fill" id="progress-fill-${img.id}"></div>
+                    </div>
+                    <div id="table-container-${img.id}"></div>
+                `;
+                container.appendChild(card);
+
+                if (img.tableData) {
+                    renderTable(img.id);
+                }
+            });
+        }
+
+        function statusLabel(status) {
+            switch (status) {
+                case 'pending': return 'Waiting to convert';
+                case 'processing': return 'Recognizing text…';
+                case 'done': return 'Converted — review the table below';
+                case 'error': return 'OCR failed';
+                default: return '';
+            }
+        }
+
+        function updateMeta(id, text) {
+            const el = document.getElementById(`meta-${id}`);
+            if (el) el.textContent = text;
+        }
+
+        function removeImage(id) {
+            images = images.filter(img => img.id !== id);
+            renderImageList();
+            updateButtons();
+        }
+
+        function clearAll() {
+            images = [];
+            renderImageList();
+            updateButtons();
+            showMessage('', '');
+            document.getElementById('statusMessage').style.display = 'none';
+        }
+
+        // --- OCR pipeline ---
+        async function getWorker() {
+            if (!ocrWorker) {
+                ocrWorker = await Tesseract.createWorker('eng', 1, {
+                    logger: (m) => {
+                        if (m.status === 'recognizing text' && currentProcessingId) {
+                            const pct = Math.round((m.progress || 0) * 100);
+                            const fill = document.getElementById(`progress-fill-${currentProcessingId}`);
+                            if (fill) fill.style.width = pct + '%';
+                            updateMeta(currentProcessingId, `Recognizing text… ${pct}%`);
+                        }
+                    }
+                });
+            }
+            return ocrWorker;
+        }
+
+        let currentProcessingId = null;
+
+        async function convertAll() {
+            document.getElementById('convertBtn').disabled = true;
+            showMessage('⏳ Converting images… this can take a while for large images.', 'info');
+
+            try {
+                const worker = await getWorker();
+                const numbersOnly = document.getElementById('numbersOnlyMode').checked;
+                await worker.setParameters({
+                    tessedit_char_whitelist: numbersOnly ? '0123456789.,-%$()/ ' : ''
+                });
+
+                for (const img of images) {
+                    await runOCR(img, worker);
+                }
+                showMessage('✅ Conversion complete. Review and edit the tables, then download the Excel file.', 'success');
+            } catch (error) {
+                console.error('Conversion error:', error);
+                showMessage(`❌ Conversion failed: ${error.message}`, 'error');
+            } finally {
+                document.getElementById('convertBtn').disabled = false;
+                updateButtons();
+            }
+        }
+
+        async function reRunOCR(id) {
+            const img = images.find(i => i.id === id);
+            if (!img) return;
+            const worker = await getWorker();
+            const numbersOnly = document.getElementById('numbersOnlyMode').checked;
+            await worker.setParameters({
+                tessedit_char_whitelist: numbersOnly ? '0123456789.,-%$()/ ' : ''
+            });
+            await runOCR(img, worker);
+            updateButtons();
+        }
+
+        async function runOCR(img, worker) {
+            img.status = 'processing';
+            currentProcessingId = img.id;
+            const track = document.getElementById(`progress-track-${img.id}`);
+            if (track) track.style.display = 'block';
+            updateMeta(img.id, 'Recognizing text… 0%');
+
+            try {
+                const enhance = document.getElementById('enhanceMode').checked;
+                const source = enhance ? await enhanceImage(img.dataUrl) : img.dataUrl;
+
+                const { data } = await worker.recognize(source);
+                const words = (data.words || []).filter(w => w.text && w.text.trim().length > 0);
+                img.tableData = wordsToRows(words);
+                img.status = 'done';
+                updateMeta(img.id, statusLabel('done'));
+            } catch (error) {
+                console.error(`OCR failed for ${img.name}:`, error);
+                img.status = 'error';
+                updateMeta(img.id, `${statusLabel('error')}: ${error.message}`);
+            } finally {
+                currentProcessingId = null;
+                if (track) track.style.display = 'none';
+                renderTable(img.id);
+            }
+        }
+
+        // Grayscale + simple threshold to improve OCR on scanned/photographed tables
+        function enhanceImage(dataUrl) {
+            return new Promise((resolve, reject) => {
+                const image = new Image();
+                image.onload = () => {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = image.width;
+                    canvas.height = image.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(image, 0, 0);
+
+                    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                    const data = imageData.data;
+                    for (let i = 0; i < data.length; i += 4) {
+                        const gray = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                        const value = gray > 150 ? 255 : (gray < 90 ? 0 : gray);
+                        data[i] = data[i + 1] = data[i + 2] = value;
+                    }
+                    ctx.putImageData(imageData, 0, 0);
+                    resolve(canvas.toDataURL('image/png'));
+                };
+                image.onerror = reject;
+                image.src = dataUrl;
+            });
+        }
+
+        // --- Word bounding boxes -> row/column grid ---
+        function wordsToRows(words) {
+            if (words.length === 0) return [['']];
+
+            const avgHeight = words.reduce((sum, w) => sum + (w.bbox.y1 - w.bbox.y0), 0) / words.length;
+            const lineTolerance = Math.max(avgHeight * 0.6, 8);
+
+            // 1. Cluster words into lines by vertical center
+            const sorted = [...words].sort((a, b) => (a.bbox.y0 + a.bbox.y1) / 2 - (b.bbox.y0 + b.bbox.y1) / 2);
+            const lines = [];
+            sorted.forEach(word => {
+                const yCenter = (word.bbox.y0 + word.bbox.y1) / 2;
+                let line = lines.find(l => Math.abs(l.yCenter - yCenter) <= lineTolerance);
+                if (!line) {
+                    line = { yCenter, words: [] };
+                    lines.push(line);
+                }
+                line.words.push(word);
+                line.yCenter = line.words.reduce((s, w) => s + (w.bbox.y0 + w.bbox.y1) / 2, 0) / line.words.length;
+            });
+            lines.sort((a, b) => a.yCenter - b.yCenter);
+            lines.forEach(l => l.words.sort((a, b) => a.bbox.x0 - b.bbox.x0));
+
+            // 2. Merge words within a line into cells based on horizontal gaps
+            const threshold = Math.max(avgHeight * 1.8, 25);
+            const rows = lines.map(line => {
+                const cells = [];
+                let current = null;
+                line.words.forEach((word, idx) => {
+                    if (!current) {
+                        current = { x0: word.bbox.x0, x1: word.bbox.x1, text: word.text };
+                    } else {
+                        const gap = word.bbox.x0 - current.x1;
+                        if (gap > threshold) {
+                            cells.push(current);
+                            current = { x0: word.bbox.x0, x1: word.bbox.x1, text: word.text };
+                        } else {
+                            current.text += ' ' + word.text;
+                            current.x1 = word.bbox.x1;
+                        }
+                    }
+                });
+                if (current) cells.push(current);
+                return cells;
+            });
+
+            // 3. Cluster cell start positions across all rows into consistent columns
+            const allStarts = rows.flatMap(r => r.map(c => c.x0)).sort((a, b) => a - b);
+            const colThreshold = Math.max(avgHeight * 1.5, 25);
+            const columnCenters = [];
+            allStarts.forEach(x => {
+                let col = columnCenters.find(c => Math.abs(c.center - x) <= colThreshold);
+                if (!col) {
+                    col = { center: x, values: [] };
+                    columnCenters.push(col);
+                }
+                col.values.push(x);
+                col.center = col.values.reduce((s, v) => s + v, 0) / col.values.length;
+            });
+            columnCenters.sort((a, b) => a.center - b.center);
+
+            // 4. Build the grid, snapping each cell to its nearest column
+            const grid = rows.map(row => {
+                const rowCells = new Array(columnCenters.length).fill('');
+                row.forEach(cell => {
+                    let bestIdx = 0;
+                    let bestDist = Infinity;
+                    columnCenters.forEach((col, idx) => {
+                        const dist = Math.abs(col.center - cell.x0);
+                        if (dist < bestDist) {
+                            bestDist = dist;
+                            bestIdx = idx;
+                        }
+                    });
+                    rowCells[bestIdx] = rowCells[bestIdx] ? `${rowCells[bestIdx]} ${cell.text}` : cell.text;
+                });
+                return rowCells;
+            });
+
+            return grid.length ? grid : [['']];
+        }
+
+        // --- Editable table rendering ---
+        function renderTable(id) {
+            const img = images.find(i => i.id === id);
+            const container = document.getElementById(`table-container-${id}`);
+            if (!container) return;
+
+            if (!img.tableData) {
+                container.innerHTML = '';
+                return;
+            }
+
+            if (img.status === 'error') {
+                container.innerHTML = `<div class="empty-state">Could not read this image. Try "Re-run OCR" or a clearer photo/scan.</div>`;
+                return;
+            }
+
+            const table = document.createElement('table');
+            table.className = 'itx-table';
+            const tbody = document.createElement('tbody');
+
+            img.tableData.forEach((row, r) => {
+                const tr = document.createElement('tr');
+                row.forEach((cellText, c) => {
+                    const td = document.createElement('td');
+                    td.contentEditable = 'true';
+                    td.textContent = cellText;
+                    td.addEventListener('input', () => {
+                        img.tableData[r][c] = td.textContent;
+                    });
+                    tr.appendChild(td);
+                });
+                tbody.appendChild(tr);
+            });
+
+            table.appendChild(tbody);
+
+            const wrap = document.createElement('div');
+            wrap.className = 'table-wrap';
+            wrap.appendChild(table);
+
+            const toolbar = document.createElement('div');
+            toolbar.className = 'table-toolbar';
+            toolbar.innerHTML = `
+                <button class="btn-small" onclick="addRow(${id})">+ Row</button>
+                <button class="btn-small" onclick="addColumn(${id})">+ Column</button>
+                <button class="btn-small danger" onclick="removeRow(${id})">- Row</button>
+                <button class="btn-small danger" onclick="removeColumn(${id})">- Column</button>
+            `;
+
+            container.innerHTML = '';
+            container.appendChild(wrap);
+            container.appendChild(toolbar);
+        }
+
+        function addRow(id) {
+            const img = images.find(i => i.id === id);
+            if (!img || !img.tableData) return;
+            const cols = img.tableData[0] ? img.tableData[0].length : 1;
+            img.tableData.push(new Array(cols).fill(''));
+            renderTable(id);
+        }
+
+        function removeRow(id) {
+            const img = images.find(i => i.id === id);
+            if (!img || !img.tableData || img.tableData.length <= 1) return;
+            img.tableData.pop();
+            renderTable(id);
+        }
+
+        function addColumn(id) {
+            const img = images.find(i => i.id === id);
+            if (!img || !img.tableData) return;
+            img.tableData.forEach(row => row.push(''));
+            renderTable(id);
+        }
+
+        function removeColumn(id) {
+            const img = images.find(i => i.id === id);
+            if (!img || !img.tableData || !img.tableData[0] || img.tableData[0].length <= 1) return;
+            img.tableData.forEach(row => row.pop());
+            renderTable(id);
+        }
+
+        // --- Excel export ---
+        function downloadExcel() {
+            const ready = images.filter(img => img.tableData && img.status !== 'error');
+            if (ready.length === 0) {
+                showMessage('❌ No converted tables to export yet', 'error');
+                return;
+            }
+
+            const usedNames = new Set();
+            const wb = XLSX.utils.book_new();
+
+            ready.forEach((img, idx) => {
+                const ws = XLSX.utils.aoa_to_sheet(img.tableData);
+                let sheetName = img.name.replace(/\.[^/.]+$/, '').replace(/[\\/?*[\]:]/g, '_').slice(0, 28) || `Sheet${idx + 1}`;
+                let finalName = sheetName;
+                let suffix = 1;
+                while (usedNames.has(finalName)) {
+                    finalName = `${sheetName}_${suffix++}`.slice(0, 31);
+                }
+                usedNames.add(finalName);
+                XLSX.utils.book_append_sheet(wb, ws, finalName);
+            });
+
+            XLSX.writeFile(wb, `image-to-excel-${Date.now()}.xlsx`);
+            showMessage('✅ Excel file downloaded', 'success');
+        }
+
+        function showMessage(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            if (!message) {
+                statusDiv.style.display = 'none';
+                return;
+            }
+            statusDiv.textContent = message;
+            statusDiv.className = `status-message ${type}`;
+        }
+
+        // Logout button
+        document.getElementById('logoutBtn')?.addEventListener('click', async function (e) {
+            e.preventDefault();
+            try {
+                await fetch(`${CONFIG.API_BASE}/auth/logout`, {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+            } catch (error) {
+                console.error('Logout error:', error);
+            }
+            localStorage.removeItem('token');
+            localStorage.removeItem('employee');
+            window.location.reload();
+        });
+
+        window.addEventListener('beforeunload', () => {
+            if (ocrWorker) ocrWorker.terminate();
+        });
+    </script>
+</body>
+</html>
